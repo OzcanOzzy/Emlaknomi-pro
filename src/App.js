@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Printer, Home, MapPin, CheckCircle, Layout, Upload, User, ChevronDown, ChevronUp, Download, Grid, Image as ImageIcon, Lock, Loader2, Globe, Car, Building } from 'lucide-react';
+import { Camera, Printer, Home, MapPin, CheckCircle, Layout, Upload, User, ChevronDown, ChevronUp, Download, Grid, Image as ImageIcon, Lock, Loader2, Globe, Car, Building, X } from 'lucide-react';
 
 // --- YARDIMCI BİLEŞENLER ---
 const InputField = ({ label, name, value, onChange, onBlur, placeholder }) => (
@@ -76,7 +76,7 @@ const locationData = {
   "Eskişehir": { "Odunpazarı": ["71 Evler", "Akarbaşı", "Akcami", "Alanönü"], "Tepebaşı": ["Aşağı Söğütönü", "Batıkent", "Çamlıca"] }
 };
 
-// --- SEÇENEK LİSTELERİ (KISALTILDI) ---
+// --- SEÇENEK LİSTELERİ ---
 const options = {
   rooms: ["1+0", "1+1", "2+0", "2+1", "3+0", "3+1", "4+0", "4+1", "5+1", "5+2", "6+1", "6+2", "6+3", "7+1", "7+2", "7+3", "7+4", "8+1", "8+2", "8+3", "8+4", "Diğer"],
   floors: ["Zemin Kat", "Yüksek Giriş", "Dükkan Üstü", "Bodrum Kat", ...Array.from({length: 25}, (_, i) => (i + 1).toString())],
@@ -98,6 +98,7 @@ const options = {
   deed: ["Kat Mülkiyeti", "Kat İrtifakı", "Arsa Tapulu"],
   hisse: ["Hisseli", "Müstakil"],
   iskan: ["Var", "Yok", "Alınacak"],
+    
   konutTipi: ["Apart", "Daire", "Dublex", "Triplex", "Villa", "Müstakil Ev", "Devremülk", "Diğer"],
   katTipi: ["Ara Kat", "Çatı Katı", "Bahçe Katı", "Teras Kat", "Diğer"],
   banyoSayisi: ["1", "2", "3", "4", "5"],
@@ -111,6 +112,7 @@ const options = {
   guvenlik: ["Var", "Yok", "Kamera Sistemi", "Güvenlik"],
   aktivite: ["Spa", "Sauna", "Hamam", "Açık Havuz", "Kapalı Havuz", "Spor Salonu", "Tenis Kortu", "Basketbol Sahası", "Futbol Sahası", "Toplantı salonu", "Kreş"],
   kiler: ["Var", "Yok", "Dairede", "Bodrumda", "Çatıda", "Balkonda", "Bahçede"],
+    
   arsaTipi: ["Konut", "Ticari", "Konut + Ticari", "Otel", "Sanayi", "AVM", "Diğer"],
   imarDurumu: ["İmarlı", "İmarsız", "18. Madde kapsamında", "Diğer"],
   nizam: ["Ayrık", "Bitişik", "Blok", "İkiz", "Birlikte Yapılaşma", "Diğer"],
@@ -122,6 +124,7 @@ const options = {
   evDurumu: ["Var", "Yok", "1+1", "2+1", "3+1", "4+1", "Dublex", "Triplex"],
   havuzDurumu: ["Var", "Yok", "Sulama Havuzu", "Yüzme Havuzu", "Bilinmiyor"],
   bahceTipi: ["Elma Bahçesi", "Ceviz Bahçesi", "Zeytin Bahçesi", "Badem Bahçesi", "Erik Bahçesi", "Kiraz Bahçesi", "Üzüm Bağı", "Meyve Bahçesi (Karışık)", "Hobi bahçesi", "Diğer"],
+    
   ticariTipi: ["Dükkan", "Ofis", "Depo", "Sanayi Dükkanı", "Otel", "Fabrika", "Diğer"],
   katSayisiTicari: ["Bodrum", "Zemin", "Asma Kat", "1", "2", "3", "4", "5", "6"],
   mevki: ["Çarşı", "İlkokul", "Lise", "Üniversite", "Hastane", "Sağlık Ocağı", "Pazar", "AVM", "Market", "Eczane", "Belediye", "Dolmuş Hattı", "Otobüs Durağı", "Ana Cadde", "Ara Sokak"]
@@ -256,6 +259,17 @@ export default function RealEstateAssistant() {
   };
   const handleDistrictChange = (e) => { const newDistrict = e.target.value; const neighborhoods = locationData[formData.city]?.[newDistrict] || []; setFormData(prev => ({ ...prev, district: newDistrict, neighborhood: neighborhoods[0] || '' })); };
   const handleImageUpload = (e) => { if (e.target.files) { const newImages = Array.from(e.target.files).map(file => URL.createObjectURL(file)); setFormData(prev => ({ ...prev, images: [...prev.images, ...newImages] })); } };
+  
+  // --- FOTOĞRAF SİLME ---
+  const removeImage = (index, e) => {
+    e.stopPropagation();
+    const newImages = formData.images.filter((_, i) => i !== index);
+    let newCoverIndex = formData.coverImageIndex;
+    if (index === formData.coverImageIndex) newCoverIndex = 0;
+    else if (index < formData.coverImageIndex) newCoverIndex--;
+    setFormData(prev => ({ ...prev, images: newImages, coverImageIndex: newCoverIndex }));
+  };
+
   const handleLogoChange = (e) => { if (e.target.files && e.target.files[0]) { const file = e.target.files[0]; const reader = new FileReader(); reader.onloadend = () => { const base64Data = reader.result; setCustomLogo(base64Data); setShowLogo(true); try { localStorage.setItem('emlaknomi_custom_logo', base64Data); } catch (err) {} }; reader.readAsDataURL(file); } };
   const handleFeatureToggle = (feature) => { const newFeatures = formData.features.includes(feature) ? formData.features.filter(f => f !== feature) : [...formData.features, feature]; setFormData(prev => ({ ...prev, features: newFeatures })); };
   const copyToClipboard = (text) => navigator.clipboard.writeText(text);
@@ -282,14 +296,18 @@ export default function RealEstateAssistant() {
     setFormData(prev => ({ ...prev, description: desc }));
   };
 
-  // --- CAPTURE ELEMENT (KESİN ÇÖZÜM) ---
+  // --- CAPTURE ELEMENT (KESİN ÇÖZÜM - OVERFLOW LOCK) ---
   const captureElement = async (element, width = 1080, height = 1080) => {
     if (!window.html2canvas) return null;
 
-    // 1. Sayfayı en tepeye zorla (Scroll kaymasını sıfırlar)
+    // 1. Sayfa kaydırmasını kilitle ve başa al (Kaymayı önler)
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
-    // 2. Klon ve Konteyner
+    // 2. Klon ve Konteyner (Tam Ekran ve Sabit)
     const container = document.createElement('div');
     container.style.position = 'fixed';
     container.style.top = '0';
@@ -333,10 +351,12 @@ export default function RealEstateAssistant() {
         backgroundColor: null
       });
       document.body.removeChild(container);
+      document.body.style.overflow = originalOverflow; // Eski haline getir
       return canvas;
     } catch (err) {
       console.error("Capture error:", err);
       if (document.body.contains(container)) document.body.removeChild(container);
+      document.body.style.overflow = originalOverflow;
       return null;
     }
   };
@@ -382,7 +402,247 @@ export default function RealEstateAssistant() {
     setIsDownloading(false);
   };
 
-  const renderDynamicFields = () => { return null; }; // Basitlik için burada kısalttım, yukarıdaki logic aynı şekilde kullanılır (React yapısı gereği) - Ana kodda burası dolu olacak.
+  const renderDynamicFields = () => {
+      const t = formData.type;
+      
+      const renderKonutFields = () => (
+        <>
+            <SelectField label="Konut Tipi" name="konutTipi" value={formData.konutTipi} onChange={handleInputChange} options={options.konutTipi} />
+            <SelectField label="Oda Sayısı" name="rooms" value={formData.rooms} onChange={handleInputChange} options={options.rooms} />
+            <InputField label="Brüt m²" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
+            <InputField label="Net m²" name="netSize" value={formData.netSize} onChange={handleInputChange} onBlur={handleInputBlur} />
+            <SelectField label="Bulunduğu Kat" name="floor" value={formData.floor} onChange={handleInputChange} options={options.floors} />
+            <SelectField label="Kat Sayısı" name="totalFloors" value={formData.totalFloors} onChange={handleInputChange} options={options.totalFloors} />
+            <SelectField label="Kattaki Daire" name="flatCountOnFloor" value={formData.flatCountOnFloor} onChange={handleInputChange} options={options.flatCount} />
+            <SelectField label="Kat Tipi" name="katTipi" value={formData.katTipi} onChange={handleInputChange} options={options.katTipi} />
+            <MultiSelectField label="Cephe" field="facade" value={formData.facade} onChange={handleMultiSelect} options={options.facade} themeColor={themeColor} />
+            <SelectField label="Bina Yaşı" name="age" value={formData.age} onChange={handleInputChange} options={options.age} />
+            <SelectField label="Banyo Sayısı" name="banyoSayisi" value={formData.banyoSayisi} onChange={handleInputChange} options={options.banyoSayisi} />
+            <SelectField label="Ebeveyn Banyo" name="masterBath" value={formData.masterBath} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Tuvalet Sayısı" name="wcCount" value={formData.wcCount} onChange={handleInputChange} options={options.wcCount} />
+            <MultiSelectField label="Tuvalet Tipi" field="tuvaletTipi" value={formData.tuvaletTipi} onChange={handleMultiSelect} options={options.tuvaletTipi} themeColor={themeColor} />
+            <MultiSelectField label="Isıtma Tipi" field="heating" value={formData.heating} onChange={handleMultiSelect} options={options.heating} themeColor={themeColor} />
+            <SelectField label="Isı Yalıtım" name="insulation" value={formData.insulation} onChange={handleInputChange} options={options.insulation} />
+            <SelectField label="Balkon Sayısı" name="balconyCount" value={formData.balconyCount} onChange={handleInputChange} options={options.balcony} />
+            <SelectField label="Cam Balkon" name="glassBalcony" value={formData.glassBalcony} onChange={handleInputChange} options={options.glassBalcony} />
+            <SelectField label="Kızartma Mutfağı" name="kizartmaMutfagi" value={formData.kizartmaMutfagi} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Giyinme Odası" name="giyinmeOdasi" value={formData.giyinmeOdasi} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Çamaşır Odası" name="camasirOdasi" value={formData.camasirOdasi} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Asansör" name="elevator" value={formData.elevator} onChange={handleInputChange} options={options.elevator} />
+            <SelectField label="İç Kapılar" name="icKapilar" value={formData.icKapilar} onChange={handleInputChange} options={options.icKapilar} />
+            <SelectField label="Pencereler" name="pencereler" value={formData.pencereler} onChange={handleInputChange} options={options.pencereler} />
+            <SelectField label="Asma Tavan" name="asmaTavan" value={formData.asmaTavan} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Duşakabin" name="dusakabin" value={formData.dusakabin} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Vestiyer" name="vestiyer" value={formData.vestiyer} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Çatı Kaplama" name="catiKaplama" value={formData.catiKaplama} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Zeminler" name="zeminler" value={formData.zeminler} onChange={handleInputChange} options={options.zeminler} />
+            <SelectField label="Mutfak Dolabı" name="mutfakDolabi" value={formData.mutfakDolabi} onChange={handleInputChange} options={options.mutfakDolabi} />
+            <SelectField label="Çelik Kapı" name="celikKapi" value={formData.celikKapi} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <MultiSelectField label="Kiler" field="pantry" value={formData.pantry} onChange={handleMultiSelect} options={options.kiler} themeColor={themeColor} />
+            <SelectField label="Garaj" name="garage" value={formData.garage} onChange={handleInputChange} options={options.garage} />
+            <MultiSelectField label="Bahçe" field="bahce" value={formData.bahce} onChange={handleMultiSelect} options={options.bahce} themeColor={themeColor} />
+            <SelectField label="Eşyalı mı" name="esyali" value={formData.esyali} onChange={handleInputChange} options={["Evet", "Hayır"]} />
+            <SelectField label="Otopark" name="parking" value={formData.parking} onChange={handleInputChange} options={options.parking} />
+            <MultiSelectField label="Panjur" field="panjur" value={formData.panjur} onChange={handleMultiSelect} options={options.panjur} themeColor={themeColor} />
+            <SelectField label="Ankastre" name="ankastre" value={formData.ankastre} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Site İçi mi" name="siteIci" value={formData.siteIci} onChange={handleInputChange} options={["Evet", "Hayır"]} />
+            <SelectField label="Oyun Parkı" name="oyunParki" value={formData.oyunParki} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Kamelya" name="kamelya" value={formData.kamelya} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <MultiSelectField label="Güvenlik" field="guvenlik" value={formData.guvenlik} onChange={handleMultiSelect} options={options.guvenlik} themeColor={themeColor} />
+            <MultiSelectField label="Aktivite" field="aktivite" value={formData.aktivite} onChange={handleMultiSelect} options={options.aktivite} themeColor={themeColor} />
+            <MultiSelectField label="Muhit" field="mevki" value={formData.mevki} onChange={handleMultiSelect} options={options.mevki} themeColor={themeColor} />
+            <InputField label="Aidat" name="aidat" value={formData.aidat} onChange={handleInputChange} placeholder="TL" />
+            <SelectField label="Tapu Durumu" name="deedStatus" value={formData.deedStatus} onChange={handleInputChange} options={options.deed} />
+            <SelectField label="İskan/Oturum" name="iskan" value={formData.iskan} onChange={handleInputChange} options={options.iskan} />
+            <SelectField label="Kullanım Durumu" name="usageStatus" value={formData.usageStatus} onChange={handleInputChange} options={options.usage} />
+            <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
+        </>
+      );
+
+      if (t === "Satılık Daire" || t === "Kiralık Daire") {
+          return (
+              <>
+                {renderKonutFields()}
+                {t === "Satılık Daire" && (
+                    <>
+                        <InputField label="Kira Bedeli" name="kiraBedeli" value={formData.kiraBedeli} onChange={handleInputChange} />
+                        <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
+                        <SelectField label="Krediye Uygun" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
+                    </>
+                )}
+              </>
+          );
+      }
+
+      if (t === "Satılık Arsa") {
+          return (
+              <>
+                <SelectField label="Arsa Tipi" name="arsaTipi" value={formData.arsaTipi} onChange={handleInputChange} options={options.arsaTipi} />
+                <SelectField label="İmar Durumu" name="imarDurumu" value={formData.imarDurumu} onChange={handleInputChange} options={options.imarDurumu} />
+                <InputField label="Ada/Parsel" name="adaParsel" value={formData.adaParsel} onChange={handleInputChange} />
+                <InputField label="Metresi (m²)" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
+                <InputField label="T.A.K.S." name="taks" value={formData.taks} onChange={handleInputChange} />
+                <InputField label="K.A.K.S." name="kaks" value={formData.kaks} onChange={handleInputChange} />
+                <InputField label="Kat Adedi" name="katAdedi" value={formData.katAdedi} onChange={handleInputChange} />
+                <InputField label="Yükseklik" name="yukseklik" value={formData.yukseklik} onChange={handleInputChange} />
+                <InputField label="Yola Terk (m²)" name="yolaTerk" value={formData.yolaTerk} onChange={handleInputChange} onBlur={handleInputBlur} />
+                <SelectField label="Nizam" name="nizam" value={formData.nizam} onChange={handleInputChange} options={options.nizam} />
+                <InputField label="Yola Cephesi" name="yolaCephesi" value={formData.yolaCephesi} onChange={handleInputChange} onBlur={handleInputBlur} />
+                <MultiSelectField label="Alt Yapı" field="altYapi" value={formData.altYapi} onChange={handleMultiSelect} options={options.altYapi} themeColor={themeColor} />
+                <SelectField label="Kat Karşılığı" name="katKarsiligi" value={formData.katKarsiligi} onChange={handleInputChange} options={["Evet", "Hayır", "Bilinmiyor"]} />
+                <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
+                <SelectField label="Kredi" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
+                <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
+              </>
+          );
+      }
+
+      if (t === "Satılık Tarla") {
+          return (
+              <>
+                <MultiSelectField label="Tarla Tipi" field="tarlaTipi" value={formData.tarlaTipi} onChange={handleMultiSelect} options={options.tarlaTipi} themeColor={themeColor} />
+                <InputField label="Ada/Parsel" name="adaParsel" value={formData.adaParsel} onChange={handleInputChange} />
+                <InputField label="Metresi (m²)" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
+                <MultiSelectField label="Su Durumu" field="suDurumu" value={formData.suDurumu} onChange={handleMultiSelect} options={options.suDurumu} themeColor={themeColor} />
+                <SelectField label="Elektrik Durumu" name="elektrikDurumu" value={formData.elektrikDurumu} onChange={handleInputChange} options={options.elektrikDurumu} />
+                <MultiSelectField label="Yol Durumu" field="yolDurumu" value={formData.yolDurumu} onChange={handleMultiSelect} options={options.yolDurumu} themeColor={themeColor} />
+                <InputField label="Yola Cephe (m²)" name="yolaCephesi" value={formData.yolaCephesi} onChange={handleInputChange} onBlur={handleInputBlur} />
+                <SelectField label="Tel Örgü" name="telOrgu" value={formData.telOrgu} onChange={handleInputChange} options={["Var", "Yok"]} />
+                <MultiSelectField label="Ev" field="evDurumu" value={formData.evDurumu} onChange={handleMultiSelect} options={options.evDurumu} themeColor={themeColor} />
+                <MultiSelectField label="Havuz" field="havuzDurumu" value={formData.havuzDurumu} onChange={handleMultiSelect} options={options.havuzDurumu} themeColor={themeColor} />
+                <SelectField label="Depo/Garaj" name="depoGaraj" value={formData.depoGaraj} onChange={handleInputChange} options={["Var", "Yok"]} />
+                <InputField label="Teçhizat/Aletler" name="techizat" value={formData.techizat} onChange={handleInputChange} />
+                <InputField label="Eğim (Derece)" name="egim" value={formData.egim} onChange={handleInputChange} />
+                <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
+                <SelectField label="Kredi" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
+                <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
+              </>
+          );
+      }
+      
+      if (t === "Satılık Bahçe") {
+          return (
+              <>
+                <SelectField label="Bahçe Tipi" name="bahceTipi" value={formData.bahceTipi} onChange={handleInputChange} options={options.bahceTipi} />
+                <InputField label="Ada/Parsel" name="adaParsel" value={formData.adaParsel} onChange={handleInputChange} />
+                <InputField label="Metresi (m²)" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
+                <InputField label="Meyve Cinsi" name="meyveCinsi" value={formData.meyveCinsi} onChange={handleInputChange} />
+                <InputField label="Ağaç Sayısı" name="agacSayisi" value={formData.agacSayisi} onChange={handleInputChange} />
+                <InputField label="Ağaç Yaşı" name="agacYasi" value={formData.agacYasi} onChange={handleInputChange} />
+                <MultiSelectField label="Su Durumu" field="suDurumu" value={formData.suDurumu} onChange={handleMultiSelect} options={options.suDurumu} themeColor={themeColor} />
+                <SelectField label="Elektrik" name="elektrikDurumu" value={formData.elektrikDurumu} onChange={handleInputChange} options={options.elektrikDurumu} />
+                <MultiSelectField label="Yol" field="yolDurumu" value={formData.yolDurumu} onChange={handleMultiSelect} options={options.yolDurumu} themeColor={themeColor} />
+                <InputField label="Yola Cephe" name="yolaCephesi" value={formData.yolaCephesi} onChange={handleInputChange} onBlur={handleInputBlur} />
+                <SelectField label="Tel Örgü" name="telOrgu" value={formData.telOrgu} onChange={handleInputChange} options={["Var", "Yok"]} />
+                <MultiSelectField label="Ev" field="evDurumu" value={formData.evDurumu} onChange={handleMultiSelect} options={options.evDurumu} themeColor={themeColor} />
+                <MultiSelectField label="Havuz" field="havuzDurumu" value={formData.havuzDurumu} onChange={handleMultiSelect} options={options.havuzDurumu} themeColor={themeColor} />
+                <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
+                <SelectField label="Kredi" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
+                <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
+              </>
+          );
+      }
+
+      if (t === "Satılık Ticari" || t === "Devren Satılık" || t === "Kiralık Ticari") {
+          return (
+              <>
+                <SelectField label="Gayrimenkul Tipi" name="gayrimenkulTipi" value={formData.gayrimenkulTipi} onChange={handleInputChange} options={options.ticariTipi} />
+                <InputField label="Metresi (m²)" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
+                <MultiSelectField label="Kat Sayısı" field="katSayisiTicari" value={formData.katSayisiTicari} onChange={handleMultiSelect} options={options.katSayisiTicari} themeColor={themeColor} />
+                <InputField label="Ön Cephe (m)" name="onCepheUzunluk" value={formData.onCepheUzunluk} onChange={handleInputChange} />
+                <SelectField label="Bina Yaşı" name="age" value={formData.age} onChange={handleInputChange} options={options.age} />
+                <MultiSelectField label="Cephe" field="facade" value={formData.facade} onChange={handleMultiSelect} options={options.facade} themeColor={themeColor} />
+                
+                {t !== "Kiralık Ticari" && t !== "Devren Satılık" && (
+                    <SelectField label="Kiracılı mı" name="kiracilimi" value={formData.kiracilimi} onChange={handleInputChange} options={["Evet", "Hayır"]} />
+                )}
+                
+                <InputField label="Kira Bedeli" name="kiraBedeli" value={formData.kiraBedeli} onChange={handleInputChange} />
+                <MultiSelectField label="Alt Yapı" field="altYapi" value={formData.altYapi} onChange={handleMultiSelect} options={options.altYapi} themeColor={themeColor} />
+                <MultiSelectField label="Mevki" field="mevki" value={formData.mevki} onChange={handleMultiSelect} options={options.mevki} themeColor={themeColor} />
+                
+                {t !== "Kiralık Ticari" && t !== "Devren Satılık" && (
+                    <>
+                        <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
+                        <SelectField label="Kredi" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
+                        <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
+                    </>
+                )}
+                
+                {t === "Devren Satılık" && (
+                    <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
+                )}
+
+                {t === "Kiralık Ticari" && (
+                    <>
+                    </>
+                )}
+              </>
+          );
+      }
+
+      return null;
+  };
+  
+  // --- VİTRİN DETAY RENDER ---
+  const renderVitrinDetails = () => {
+      const t = formData.type;
+      
+      // ARSA
+      if (t === "Satılık Arsa") {
+          return (
+              <>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Fiyat:</span> <span className="font-bold text-base text-orange-600">{formData.price} {formData.currency}</span></div>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Metrekare:</span> <span className="font-bold">{formData.size}</span></div>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Ada/Parsel:</span> <span className="font-bold">{formData.adaParsel || '-'}</span></div>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Kat Adedi:</span> <span className="font-bold">{formData.katAdedi || '-'}</span></div>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>T.A.K.S.:</span> <span className="font-bold">{formData.taks || '-'}</span></div>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>K.A.K.S.:</span> <span className="font-bold">{formData.kaks || '-'}</span></div>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>İmar:</span> <span className="font-bold">{formData.imarDurumu || '-'}</span></div>
+              </>
+          );
+      }
+
+      // TARLA / BAHÇE
+      if (t === "Satılık Tarla" || t === "Satılık Bahçe") {
+          return (
+              <>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Fiyat:</span> <span className="font-bold text-base text-orange-600">{formData.price} {formData.currency}</span></div>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Metrekare:</span> <span className="font-bold">{formData.size}</span></div>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Ada/Parsel:</span> <span className="font-bold">{formData.adaParsel || '-'}</span></div>
+                <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Su Durumu:</span> <span className="font-bold">{formData.suDurumu.join(', ') || '-'}</span></div>
+                {t === "Satılık Bahçe" && <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Bahçe Tipi:</span> <span className="font-bold">{formData.bahceTipi || '-'}</span></div>}
+              </>
+          );
+      }
+
+      // DAİRE (Varsayılan)
+      return (
+          <>
+            <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Fiyat:</span> <span className="font-bold text-base text-orange-600">{formData.price} {formData.currency}</span></div>
+            <div className="bg-slate-50 p-2 rounded border flex justify-between items-center"><span>Metrekare:</span> <span className="font-bold">{formData.size}</span></div>
+            {formData.rooms && <div className="bg-slate-50 p-2 rounded border flex justify-between"><span>Oda:</span> <span className="font-bold">{formData.rooms}</span></div>}
+            {formData.floor && <div className="bg-slate-50 p-2 rounded border flex justify-between"><span>Kat:</span> <span className="font-bold">{getFloorDisplay()}</span></div>}
+            {formData.age && <div className="bg-slate-50 p-2 rounded border flex justify-between"><span>Bina Yaşı:</span> <span className="font-bold">{formData.age}</span></div>}
+            
+            <div className="bg-slate-50 p-2 rounded border flex justify-between">
+                <span>{formData.facade && formData.facade.length > 0 ? 'Cephe:' : 'Asansör:'}</span>
+                <span className="font-bold text-right">
+                    {formData.facade && formData.facade.length > 0 
+                        ? (Array.isArray(formData.facade) ? formData.facade.join(', ') : formData.facade) 
+                        : (formData.elevator || '-')}
+                </span>
+            </div>
+
+            {['Bireysel Garaj', 'Ortak Kullanım', 'Var'].includes(formData.garage) && (
+                <div className="bg-slate-50 p-2 rounded border flex justify-between bg-orange-50 border-orange-200">
+                    <span className="flex items-center text-orange-700 font-bold"><Car size={14} className="mr-1"/> Özellik:</span>
+                    <span className="font-bold text-orange-700">{formData.garage === "Var" ? "Otopark" : formData.garage}</span>
+                </div>
+            )}
+          </>
+      );
+  };
 
   // --- SOSYAL MEDYA TASARIM ---
   const SocialDesign = ({ isCapture = false }) => {
@@ -479,10 +739,10 @@ export default function RealEstateAssistant() {
                         {consultant.showPhoto && (
                             <div className="w-32 h-32 bg-slate-200 rounded-full mr-8 overflow-hidden border-4 border-orange-500 shadow-lg relative"><img src={consultant.photo} className="w-full h-full object-cover object-top" crossOrigin="anonymous"/></div>
                         )}
-                        <div><div className="text-4xl font-bold leading-none mb-3 text-orange-400">{consultant.name}</div><div className="text-3xl font-mono text-slate-200">{consultant.phone}</div></div>
+                        <div><div className="text-4xl font-bold leading-none mb-3" style={{color: themeColor}}>{consultant.name}</div><div className="text-3xl font-mono text-slate-200">{consultant.phone}</div></div>
                     </div>
                     <div className="text-right flex flex-col items-end gap-3">
-                        {showWebsiteOzcan && <div className="text-xl font-bold text-white bg-orange-600 px-6 py-2 rounded shadow-sm flex items-center"><Globe size={24} className="mr-2"/> www.ozcanaktas.com</div>}
+                        {showWebsiteOzcan && <div className="text-xl font-bold text-white px-6 py-2 rounded shadow-sm flex items-center" style={{backgroundColor: themeColor}}><Globe size={24} className="mr-2"/> www.ozcanaktas.com</div>}
                         {showWebsiteEmlaknomi && <div className="text-xl font-bold text-slate-900 bg-white px-6 py-2 rounded shadow-sm flex items-center"><Globe size={24} className="mr-2"/> www.emlaknomi.com</div>}
                     </div>
                 </div>
@@ -491,8 +751,6 @@ export default function RealEstateAssistant() {
         </div>
       );
   };
-
-  const renderVitrinDetails = () => { return null; }; // Kısaltıldı, ana kodda dolu olacak.
 
   if (!isReady) return <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800"><Loader2 className="animate-spin text-orange-600 mb-4" size={48} /><h2 className="text-xl font-bold">Hazırlanıyor...</h2></div>;
 
@@ -545,7 +803,15 @@ export default function RealEstateAssistant() {
               <div className="border-2 border-dashed p-4 rounded bg-slate-50">
                  <label className="cursor-pointer bg-blue-600 text-white px-3 py-1.5 rounded block text-center text-sm font-medium mb-2"><Camera size={16} className="inline mr-1" /> Fotoğraf Yükle<input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} /></label>
                  <div className="grid grid-cols-4 gap-2">
-                    {formData.images.map((img, idx) => (<div key={idx} className={`relative aspect-square border-2 cursor-pointer ${formData.coverImageIndex === idx ? 'border-orange-500' : 'border-gray-200'}`} onClick={() => setFormData(prev => ({...prev, coverImageIndex: idx}))}><img src={img} className="w-full h-full object-cover"/>{formData.coverImageIndex === idx && <div className="absolute bottom-0 w-full bg-orange-500 text-white text-[8px] text-center">KAPAK</div>}</div>))}
+                    {formData.images.map((img, idx) => (
+                        <div key={idx} className={`relative aspect-square border-2 cursor-pointer group ${formData.coverImageIndex === idx ? 'border-orange-500' : 'border-gray-200'}`} onClick={() => setFormData(prev => ({...prev, coverImageIndex: idx}))}>
+                            <img src={img} className="w-full h-full object-cover"/>
+                            {formData.coverImageIndex === idx && <div className="absolute bottom-0 w-full bg-orange-500 text-white text-[8px] text-center">KAPAK</div>}
+                            <button onClick={(e) => removeImage(idx, e)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-700" title="Fotoğrafı Sil">
+                                <X size={12} />
+                            </button>
+                        </div>
+                    ))}
                  </div>
               </div>
               <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
@@ -560,7 +826,9 @@ export default function RealEstateAssistant() {
                   {isManualLocation ? (<div className="grid grid-cols-3 gap-2"><select name="city" value={formData.city} onChange={handleCityChange} className="p-1 border rounded text-xs bg-white text-slate-800">{allCities.map(c=><option key={c}>{c}</option>)}</select><input name="district" value={formData.district} onChange={handleInputChange} placeholder="İlçe" className="p-1 border rounded text-xs" /><input name="neighborhood" value={formData.neighborhood} onChange={handleInputChange} placeholder="Mahalle" className="p-1 border rounded text-xs" /></div>) : (<div className="grid grid-cols-3 gap-2"><select name="city" value={formData.city} onChange={handleCityChange} className="p-1 border rounded text-xs bg-white text-slate-800">{allCities.map(c=><option key={c}>{c}</option>)}</select><select name="district" value={formData.district} onChange={handleDistrictChange} className="p-1 border rounded text-xs bg-white text-slate-800">{detailedCities.includes(formData.city) ? Object.keys(locationData[formData.city]||{}).map(d=><option key={d}>{d}</option>) : <option>Yok</option>}</select><select name="neighborhood" value={formData.neighborhood} onChange={handleInputChange} className="p-1 border rounded text-xs bg-white text-slate-800">{(locationData[formData.city]?.[formData.district]||[]).map(n=><option key={n}>{n}</option>)}</select></div>)}
               </div>
               <InputField label="İlan No (Opsiyonel)" name="adNumber" value={formData.adNumber} onChange={handleInputChange} />
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">{/* Dinamik alanlar buraya gelecek, ana kodda dolu olacak */}</div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {renderDynamicFields()}
+              </div>
               <div className="pt-2"><label className="text-xs text-slate-500 font-bold mb-1 block">Diğer Özellikler (Metin)</label><textarea name="digerOzellikler" value={formData.digerOzellikler} onChange={handleInputChange} className="w-full p-2 border rounded text-sm" rows={2}/></div>
               <div className="space-y-2">{Object.keys(featureCategories).map((cat) => (<div key={cat} className="border rounded overflow-hidden"><button onClick={()=>toggleCategory(cat)} className="w-full p-2 bg-slate-50 text-left text-xs font-bold flex justify-between">{cat} {openCategories[cat] ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}</button>{openCategories[cat] && <div className="p-2 flex flex-wrap gap-1">{featureCategories[cat].map(f=><button key={f} onClick={()=>handleFeatureToggle(f)} className={`px-2 py-1 border rounded text-[10px] ${formData.features.includes(f)?'bg-orange-500 text-white':''}`}>{f}</button>)}</div>}</div>))}</div>
               <button onClick={generateDescription} className="w-full py-3 bg-slate-800 text-white rounded font-bold hover:bg-slate-700 transition-colors">Sihirli Metin Oluştur (Yenile)</button>
@@ -627,7 +895,7 @@ export default function RealEstateAssistant() {
                 </h1>
                 <div className="text-lg text-slate-500 mb-8 flex items-center relative z-10"><MapPin size={20} className="mr-2"/> {formData.neighborhood}, {formData.district} / {formData.city}</div>
                 <div className="grid grid-cols-2 gap-4 text-sm mb-8 relative z-10">
-                   {/* renderVitrinDetails BURADA ÇAĞRILACAK */}
+                   {renderVitrinDetails()}
                 </div>
                 <div className="mt-auto pt-6 border-t text-center text-sm text-slate-400 relative z-10">
                     {showWebsiteEmlaknomi && <span>www.emlaknomi.com &bull; </span>}
@@ -665,7 +933,7 @@ export default function RealEstateAssistant() {
                 </h1>
                 <div className="text-sm text-slate-500 mb-6 flex items-center relative z-10"><MapPin size={16} className="mr-1"/> {formData.neighborhood}, {formData.district} / {formData.city}</div>
                 <div className="grid grid-cols-2 gap-3 text-xs mb-6 relative z-10">
-                   {/* renderVitrinDetails BURADA ÇAĞRILACAK */}
+                   {renderVitrinDetails()}
                 </div>
                 <div className="mt-auto pt-4 border-t text-center text-xs text-slate-400 relative z-10">
                     {showWebsiteEmlaknomi && <span>www.emlaknomi.com &bull; </span>}
