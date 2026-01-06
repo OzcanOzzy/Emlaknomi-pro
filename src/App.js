@@ -98,7 +98,7 @@ const options = {
   deed: ["Kat Mülkiyeti", "Kat İrtifakı", "Arsa Tapulu"],
   hisse: ["Hisseli", "Müstakil"],
   iskan: ["Var", "Yok", "Alınacak"],
-   
+    
   konutTipi: ["Apart", "Daire", "Dublex", "Triplex", "Villa", "Müstakil Ev", "Devremülk", "Diğer"],
   katTipi: ["Ara Kat", "Çatı Katı", "Bahçe Katı", "Teras Kat", "Diğer"],
   banyoSayisi: ["1", "2", "3", "4", "5"],
@@ -112,7 +112,7 @@ const options = {
   guvenlik: ["Var", "Yok", "Kamera Sistemi", "Güvenlik"],
   aktivite: ["Spa", "Sauna", "Hamam", "Açık Havuz", "Kapalı Havuz", "Spor Salonu", "Tenis Kortu", "Basketbol Sahası", "Futbol Sahası", "Toplantı salonu", "Kreş"],
   kiler: ["Var", "Yok", "Dairede", "Bodrumda", "Çatıda", "Balkonda", "Bahçede"],
-   
+    
   arsaTipi: ["Konut", "Ticari", "Konut + Ticari", "Otel", "Sanayi", "AVM", "Diğer"],
   imarDurumu: ["İmarlı", "İmarsız", "18. Madde kapsamında", "Diğer"],
   nizam: ["Ayrık", "Bitişik", "Blok", "İkiz", "Birlikte Yapılaşma", "Diğer"],
@@ -124,7 +124,7 @@ const options = {
   evDurumu: ["Var", "Yok", "1+1", "2+1", "3+1", "4+1", "Dublex", "Triplex"],
   havuzDurumu: ["Var", "Yok", "Sulama Havuzu", "Yüzme Havuzu", "Bilinmiyor"],
   bahceTipi: ["Elma Bahçesi", "Ceviz Bahçesi", "Zeytin Bahçesi", "Badem Bahçesi", "Erik Bahçesi", "Kiraz Bahçesi", "Üzüm Bağı", "Meyve Bahçesi (Karışık)", "Hobi bahçesi", "Diğer"],
-   
+    
   ticariTipi: ["Dükkan", "Ofis", "Depo", "Sanayi Dükkanı", "Otel", "Fabrika", "Diğer"],
   katSayisiTicari: ["Bodrum", "Zemin", "Asma Kat", "1", "2", "3", "4", "5", "6"],
   mevki: ["Çarşı", "İlkokul", "Lise", "Üniversite", "Hastane", "Sağlık Ocağı", "Pazar", "AVM", "Market", "Eczane", "Belediye", "Dolmuş Hattı", "Otobüs Durağı", "Ana Cadde", "Ara Sokak"]
@@ -145,8 +145,9 @@ export default function RealEstateAssistant() {
   const [isManualLocation, setIsManualLocation] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const socialPreviewRef = useRef(null);
-  const vitrinPreviewRef = useRef(null); // Vitrin capture için ref
-   
+  const vitrinPreviewRef = useRef(null); 
+  const captureContainerRef = useRef(null); // GİZLİ CAPTURE ALANI İÇİN REF
+    
   const [isReady, setIsReady] = useState(false);
   const [showLogo, setShowLogo] = useState(true);
   const [customLogo, setCustomLogo] = useState(null); 
@@ -154,7 +155,6 @@ export default function RealEstateAssistant() {
   const [showWebsiteOzcan, setShowWebsiteOzcan] = useState(true);
   const [showWebsiteEmlaknomi, setShowWebsiteEmlaknomi] = useState(true);
 
-  // Danışman Bilgileri State'i
   const [consultant, setConsultant] = useState({
     name: 'Özcan AKTAŞ',
     phone: '0533 638 7000',
@@ -164,18 +164,18 @@ export default function RealEstateAssistant() {
   });
 
   const [selectedOffice, setSelectedOffice] = useState('eregli');
-   
+    
   const [formData, setFormData] = useState({
-    customTitle: '', // Yeni: Manuel başlık kutusu
+    customTitle: '',
     title: '', price: '', currency: 'TL',
     city: 'Konya', district: 'Ereğli', neighborhood: 'Yunuslu',
     type: 'Satılık Daire', adNumber: '', 
-    
+     
     // Daire & Genel
     rooms: '', size: '', netSize: '', totalFloors: '', floor: '', flatCountOnFloor: '', facade: [], age: '',
     masterBath: '', wcCount: '', heating: [], balconyCount: '', glassBalcony: '', insulation: '', elevator: '', pantry: [], garage: '',
     parking: '', usageStatus: '', deedStatus: '', creditSuitable: '', swapAvailable: '', hisseDurumu: '', iskan: '',
-    
+     
     // Konut Yeni Alanlar
     konutTipi: '', katTipi: '', banyoSayisi: '', tuvaletTipi: [], kizartmaMutfagi: '', giyinmeOdasi: '', camasirOdasi: '',
     icKapilar: '', pencereler: '', asmaTavan: '', dusakabin: '', vestiyer: '', catiKaplama: '', zeminler: '', mutfakDolabi: '',
@@ -190,7 +190,7 @@ export default function RealEstateAssistant() {
     gayrimenkulTipi: '', onCepheUzunluk: '', kiracilimi: '', mevki: [],
     katSayisiTicari: [],
     digerOzellikler: '',
-    
+     
     features: [], description: '',
     images: [], coverImageIndex: 0, logo: FIXED_LOGO_URL 
   });
@@ -204,12 +204,10 @@ export default function RealEstateAssistant() {
   // --- SİSTEM KURULUMU ---
   useEffect(() => {
     document.title = "Özcan AKTAŞ - Emlaknomi Pro";
-    
-    if (!document.querySelector('meta[name="viewport"]')) {
-      const meta = document.createElement('meta');
-      meta.name = "viewport";
-      meta.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
-      document.head.appendChild(meta);
+     
+    const metaViewport = document.querySelector('meta[name="viewport"]');
+    if (metaViewport) {
+       metaViewport.content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
     }
 
     if (!document.querySelector('link[rel="manifest"]')) {
@@ -279,7 +277,6 @@ export default function RealEstateAssistant() {
     }
   };
 
-  // m² EKLEME MANTIĞI (Blur eventi ile)
   const handleInputBlur = (e) => {
       const { name, value } = e.target;
       if (['size', 'netSize', 'yolaTerk', 'yolaCephesi'].includes(name) && value && !value.includes('m²')) {
@@ -322,12 +319,12 @@ export default function RealEstateAssistant() {
     const officeKey = e.target.value;
     setSelectedOffice(officeKey);
     setIsManualLocation(false);
-    
+     
     setConsultant(prev => ({
         ...prev,
         phone: officeDetails[officeKey].phone
     }));
-    
+     
     if (officeKey === 'eregli') {
         setFormData(prev => ({...prev, city: 'Konya', district: 'Ereğli', neighborhood: 'Yunuslu'}));
     } else if (officeKey === 'karaman') {
@@ -383,11 +380,6 @@ export default function RealEstateAssistant() {
     }
   };
 
-  const removeImage = (index) => {
-    const newImages = formData.images.filter((_, i) => i !== index);
-    setFormData(prev => ({ ...prev, images: newImages, coverImageIndex: 0 }));
-  };
-
   const handleFeatureToggle = (feature) => {
     const newFeatures = formData.features.includes(feature)
       ? formData.features.filter(f => f !== feature)
@@ -413,53 +405,53 @@ export default function RealEstateAssistant() {
   };
 
   // --- MANTIKAL YARDIMCILAR ---
-  const getTypeLabel = () => {
-      // Ana tip (örn: Satılık Daire -> Satılık, Kiralık Ticari -> Kiralık)
-      const mainOperation = formData.type.split(' ')[0]; // Satılık, Kiralık, Devren
+  const getSubTypeLabel = () => {
+      // 1. Alt tipleri kontrol et (Konut, Arsa, Ticari, Tarla, Bahçe)
+      if (formData.konutTipi) return formData.konutTipi;
+      if (formData.arsaTipi) return formData.arsaTipi;
+      if (formData.gayrimenkulTipi) return formData.gayrimenkulTipi;
+      if (formData.bahceTipi) return formData.bahceTipi;
+      if (formData.tarlaTipi && formData.tarlaTipi.length > 0) return formData.tarlaTipi[0];
       
-      // Alt tip belirleme
-      let subType = '';
-      if (formData.konutTipi) subType = formData.konutTipi;
-      else if (formData.arsaTipi) subType = formData.arsaTipi;
-      else if (formData.tarlaTipi && formData.tarlaTipi.length > 0) subType = formData.tarlaTipi[0];
-      else if (formData.bahceTipi) subType = formData.bahceTipi;
-      else if (formData.gayrimenkulTipi) subType = formData.gayrimenkulTipi;
+      // 2. Alt tip yoksa genel tipi parçala (Örn: "Satılık Daire" -> "Daire")
+      const split = formData.type.split(' ');
+      if (split.length > 1) return split.slice(1).join(' ');
       
-      // Eğer alt tip seçili değilse ana tipin ikinci kelimesini kullan (Daire, Arsa vb.)
-      if (!subType) {
-          const split = formData.type.split(' ');
-          if (split.length > 1) subType = split.slice(1).join(' ');
-      }
+      return formData.type;
+  };
 
-      return `${mainOperation} ${subType}`.trim();
+  const getFullTypeLabel = () => {
+      // "Satılık" veya "Kiralık" kelimesini al
+      const operation = formData.type.split(' ')[0]; // Satılık, Kiralık, Devren
+      const subType = getSubTypeLabel();
+      return `${operation} ${subType}`.trim();
+  };
+
+  // --- OTOMATİK BAŞLIK ---
+  const getGeneratedTitle = () => {
+    if (formData.customTitle) return formData.customTitle;
+
+    let parts = [];
+    if (formData.neighborhood) parts.push(`${formData.neighborhood}'da`);
+    if (formData.rooms) parts.push(formData.rooms);
+    
+    // Kat bilgisi sadece konut ise
+    if (formData.type.includes('Daire') || formData.konutTipi) {
+        const fd = getFloorDisplay();
+        if (fd) parts.push(fd);
+    }
+    
+    parts.push(getFullTypeLabel());
+    return parts.join(' ');
   };
 
   // --- SİHİRLİ METİN ---
+  // useEffect ile formData değiştiğinde metni güncellemeyeceğiz, butona basınca güncelleyeceğiz.
+  // Ancak fonksiyonun içindeki formData referansı her zaman güncel olmalı.
+  
   const generateDescription = () => {
     const office = officeDetails[selectedOffice];
-    
-    // Otomatik Başlık Mantığı: Mahalle + Özellikler + Alt Tip
-    let generatedTitle = '';
-    
-    if (formData.customTitle) {
-        generatedTitle = formData.customTitle;
-    } else {
-        // Otomatik oluştur
-        const typeLabel = getTypeLabel();
-        let parts = [];
-        
-        if (formData.neighborhood) parts.push(`${formData.neighborhood}'da`);
-        if (formData.rooms) parts.push(formData.rooms);
-        
-        // Kat bilgisi sadece konut ise
-        if (formData.type.includes('Daire') || formData.konutTipi) {
-            const fd = getFloorDisplay();
-            if (fd) parts.push(fd);
-        }
-        
-        parts.push(typeLabel);
-        generatedTitle = parts.join(' ');
-    }
+    const generatedTitle = getGeneratedTitle();
 
     const addLine = (label, value, suffix = '') => {
         if (!value || value === '' || (Array.isArray(value) && value.length === 0)) return '';
@@ -469,7 +461,7 @@ export default function RealEstateAssistant() {
 
     let detailsText = "";
     
-    if (formData.type === "Satılık Daire" || formData.type === "Kiralık Daire") {
+    if (formData.type.includes("Daire")) {
         detailsText += addLine('Konut Tipi', formData.konutTipi);
         detailsText += addLine('Oda Sayısı', formData.rooms);
         detailsText += addLine('Brüt m²', formData.size);
@@ -537,15 +529,17 @@ export default function RealEstateAssistant() {
 
     detailsText += addLine('Cephe', formData.facade);
     
-    // Devren Satılık için Kredi, Kiracılı ve Hisse gizle
+    // Kısıtlamalar
     if (formData.type !== "Devren Satılık" && !formData.type.includes('Kiralık')) {
         detailsText += addLine('Krediye Uygun', formData.creditSuitable);
         detailsText += addLine('Takas', formData.swapAvailable);
     }
+    // Devren Satılık için Kredi, Kiracı, Hisse yok. (Sadece Takas kalsın diye yukarıda check ettik, ama hisse ve kiracı check edilmeli)
     
-    // Garaj kontrolü - Metin için (Genişletildi)
+    // Garaj kontrolü (DÜZELTİLDİ: "Var" ise mantıklı metin, değilse seçileni yaz)
     if (['Bireysel Garaj', 'Ortak Kullanım', 'Var'].includes(formData.garage)) {
-        detailsText += `> ÖZELLİK: ${formData.garage} Mevcuttur\n`;
+        const garageText = formData.garage === "Var" ? "Otopark İmkanı" : formData.garage;
+        detailsText += `> ÖZELLİK: ${garageText} Mevcuttur\n`;
     }
 
     detailsText += addLine('Diğer Özellikler', formData.digerOzellikler);
@@ -572,14 +566,149 @@ export default function RealEstateAssistant() {
       `www.emlaknomi.com\n\n` + 
       `\nŞubeler: Karaman - Konya - Ereğli - Eskişehir - Alanya - Balıkesir - Kıbrıs`;
     
-    setFormData(prev => ({ ...prev, title: generatedTitle, description: desc }));
+    setFormData(prev => ({ ...prev, description: desc }));
   };
 
-  // --- DİNAMİK FORM OLUŞTURUCU ---
+  // --- CAPTURE ELEMENT (FIXED & IMPROVED) ---
+  const captureElement = async (element, width = 1080, height = 1080) => {
+    if (!window.html2canvas) return null;
+
+    // 1. Yeni bir container oluştur - TAM EKRAN DIŞINA VE SABİT
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0'; 
+    container.style.width = `${width}px`;
+    container.style.height = `${height}px`;
+    container.style.zIndex = '-9999'; // En arkada
+    container.style.overflow = 'hidden';
+    
+    // 2. Elementi klonla
+    const clone = element.cloneNode(true);
+    clone.style.transform = 'none'; // Önizlemedeki scale'i kaldır
+    clone.style.width = '100%';
+    clone.style.height = '100%';
+    
+    container.appendChild(clone);
+    document.body.appendChild(container);
+
+    // 3. Scroll'u başa al (Kaymayı önler)
+    window.scrollTo(0, 0);
+
+    // 4. Resimlerin yüklenmesini bekle
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    try {
+      const canvas = await window.html2canvas(container, {
+        useCORS: true,
+        scale: 1, // Zaten tam boyuttayız
+        backgroundColor: '#1e293b', // Slate-900 default
+        width: width,
+        height: height,
+        logging: false,
+        allowTaint: true,
+        foreignObjectRendering: false,
+        scrollX: 0,
+        scrollY: 0
+      });
+      
+      document.body.removeChild(container);
+      return canvas;
+    } catch (err) {
+      console.error("Capture error:", err);
+      if (document.body.contains(container)) document.body.removeChild(container);
+      return null;
+    }
+  };
+
+  const handleDownloadImageOnly = async () => {
+      // Capture işlemi için gizli ref'i kullan
+      if (!captureContainerRef.current) return;
+      const canvas = await captureElement(captureContainerRef.current, 1080, 1080);
+      if (canvas) {
+          canvas.toBlob((blob) => {
+              window.saveAs(blob, `Emlak_Tasarim.png`);
+          });
+      } else { alert("Hata oluştu, lütfen sayfayı yenileyip tekrar deneyin."); }
+  };
+
+  const handleDownloadProject = async () => {
+    if (!window.JSZip) { alert("Kütüphaneler Yüklenmedi"); return; }
+    setIsDownloading(true);
+    const zip = new window.JSZip();
+    
+    // DOSYA ADI FORMATI: [Mahalle] - [Tip/Oda] - [Fiyat] TL
+    let fileDetail = "";
+    if (formData.konutTipi) fileDetail = formData.rooms;
+    else if (formData.arsaTipi) fileDetail = "Arsa";
+    else if (formData.tarlaTipi.length > 0) fileDetail = "Tarla";
+    else if (formData.bahceTipi) fileDetail = "Bahçe";
+    else fileDetail = getSubTypeLabel();
+
+    const safeNeighborhood = (formData.neighborhood || "Adsiz").trim();
+    const safePrice = (formData.price || "0").trim();
+    
+    // Folder Name Clean Up
+    const folderName = `${safeNeighborhood} - ${fileDetail} - ${safePrice} TL`.replace(/[/\\?%*:|"<>]/g, '-');
+    
+    const rootFolder = zip.folder(folderName);
+    
+    // 1. HAM FOTOLAR
+    const hamFolder = rootFolder.folder("1_HAM_FOTOLAR");
+    if (formData.images.length > 0) {
+      const imgPromises = formData.images.map(async (imgUrl, idx) => {
+        try { const response = await fetch(imgUrl); const blob = await response.blob(); hamFolder.file(`resim_${idx + 1}.jpg`, blob); } catch (e) {}
+      });
+      await Promise.all(imgPromises);
+    }
+
+    // 2. TASARIMLI
+    const tasarimFolder = rootFolder.folder("2_TASARIMLI");
+    if (captureContainerRef.current) {
+        // Sosyal Medya Tasarımı
+        const canvas = await captureElement(captureContainerRef.current, 1080, 1080);
+        if (canvas) { const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); tasarimFolder.file(`sosyal_tasarim.png`, blob); }
+    }
+
+    // 3. İLAN METNİ
+    const metinFolder = rootFolder.folder("3_ILAN_METNI");
+    // Description state'i güncel olmayabilir, son kez generate et
+    metinFolder.file("ilan_metni.txt", formData.description || "Lütfen 'Sihirli Metin Oluştur' butonuna basınız.");
+
+    // 4. ÖZEL BİLGİ (TÜM GİZLİ VERİLER)
+    const ozelFolder = rootFolder.folder("4_OZEL_BILGI");
+    const ozelContent = `MÜŞTERİ BİLGİ FORMU
+Tarih: ${privateData.date}
+Müşteri Adı: ${privateData.customerName}
+İletişim: ${privateData.contactInfo}
+Açık Adres: ${privateData.openAddress}
+Taşınmaz No: ${privateData.propertyNo}
+Kapı Şifresi: ${privateData.doorCode}
+Tapu Durumu: ${privateData.deedStatusPrivate}
+Takas: ${privateData.swapPrivate}
+Biter Fiyat: ${privateData.finalPrice}
+Komisyon: ${privateData.commission}
+Notlar: ${privateData.notes}`;
+    ozelFolder.file("Ozel_Bilgiler.txt", ozelContent);
+
+    // 5. VİTRİN
+    const vitrinFolder = rootFolder.folder("5_VITRIN");
+    if (vitrinPreviewRef.current) {
+        const canvas = await captureElement(vitrinPreviewRef.current, 794, 1123);
+        if (canvas) { 
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
+            vitrinFolder.file(`vitrin_tasarim.png`, blob); 
+        }
+    }
+
+    const content = await zip.generateAsync({ type: "blob" });
+    window.saveAs(content, `${folderName}.zip`);
+    setIsDownloading(false);
+  };
+
   const renderDynamicFields = () => {
       const t = formData.type;
-
-      // Ortak Konut Alanları
+      
       const renderKonutFields = () => (
         <>
             <SelectField label="Konut Tipi" name="konutTipi" value={formData.konutTipi} onChange={handleInputChange} options={options.konutTipi} />
@@ -736,6 +865,7 @@ export default function RealEstateAssistant() {
                 <MultiSelectField label="Alt Yapı" field="altYapi" value={formData.altYapi} onChange={handleMultiSelect} options={options.altYapi} themeColor={themeColor} />
                 <MultiSelectField label="Mevki" field="mevki" value={formData.mevki} onChange={handleMultiSelect} options={options.mevki} themeColor={themeColor} />
                 
+                {/* Genel Özellikler (Devren Satılık ve Kiralık Ticari HARİÇ) */}
                 {t !== "Kiralık Ticari" && t !== "Devren Satılık" && (
                     <>
                         <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
@@ -743,9 +873,17 @@ export default function RealEstateAssistant() {
                         <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
                     </>
                 )}
-                {/* Devren satılık için sadece Takas kalsın istendiği varsayılıyor (Kredi, Kiracı, Hisse kalktı) */}
+                
+                {/* Devren Satılık Özel (Sadece Takas) */}
                 {t === "Devren Satılık" && (
                     <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
+                )}
+
+                {/* Kiralık Ticari Özel (Hisse hariç) */}
+                {t === "Kiralık Ticari" && (
+                    <>
+                         {/* Hisse kaldırıldı */}
+                    </>
                 )}
               </>
           );
@@ -753,126 +891,7 @@ export default function RealEstateAssistant() {
 
       return null;
   };
-
-  // --- GÖRÜNTÜ YAKALAMA (1080p FIX) ---
-  const captureElement = async (element, width = 1080, height = 1080) => {
-    if (!element || !window.html2canvas) return null;
-
-    // Sabit kapsayıcı oluştur (Kaymaları önlemek için)
-    const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.top = '-9999px';
-    container.style.left = '-9999px';
-    container.style.width = `${width}px`;
-    container.style.height = `${height}px`;
-    container.style.zIndex = '-9999';
-    container.style.overflow = 'hidden';
-    
-    // Elementi klonla
-    const clone = element.cloneNode(true);
-    // Transform ve scale etkilerini sıfırla
-    clone.style.transform = 'none';
-    clone.style.width = `${width}px`;
-    clone.style.height = `${height}px`;
-    
-    container.appendChild(clone);
-    document.body.appendChild(container);
-
-    // Render için kısa bekleme
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    try {
-      const canvas = await window.html2canvas(clone, {
-        useCORS: true,
-        scale: 1, // Scale 1 olarak ayarlandı, çünkü kapsayıcı zaten tam boyutta
-        backgroundColor: '#ffffff', // Arka plan beyaz
-        width: width,
-        height: height,
-        logging: false,
-        allowTaint: true,
-        foreignObjectRendering: false
-      });
-      
-      document.body.removeChild(container);
-      return canvas;
-    } catch (err) {
-      console.error("Capture error:", err);
-      if (document.body.contains(container)) document.body.removeChild(container);
-      return null;
-    }
-  };
-
-  // İndirme Fonksiyonları
-  const handleDownloadImageOnly = async () => {
-      if (!socialPreviewRef.current) return;
-      const canvas = await captureElement(socialPreviewRef.current, 1080, 1080);
-      if (canvas) {
-          canvas.toBlob((blob) => {
-              window.saveAs(blob, `Emlak_Tasarim_${formData.title ? formData.title.substring(0,10) : 'Taslak'}.png`);
-          });
-      } else { alert("Hata"); }
-  };
-
-  const handleDownloadProject = async () => {
-    if (!window.JSZip) { alert("Kütüphaneler Yüklenmedi"); return; }
-    setIsDownloading(true);
-    const zip = new window.JSZip();
-    const safeTitle = (formData.title || 'Adsiz').replace(/[^a-z0-9çğıöşüÇĞİÖŞÜ\s]/gi, '').trim();
-    const safePrice = (formData.price || '0').replace(/[^0-9]/g, '');
-    const folderName = `${safeTitle}_${safePrice}TL`;
-    
-    const rootFolder = zip.folder(folderName);
-    const hamFolder = rootFolder.folder("1_HAM_FOTOLAR");
-    if (formData.images.length > 0) {
-      const imgPromises = formData.images.map(async (imgUrl, idx) => {
-        try { const response = await fetch(imgUrl); const blob = await response.blob(); hamFolder.file(`resim_${idx + 1}.jpg`, blob); } catch (e) {}
-      });
-      await Promise.all(imgPromises);
-    }
-
-    const tasarimFolder = rootFolder.folder("2_TASARIMLI");
-    if (socialPreviewRef.current) {
-        const canvas = await captureElement(socialPreviewRef.current, 1080, 1080);
-        if (canvas) { const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); tasarimFolder.file(`sosyal_tasarim.png`, blob); }
-    }
-
-    const metinFolder = rootFolder.folder("3_ILAN_METNI");
-    metinFolder.file("ilan_metni.txt", formData.description || ".");
-
-    const ozelFolder = rootFolder.folder("4_OZEL_BILGI");
-    const ozelContent = `MÜŞTERİ BİLGİ FORMU
-Tarih: ${privateData.date}
-Müşteri Adı: ${privateData.customerName}
-İletişim: ${privateData.contactInfo}
-Açık Adres: ${privateData.openAddress}
-Taşınmaz No: ${privateData.propertyNo}
-Kapı Şifresi: ${privateData.doorCode}
-Tapu Durumu: ${privateData.deedStatusPrivate}
-Takas: ${privateData.swapPrivate}
-Biter Fiyat: ${privateData.finalPrice}
-Komisyon: ${privateData.commission}
-Notlar: ${privateData.notes}`;
-    ozelFolder.file("Ozel_Bilgiler.txt", ozelContent);
-
-    // Vitrin Klasörü ve Resmi
-    const vitrinFolder = rootFolder.folder("5_VITRIN");
-    if (vitrinPreviewRef.current) {
-        // A4 Boyutu: 794x1123 px (96 DPI)
-        const canvas = await captureElement(vitrinPreviewRef.current, 794, 1123);
-        if (canvas) { 
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); 
-            vitrinFolder.file(`vitrin_tasarim.png`, blob); 
-        }
-    }
-
-    const content = await zip.generateAsync({ type: "blob" });
-    window.saveAs(content, `${folderName}.zip`);
-    setIsDownloading(false);
-  };
-
-  const currentCoverImage = formData.images.length > 0 ? formData.images[formData.coverImageIndex] : placeholderImage;
-  const currentOffice = officeDetails[selectedOffice];
-
+  
   // --- VİTRİN DETAY RENDER ---
   const renderVitrinDetails = () => {
       const t = formData.type;
@@ -926,12 +945,123 @@ Notlar: ${privateData.notes}`;
             {['Bireysel Garaj', 'Ortak Kullanım', 'Var'].includes(formData.garage) && (
                 <div className="bg-slate-50 p-2 rounded border flex justify-between bg-orange-50 border-orange-200">
                     <span className="flex items-center text-orange-700 font-bold"><Car size={14} className="mr-1"/> Özellik:</span>
-                    <span className="font-bold text-orange-700">{formData.garage}</span>
+                    <span className="font-bold text-orange-700">{formData.garage === "Var" ? "Otopark" : formData.garage}</span>
                 </div>
             )}
           </>
       );
   };
+
+  // --- SOSYAL MEDYA TASARIM BİLEŞENİ (AYRI COMPONENT) ---
+  // Bu bileşen hem ekranda gösterilir hem de gizli capture container'da render edilir
+  const SocialDesign = ({ isCapture = false }) => {
+      // isCapture: true ise border, shadow vb. olmadan saf içerik döndür
+      return (
+        <div className="w-[1080px] h-[1080px] bg-slate-900 relative flex-shrink-0 font-sans">
+            {/* RESİM */}
+            {designMode === 'single' ? (
+                <img src={formData.images.length > 0 ? formData.images[formData.coverImageIndex] : placeholderImage} className="w-full h-full object-cover opacity-90" crossOrigin="anonymous"/>
+            ) : (
+                <div className="grid grid-cols-2 grid-rows-2 w-full h-full">
+                    {[0, 1, 2, 3].map(i => (
+                        <div key={i} className="relative border-white/10 border-[1px]">
+                            <img src={formData.images[i] || placeholderImage} className="w-full h-full object-cover" crossOrigin="anonymous"/>
+                            {i===0 && <div className="absolute inset-0 bg-black/20"></div>}
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* LOGO */}
+            {showLogo && (
+            <div className="absolute top-2 right-2 w-48 h-32 flex items-center justify-center z-20">
+                <img src={customLogo || FIXED_LOGO_URL} crossOrigin="anonymous" className="max-w-full max-h-full object-contain drop-shadow-2xl" />
+            </div>
+            )}
+
+            {/* SOL ÜST ETİKETLER */}
+            <div className="absolute top-8 left-0 flex flex-col items-start gap-2 z-20 max-w-[650px]">
+                <div className="text-white px-6 py-2 text-3xl font-bold shadow-md rounded-r-xl tracking-wide uppercase" style={{backgroundColor: themeColor}}>{getFullTypeLabel()}</div>
+                {!(formData.type === "Devren Satılık" || formData.type === "Satılık Ticari" || formData.type === "Kiralık Ticari") && (
+                    <div className="bg-slate-900 text-white px-5 py-2 text-xl font-medium shadow-md rounded-r-xl border-l-4" style={{borderColor: themeColor}}>{formData.neighborhood} Mh.</div>
+                )}
+                {formData.adNumber && (
+                    <div className="bg-white text-slate-900 px-4 py-1 text-base font-bold shadow-md rounded-r-lg mt-1 border-l-4 border-slate-500">
+                    No: {formData.adNumber}
+                    </div>
+                )}
+            </div>
+
+            {/* ALT BİLGİ ŞERİDİ */}
+            <div className="absolute bottom-0 left-0 w-full p-12 bg-gradient-to-t from-black via-black/80 to-transparent text-white z-20">
+            {/* BAŞLIK */}
+            <h2 className="text-5xl font-bold leading-tight mb-5 drop-shadow-md">
+                    {getGeneratedTitle()}
+            </h2>
+            
+            <div className="flex items-center text-3xl mb-8 text-slate-300 font-medium"><MapPin className="mr-2" style={{color: themeColor}} size={32} />{formData.district} / {formData.city}</div>
+            
+            {/* ÇİZGİ */}
+            <div className="flex justify-between items-center mb-6 border-t-2 border-white/30 pt-6 mt-2">
+                <div className="flex space-x-8 text-3xl font-medium">
+                    {formData.type.includes('Daire') ? (
+                        <>
+                            <span className="flex items-center"><Home className="mr-3 opacity-80" size={32}/>{formData.rooms}</span>
+                            <span className="w-0.5 h-8 bg-white/40"></span>
+                            <span className="flex items-center"><Layout className="mr-3 opacity-80" size={32}/>{formData.size} m²</span>
+                            <span className="w-0.5 h-8 bg-white/40"></span>
+                            {/* KAT GÖSTERİMİ - ARTIK BİNA İKONLU */}
+                            <span className="flex items-center"><Building className="mr-2 opacity-80" size={32}/>{getFloorDisplay()}</span>
+                        </>
+                    ) : (
+                        <>
+                            <span className="flex items-center"><Layout className="mr-3 opacity-80" size={32}/>{formData.size} m²</span>
+                            <span className="w-0.5 h-8 bg-white/40"></span>
+                            <span className="flex items-center">{getSubTypeLabel()}</span>
+                        </>
+                    )}
+                    {/* GARAJ UYARISI - İKON VE METİN GÜNCEL */}
+                    {['Bireysel Garaj', 'Ortak Kullanım', 'Var'].includes(formData.garage) && (
+                        <>
+                            <span className="w-0.5 h-8 bg-white/40"></span>
+                            <span className="flex items-center text-orange-400 bg-white/10 px-3 py-1 rounded">
+                                <Car className="mr-2" size={32}/> 
+                                {formData.garage === "Var" ? "Otopark" : formData.garage}
+                            </span>
+                        </>
+                    )}
+                </div>
+                {/* FİYAT - WHITESPACE-NOWRAP EKLENDİ */}
+                <div className="text-5xl font-bold bg-white/10 px-8 py-3 rounded-lg text-orange-500 backdrop-blur-sm shadow-sm whitespace-nowrap">{formData.price} {formData.currency}</div>
+            </div>
+
+            {/* ALT İLETİŞİM - BÜYÜTÜLMÜŞ */}
+            {consultant.showInfo && (
+                <div className="flex justify-between items-end">
+                    <div className="flex items-center text-white bg-black/60 px-10 py-5 rounded-2xl border border-white/20"> 
+                        {consultant.showPhoto && (
+                            <div className="w-32 h-32 bg-slate-200 rounded-full mr-8 overflow-hidden border-4 border-orange-500 shadow-lg relative"> 
+                                <img src={consultant.photo} className="w-full h-full object-cover object-top" crossOrigin="anonymous"/>
+                            </div>
+                        )}
+                        <div>
+                            <div className="text-4xl font-bold leading-none mb-3 text-orange-400">{consultant.name}</div>
+                            <div className="text-3xl font-mono text-slate-200">{consultant.phone}</div>
+                        </div>
+                    </div>
+                    
+                    {/* WEB SİTELERİ KUTUSU */}
+                    <div className="text-right flex flex-col items-end gap-3">
+                        {showWebsiteOzcan && <div className="text-xl font-bold text-white bg-orange-600 px-6 py-2 rounded shadow-sm flex items-center"><Globe size={24} className="mr-2"/> www.ozcanaktas.com</div>}
+                        {showWebsiteEmlaknomi && <div className="text-xl font-bold text-slate-900 bg-white px-6 py-2 rounded shadow-sm flex items-center"><Globe size={24} className="mr-2"/> www.emlaknomi.com</div>}
+                    </div>
+                </div>
+            )}
+            </div>
+        </div>
+      );
+  };
+
 
   if (!isReady) return <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800"><Loader2 className="animate-spin text-orange-600 mb-4" size={48} /><h2 className="text-xl font-bold">Hazırlanıyor...</h2></div>;
 
@@ -1009,7 +1139,23 @@ Notlar: ${privateData.notes}`;
             <h2 className="text-lg font-semibold mb-4 flex items-center text-slate-700"><Layout className="mr-2 text-blue-600" size={20} /> İlan Detayları</h2>
             <div className="space-y-4">
               
-              {/* Başlık Alanı - Yeni Düzen */}
+              {/* Foto Yükleme (YER DEĞİŞTİRİLDİ - EN ÜSTE ALINDI) */}
+              <div className="border-2 border-dashed p-4 rounded bg-slate-50">
+                 <label className="cursor-pointer bg-blue-600 text-white px-3 py-1.5 rounded block text-center text-sm font-medium mb-2">
+                    <Camera size={16} className="inline mr-1" /> Fotoğraf Yükle
+                    <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
+                 </label>
+                 <div className="grid grid-cols-4 gap-2">
+                    {formData.images.map((img, idx) => (
+                        <div key={idx} className={`relative aspect-square border-2 cursor-pointer ${formData.coverImageIndex === idx ? 'border-orange-500' : 'border-gray-200'}`} onClick={() => setFormData(prev => ({...prev, coverImageIndex: idx}))}>
+                            <img src={img} className="w-full h-full object-cover"/>
+                            {formData.coverImageIndex === idx && <div className="absolute bottom-0 w-full bg-orange-500 text-white text-[8px] text-center">KAPAK</div>}
+                        </div>
+                    ))}
+                 </div>
+              </div>
+
+              {/* Başlık Alanı */}
               <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
                   <label className="text-xs text-orange-800 font-bold mb-1 block">İlan Başlığı</label>
                   <div className="flex items-center gap-2">
@@ -1024,22 +1170,6 @@ Notlar: ${privateData.notes}`;
                       />
                   </div>
                   <p className="text-[10px] text-orange-600 mt-1">* Boş bırakılırsa: Mahalle + Oda + Kat + Tip otomatik yazılır.</p>
-              </div>
-
-              {/* Foto Yükleme */}
-              <div className="border-2 border-dashed p-4 rounded bg-slate-50">
-                 <label className="cursor-pointer bg-blue-600 text-white px-3 py-1.5 rounded block text-center text-sm font-medium mb-2">
-                    <Camera size={16} className="inline mr-1" /> Fotoğraf Yükle
-                    <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} />
-                 </label>
-                 <div className="grid grid-cols-4 gap-2">
-                    {formData.images.map((img, idx) => (
-                        <div key={idx} className={`relative aspect-square border-2 cursor-pointer ${formData.coverImageIndex === idx ? 'border-orange-500' : 'border-gray-200'}`} onClick={() => setFormData(prev => ({...prev, coverImageIndex: idx}))}>
-                            <img src={img} className="w-full h-full object-cover"/>
-                            {formData.coverImageIndex === idx && <div className="absolute bottom-0 w-full bg-orange-500 text-white text-[8px] text-center">KAPAK</div>}
-                        </div>
-                    ))}
-                 </div>
               </div>
 
               {/* Temel Bilgiler */}
@@ -1129,106 +1259,11 @@ Notlar: ${privateData.notes}`;
                   <button onClick={handleDownloadImageOnly} className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded font-bold">Görsel İndir</button>
               </div>
               
-              {/* ÖNİZLEME ALANI - SABİT 1080px TASARIM */}
+              {/* ÖNİZLEME ALANI - SCALED FOR DISPLAY */}
               <div className="w-full overflow-hidden flex justify-center bg-slate-900" style={{height: '380px'}}> 
                   <div style={{transform: 'scale(0.35)', transformOrigin: 'top center', width: '1080px', height: '1080px'}}>
-                    <div ref={socialPreviewRef} className="w-[1080px] h-[1080px] bg-slate-900 relative shadow-2xl overflow-hidden flex-shrink-0">
-                        {/* RESİM */}
-                        {designMode === 'single' ? (
-                            <img src={formData.images.length > 0 ? formData.images[formData.coverImageIndex] : placeholderImage} className="w-full h-full object-cover opacity-90" crossOrigin="anonymous"/>
-                        ) : (
-                            <div className="grid grid-cols-2 grid-rows-2 w-full h-full">
-                                {[0, 1, 2, 3].map(i => (
-                                    <div key={i} className="relative border-white/10 border-[1px]"><img src={formData.images[i] || placeholderImage} className="w-full h-full object-cover" crossOrigin="anonymous"/>{i===0 && <div className="absolute inset-0 bg-black/20"></div>}</div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* LOGO */}
-                        {showLogo && (
-                        <div className="absolute top-2 right-2 w-48 h-32 flex items-center justify-center z-20">
-                            <img src={customLogo || FIXED_LOGO_URL} crossOrigin="anonymous" className="max-w-full max-h-full object-contain drop-shadow-2xl" />
-                        </div>
-                        )}
-
-                        {/* SOL ÜST ETİKETLER - TİP GÜNCELLEMESİ */}
-                        <div className="absolute top-8 left-0 flex flex-col items-start gap-2 z-20">
-                            <div className="text-white px-6 py-2 text-2xl font-bold shadow-md rounded-r-xl tracking-wide uppercase" style={{backgroundColor: themeColor}}>{getTypeLabel()}</div>
-                            {!(formData.type === "Devren Satılık" || formData.type === "Satılık Ticari" || formData.type === "Kiralık Ticari") && (
-                                <div className="bg-slate-900 text-white px-5 py-2 text-lg font-medium shadow-md rounded-r-xl border-l-4" style={{borderColor: themeColor}}>{formData.neighborhood} Mh.</div>
-                            )}
-                            {formData.adNumber && (
-                                <div className="bg-white text-slate-900 px-4 py-1 text-sm font-bold shadow-md rounded-r-lg mt-1 border-l-4 border-slate-500">
-                                No: {formData.adNumber}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* ALT BİLGİ ŞERİDİ */}
-                        <div className="absolute bottom-0 left-0 w-full p-10 bg-gradient-to-t from-black via-black/80 to-transparent text-white z-20">
-                        {/* BAŞLIK */}
-                        <h2 className="text-4xl font-bold leading-tight mb-4 drop-shadow-md">
-                             {formData.customTitle 
-                                ? `Emlaknomi'den ${formData.customTitle}` 
-                                : `Emlaknomi'den ${formData.title}`}
-                        </h2>
-                        
-                        <div className="flex items-center text-2xl mb-6 text-slate-300 font-medium"><MapPin className="mr-2" style={{color: themeColor}} />{formData.district} / {formData.city}</div>
-                        
-                        {/* ÇİZGİ */}
-                        <div className="flex justify-between items-center mb-5 border-t-2 border-white/30 pt-5 mt-2">
-                            <div className="flex space-x-6 text-2xl font-medium">
-                                {formData.type.includes('Daire') ? (
-                                    <>
-                                        <span className="flex items-center"><Home className="mr-2 opacity-80"/>{formData.rooms}</span>
-                                        <span className="w-0.5 h-6 bg-white/40"></span>
-                                        <span className="flex items-center"><Layout className="mr-2 opacity-80"/>{formData.size} m²</span>
-                                        <span className="w-0.5 h-6 bg-white/40"></span>
-                                        {/* KAT GÖSTERİMİ */}
-                                        <span className="flex items-center">{getFloorDisplay()}</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="flex items-center"><Layout className="mr-2 opacity-80"/>{formData.size} m²</span>
-                                        <span className="w-0.5 h-6 bg-white/40"></span>
-                                        <span className="flex items-center">{getTypeLabel()}</span>
-                                    </>
-                                )}
-                                {/* GARAJ UYARISI - GÜNCELLENDİ */}
-                                {['Bireysel Garaj', 'Ortak Kullanım', 'Var'].includes(formData.garage) && (
-                                    <>
-                                        <span className="w-0.5 h-6 bg-white/40"></span>
-                                        <span className="flex items-center text-orange-400 bg-white/10 px-2 rounded"><Car className="mr-1" size={20}/> {formData.garage}</span>
-                                    </>
-                                )}
-                            </div>
-                            <div className="text-4xl font-bold bg-white/10 px-6 py-2 rounded-lg text-orange-500 backdrop-blur-sm shadow-sm">{formData.price} {formData.currency}</div>
-                        </div>
-
-                        {/* ALT İLETİŞİM - PROFİL FOTOĞRAFLI VE BÜYÜTÜLMÜŞ */}
-                        {consultant.showInfo && (
-                            <div className="flex justify-between items-end">
-                                <div className="flex items-center text-white bg-black/60 px-8 py-4 rounded-xl border border-white/20"> {/* Padding artırıldı */}
-                                    {consultant.showPhoto && (
-                                        <div className="w-24 h-24 bg-slate-200 rounded-full mr-6 overflow-hidden border-2 border-orange-500 shadow-lg relative"> {/* Boyut artırıldı 20->24 */}
-                                            {/* Yüzü ortalamak için object-cover ve object-top kullanıyoruz */}
-                                            <img src={consultant.photo} className="w-full h-full object-cover object-top" crossOrigin="anonymous"/>
-                                        </div>
-                                    )}
-                                    <div>
-                                        <div className="text-3xl font-bold leading-none mb-2 text-orange-400">{consultant.name}</div> {/* Font artırıldı 2xl->3xl */}
-                                        <div className="text-2xl font-mono text-slate-200">{consultant.phone}</div> {/* Font artırıldı xl->2xl */}
-                                    </div>
-                                </div>
-                                
-                                {/* WEB SİTELERİ KUTUSU */}
-                                <div className="text-right flex flex-col items-end gap-2">
-                                    {showWebsiteOzcan && <div className="text-lg font-bold text-white bg-orange-600 px-4 py-1.5 rounded shadow-sm flex items-center"><Globe size={18} className="mr-2"/> www.ozcanaktas.com</div>}
-                                    {showWebsiteEmlaknomi && <div className="text-lg font-bold text-slate-900 bg-white px-4 py-1.5 rounded shadow-sm flex items-center"><Globe size={18} className="mr-2"/> www.emlaknomi.com</div>}
-                                </div>
-                            </div>
-                        )}
-                        </div>
+                    <div ref={socialPreviewRef} className="shadow-2xl">
+                         <SocialDesign isCapture={false} />
                     </div>
                   </div>
               </div>
@@ -1236,34 +1271,39 @@ Notlar: ${privateData.notes}`;
           )}
 
           {/* VİTRİN - Hem Görüntüleme Hem Capture İçin */}
-          {/* Gizli Capture Container - Her zaman render edilir ancak görünmez */}
+          {/* Gizli Capture Container - Vitrin için */}
           <div style={{position: 'absolute', top: -9999, left: -9999, width: '794px', height: '1123px'}}>
              <div ref={vitrinPreviewRef} className="w-[794px] h-[1123px] bg-white p-8 flex flex-col relative text-slate-800">
-                <div className="flex justify-between items-center border-b-4 border-orange-500 pb-4 mb-4">
-                   {showLogo ? <img src={customLogo || FIXED_LOGO_URL} className="h-20 object-contain"/> : (showLogo && <div className="font-bold text-3xl">EMLAKNOMİ</div>)}
+                <div className="flex justify-between items-center border-b-4 border-orange-500 pb-4 mb-4 relative z-10">
+                   {showLogo ? <img src={customLogo || FIXED_LOGO_URL} className="h-20 object-contain"/> : null}
                    <div className="text-right">
                        <div className="font-bold text-xl">{consultant.name}</div>
                        <div className="text-lg">{consultant.phone}</div>
                        {showWebsiteOzcan && <div className="text-sm text-slate-500">www.ozcanaktas.com</div>}
                    </div>
                 </div>
-                <div className="w-full h-[500px] bg-slate-100 mb-6 overflow-hidden rounded relative">
+                <div className="w-full h-[500px] bg-slate-100 mb-6 overflow-hidden rounded relative z-0">
                   <img src={formData.images.length > 0 ? formData.images[formData.coverImageIndex] : placeholderImage} className="w-full h-full object-cover" />
-                  <div className="absolute top-0 right-0 bg-orange-600 text-white px-6 py-3 font-bold text-xl shadow">{getTypeLabel()}</div>
+                  <div className="absolute top-0 right-0 bg-orange-600 text-white px-6 py-3 font-bold text-xl shadow">{getFullTypeLabel()}</div>
                 </div>
-                <h1 className="text-4xl font-bold mb-3 leading-tight">
-                    {formData.customTitle 
-                        ? `Emlaknomi'den ${formData.customTitle}` 
-                        : `Emlaknomi'den ${formData.title}`}
+                <h1 className="text-4xl font-bold mb-3 leading-tight relative z-10">
+                    {getGeneratedTitle()}
                 </h1>
-                <div className="text-lg text-slate-500 mb-8 flex items-center"><MapPin size={20} className="mr-2"/> {formData.neighborhood}, {formData.district} / {formData.city}</div>
-                <div className="grid grid-cols-2 gap-4 text-sm mb-8">
+                <div className="text-lg text-slate-500 mb-8 flex items-center relative z-10"><MapPin size={20} className="mr-2"/> {formData.neighborhood}, {formData.district} / {formData.city}</div>
+                <div className="grid grid-cols-2 gap-4 text-sm mb-8 relative z-10">
                    {renderVitrinDetails()}
                 </div>
-                <div className="mt-auto pt-6 border-t text-center text-sm text-slate-400">
+                <div className="mt-auto pt-6 border-t text-center text-sm text-slate-400 relative z-10">
                     {showWebsiteEmlaknomi && <span>www.emlaknomi.com &bull; </span>}
-                    {currentOffice.address}
+                    {officeDetails[selectedOffice].address}
                 </div>
+             </div>
+          </div>
+          
+          {/* GİZLİ SOSYAL MEDYA CONTAINER - SADECE İNDİRME İÇİN */}
+          <div style={{position: 'absolute', top: -9999, left: -9999, width: '1080px', height: '1080px'}}>
+             <div ref={captureContainerRef}>
+                <SocialDesign isCapture={true} />
              </div>
           </div>
 
@@ -1271,9 +1311,8 @@ Notlar: ${privateData.notes}`;
             <div className="bg-white p-4 rounded shadow border">
               <h3 className="text-xs font-bold text-slate-500 mb-2">VİTRİN (A4)</h3>
               <div className="aspect-[1/1.414] w-full bg-white border shadow-lg p-6 flex flex-col relative overflow-hidden scale-90 origin-top text-slate-800">
-                <div className="flex justify-between items-center border-b-4 border-orange-500 pb-4 mb-4">
-                   {showLogo ? <img src={customLogo || FIXED_LOGO_URL} className="h-16 object-contain"/> : null} 
-                   {/* Logo gizle dendiğinde EMLAKNOMİ yazısı da çıkmasın istendiği için null döndürüldü, yukarıdaki logic: logo varsa resim, yoksa yazıydı. Şimdi logo yoksa hiçbişi yok. */}
+                <div className="flex justify-between items-center border-b-4 border-orange-500 pb-4 mb-4 relative z-10">
+                   {showLogo ? <img src={customLogo || FIXED_LOGO_URL} className="h-16 object-contain"/> : null}
                    
                    <div className="text-right">
                        <div className="font-bold text-lg">{consultant.name}</div>
@@ -1282,24 +1321,22 @@ Notlar: ${privateData.notes}`;
                    </div>
                 </div>
                 {/* VİTRİN RESMİ */}
-                <div className="w-full h-96 bg-slate-100 mb-4 overflow-hidden rounded relative">
+                <div className="w-full h-96 bg-slate-100 mb-4 overflow-hidden rounded relative z-0">
                   <img src={formData.images.length > 0 ? formData.images[formData.coverImageIndex] : placeholderImage} className="w-full h-full object-cover" />
-                  <div className="absolute top-0 right-0 bg-orange-600 text-white px-4 py-2 font-bold shadow">{getTypeLabel()}</div>
+                  <div className="absolute top-0 right-0 bg-orange-600 text-white px-4 py-2 font-bold shadow">{getFullTypeLabel()}</div>
                 </div>
-                <h1 className="text-2xl font-bold mb-2 leading-tight">
-                    {formData.customTitle 
-                        ? `Emlaknomi'den ${formData.customTitle}` 
-                        : `Emlaknomi'den ${formData.title}`}
+                <h1 className="text-2xl font-bold mb-2 leading-tight relative z-10">
+                    {getGeneratedTitle()}
                 </h1>
-                <div className="text-sm text-slate-500 mb-6 flex items-center"><MapPin size={16} className="mr-1"/> {formData.neighborhood}, {formData.district} / {formData.city}</div>
+                <div className="text-sm text-slate-500 mb-6 flex items-center relative z-10"><MapPin size={16} className="mr-1"/> {formData.neighborhood}, {formData.district} / {formData.city}</div>
                 
-                <div className="grid grid-cols-2 gap-3 text-xs mb-6">
+                <div className="grid grid-cols-2 gap-3 text-xs mb-6 relative z-10">
                    {renderVitrinDetails()}
                 </div>
 
-                <div className="mt-auto pt-4 border-t text-center text-xs text-slate-400">
+                <div className="mt-auto pt-4 border-t text-center text-xs text-slate-400 relative z-10">
                     {showWebsiteEmlaknomi && <span>www.emlaknomi.com &bull; </span>}
-                    {currentOffice.address}
+                    {officeDetails[selectedOffice].address}
                 </div>
               </div>
               <button onClick={() => window.print()} className="mt-4 w-full py-2 bg-slate-800 text-white rounded font-bold"><Printer size={16} className="inline mr-2"/> Yazdır</button>
