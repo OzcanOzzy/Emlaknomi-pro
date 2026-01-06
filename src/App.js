@@ -574,42 +574,53 @@ export default function RealEstateAssistant() {
     if (!window.html2canvas) return null;
 
     // 1. Yeni bir container oluştur - TAM EKRAN DIŞINA VE SABİT
+    // Bu sefer "display: none" veya ekran dışı konumlandırma yapmıyoruz.
+    // Z-Index ile en arkaya atıp, fixed pozisyonla ekrana çiviliyoruz.
+    // Bu, tarayıcının "görünmeyen alanı render etmeme" optimizasyonunu aşar.
     const container = document.createElement('div');
     container.style.position = 'fixed';
     container.style.top = '0';
     container.style.left = '0'; 
     container.style.width = `${width}px`;
     container.style.height = `${height}px`;
-    container.style.zIndex = '-9999'; // En arkada
+    container.style.zIndex = '-9999'; // Kullanıcı görmesin, arkada kalsın
     container.style.overflow = 'hidden';
+    container.style.backgroundColor = '#ffffff'; // Varsayılan arka plan
     
     // 2. Elementi klonla
     const clone = element.cloneNode(true);
-    clone.style.transform = 'none'; // Önizlemedeki scale'i kaldır
+    // Klonun stilini sıfırla ki preview'daki transform'lar gelmesin
+    clone.style.transform = 'none'; 
     clone.style.width = '100%';
     clone.style.height = '100%';
+    clone.style.margin = '0';
+    clone.style.padding = '0';
     
     container.appendChild(clone);
     document.body.appendChild(container);
 
-    // 3. Scroll'u başa al (Kaymayı önler)
-    window.scrollTo(0, 0);
+    // 3. Resimlerin yüklenmesini bekle
+    const images = clone.getElementsByTagName('img');
+    await Promise.all(Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+    }));
 
-    // 4. Resimlerin yüklenmesini bekle
-    await new Promise(resolve => setTimeout(resolve, 800));
+    // 4. Kısa bir gecikme (Render için)
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
       const canvas = await window.html2canvas(container, {
         useCORS: true,
         scale: 1, // Zaten tam boyuttayız
-        backgroundColor: '#1e293b', // Slate-900 default
         width: width,
         height: height,
-        logging: false,
-        allowTaint: true,
-        foreignObjectRendering: false,
+        // Scroll pozisyonundan bağımsız olarak 0,0 noktasını al
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        x: 0,
+        y: 0,
+        backgroundColor: null // Container rengini koru
       });
       
       document.body.removeChild(container);
