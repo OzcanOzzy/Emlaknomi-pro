@@ -180,7 +180,7 @@ export default function RealEstateAssistant() {
     aidat: '', kiraBedeli: '',
     arsaTipi: '', imarDurumu: '', adaParsel: '', taks: '', kaks: '', katAdedi: '', yukseklik: '', yolaTerk: '', nizam: '', yolaCephesi: '',
     altYapi: [], katKarsiligi: '',
-    tarlaTipi: [], suDurumu: [], elektrikDurumu: '', yolDurumu: [], telOrgu: '', evDurumu: [], havuzDurumu: [], depoGaraj: '', sulamaTesisati: '', techizat: '', egim: '',
+    tarlaTipi: [], suDurumu: [], elektrikDurumu: '', yolDurumu: [], telOrgu: '', evDurumu: [], havuzDurumu: '', depoGaraj: '', sulamaTesisati: '', techizat: '', egim: '',
     bahceTipi: '', meyveCinsi: '', agacSayisi: '', agacYasi: '',
     gayrimenkulTipi: '', onCepheUzunluk: '', kiracilimi: '', mevki: [],
     katSayisiTicari: [],
@@ -282,7 +282,13 @@ export default function RealEstateAssistant() {
   const generateDescription = () => {
     const office = officeDetails[selectedOffice]; const generatedTitle = getGeneratedTitle();
     const addLine = (label, value, suffix = '') => { if (!value || value === '' || (Array.isArray(value) && value.length === 0)) return ''; const valStr = Array.isArray(value) ? value.join(', ') : value; return `> ${label}: ${valStr}${suffix}\n`; };
+    
+    // --- DÜZENLEME: İlan No Mantığı ---
     let detailsText = "";
+    // İlan numarası her zaman gösterilecek (boş olsa bile). 
+    // Başlık ile İlan No arasına 1 satır boşluk koymak için başa \n eklendi.
+    detailsText += `\n> İlan No: ${formData.adNumber || ''}\n\n`;
+
     if (formData.type.includes("Daire")) {
         detailsText += addLine('Konut Tipi', formData.konutTipi); detailsText += addLine('Oda Sayısı', formData.rooms); detailsText += addLine('Brüt m²', formData.size); detailsText += addLine('Net m²', formData.netSize); detailsText += addLine('Bulunduğu Kat', formData.floor); detailsText += addLine('Binadaki Kat', formData.totalFloors); detailsText += addLine('Kattaki Daire', formData.flatCountOnFloor); detailsText += addLine('Kat Tipi', formData.katTipi); detailsText += addLine('Bina Yaşı', formData.age); detailsText += addLine('Banyo Sayısı', formData.banyoSayisi); detailsText += addLine('Ebeveyn Banyo', formData.masterBath); detailsText += addLine('Tuvalet Sayısı', formData.wcCount); detailsText += addLine('Tuvalet Tipi', formData.tuvaletTipi); detailsText += addLine('Isıtma Tipi', formData.heating); detailsText += addLine('Isı Yalıtım', formData.insulation); detailsText += addLine('Balkon', formData.balconyCount); detailsText += addLine('Cam Balkon', formData.glassBalcony); detailsText += addLine('Kızartma Mutfağı', formData.kizartmaMutfagi); detailsText += addLine('Giyinme Odası', formData.giyinmeOdasi); detailsText += addLine('Çamaşır Odası', formData.camasirOdasi); detailsText += addLine('Asansör', formData.elevator); detailsText += addLine('İç Kapılar', formData.icKapilar); detailsText += addLine('Pencereler', formData.pencereler); detailsText += addLine('Asma Tavan', formData.asmaTavan); detailsText += addLine('Duşakabin', formData.dusakabin); detailsText += addLine('Vestiyer', formData.vestiyer); detailsText += addLine('Çatı Kaplama', formData.catiKaplama); detailsText += addLine('Zeminler', formData.zeminler); detailsText += addLine('Mutfak Dolabı', formData.mutfakDolabi); detailsText += addLine('Çelik Kapı', formData.celikKapi); detailsText += addLine('Kiler', formData.pantry); detailsText += addLine('Garaj', formData.garage); detailsText += addLine('Bahçe', formData.bahce); detailsText += addLine('Eşyalı mı', formData.esyali); detailsText += addLine('Otopark', formData.parking); detailsText += addLine('Panjur', formData.panjur); detailsText += addLine('Ankastre', formData.ankastre); detailsText += addLine('Site İçi', formData.siteIci); detailsText += addLine('Oyun Parkı', formData.oyunParki); detailsText += addLine('Kamelya', formData.kamelya); detailsText += addLine('Güvenlik', formData.guvenlik); detailsText += addLine('Aktivite', formData.aktivite); detailsText += addLine('Muhit', formData.mevki); detailsText += addLine('Aidat', formData.aidat); detailsText += addLine('Tapu Durumu', formData.deedStatus); detailsText += addLine('İskan/Oturum', formData.iskan); detailsText += addLine('Kullanım Durumu', formData.usageStatus); detailsText += addLine('Hisse Durumu', formData.hisseDurumu); detailsText += addLine('Kira Bedeli', formData.kiraBedeli);
     } else if (formData.type === "Satılık Arsa") { detailsText += addLine('Arsa Tipi', formData.arsaTipi); detailsText += addLine('İmar Durumu', formData.imarDurumu); detailsText += addLine('Ada/Parsel', formData.adaParsel); detailsText += addLine('Metresi', formData.size); detailsText += addLine('T.A.K.S.', formData.taks); detailsText += addLine('K.A.K.S.', formData.kaks); detailsText += addLine('Nizam', formData.nizam); detailsText += addLine('Alt Yapı', formData.altYapi);
@@ -713,13 +719,15 @@ export default function RealEstateAssistant() {
                         <>
                             <span className="flex items-center"><Home className="mr-3 opacity-80" size={32}/>{formData.rooms}</span>
                             <span className="w-0.5 h-8 bg-white/40"></span>
-                            <span className="flex items-center"><Layout className="mr-3 opacity-80" size={32}/>{formData.size} m²</span>
+                            {/* DÜZENLEME: Burada 'm²' kaldırıldı, çünkü formData.size içinde zaten var */}
+                            <span className="flex items-center"><Layout className="mr-3 opacity-80" size={32}/>{formData.size}</span>
                             <span className="w-0.5 h-8 bg-white/40"></span>
                             <span className="flex items-center"><Building className="mr-2 opacity-80" size={32}/>{getFloorDisplay()}</span>
                         </>
                     ) : (
                         <>
-                            <span className="flex items-center"><Layout className="mr-3 opacity-80" size={32}/>{formData.size} m²</span>
+                            {/* DÜZENLEME: Burada da 'm²' kaldırıldı */}
+                            <span className="flex items-center"><Layout className="mr-3 opacity-80" size={32}/>{formData.size}</span>
                             <span className="w-0.5 h-8 bg-white/40"></span>
                             <span className="flex items-center">{getSubTypeLabel()}</span>
                         </>
