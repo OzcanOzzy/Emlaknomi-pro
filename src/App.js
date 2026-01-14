@@ -291,8 +291,32 @@ export default function RealEstateAssistant() {
 
     if (formData.type.includes("Daire")) {
         detailsText += addLine('Konut Tipi', formData.konutTipi); detailsText += addLine('Oda Sayısı', formData.rooms); detailsText += addLine('Brüt m²', formData.size); detailsText += addLine('Net m²', formData.netSize); detailsText += addLine('Bulunduğu Kat', formData.floor); detailsText += addLine('Binadaki Kat', formData.totalFloors); detailsText += addLine('Kattaki Daire', formData.flatCountOnFloor); detailsText += addLine('Kat Tipi', formData.katTipi); detailsText += addLine('Bina Yaşı', formData.age); detailsText += addLine('Banyo Sayısı', formData.banyoSayisi); detailsText += addLine('Ebeveyn Banyo', formData.masterBath); detailsText += addLine('Tuvalet Sayısı', formData.wcCount); detailsText += addLine('Tuvalet Tipi', formData.tuvaletTipi); detailsText += addLine('Isıtma Tipi', formData.heating); detailsText += addLine('Isı Yalıtım', formData.insulation); detailsText += addLine('Balkon', formData.balconyCount); detailsText += addLine('Cam Balkon', formData.glassBalcony); detailsText += addLine('Kızartma Mutfağı', formData.kizartmaMutfagi); detailsText += addLine('Giyinme Odası', formData.giyinmeOdasi); detailsText += addLine('Çamaşır Odası', formData.camasirOdasi); detailsText += addLine('Asansör', formData.elevator); detailsText += addLine('İç Kapılar', formData.icKapilar); detailsText += addLine('Pencereler', formData.pencereler); detailsText += addLine('Asma Tavan', formData.asmaTavan); detailsText += addLine('Duşakabin', formData.dusakabin); detailsText += addLine('Vestiyer', formData.vestiyer); detailsText += addLine('Çatı Kaplama', formData.catiKaplama); detailsText += addLine('Zeminler', formData.zeminler); detailsText += addLine('Mutfak Dolabı', formData.mutfakDolabi); detailsText += addLine('Çelik Kapı', formData.celikKapi); detailsText += addLine('Kiler', formData.pantry); detailsText += addLine('Garaj', formData.garage); detailsText += addLine('Bahçe', formData.bahce); detailsText += addLine('Eşyalı mı', formData.esyali); detailsText += addLine('Otopark', formData.parking); detailsText += addLine('Panjur', formData.panjur); detailsText += addLine('Ankastre', formData.ankastre); detailsText += addLine('Site İçi', formData.siteIci); detailsText += addLine('Oyun Parkı', formData.oyunParki); detailsText += addLine('Kamelya', formData.kamelya); detailsText += addLine('Güvenlik', formData.guvenlik); detailsText += addLine('Aktivite', formData.aktivite); detailsText += addLine('Muhit', formData.mevki); detailsText += addLine('Aidat', formData.aidat); detailsText += addLine('Tapu Durumu', formData.deedStatus); detailsText += addLine('İskan/Oturum', formData.iskan); detailsText += addLine('Kullanım Durumu', formData.usageStatus); detailsText += addLine('Hisse Durumu', formData.hisseDurumu); detailsText += addLine('Kira Bedeli', formData.kiraBedeli);
-    } else if (formData.type === "Satılık Arsa") { detailsText += addLine('Arsa Tipi', formData.arsaTipi); detailsText += addLine('İmar Durumu', formData.imarDurumu); detailsText += addLine('Ada/Parsel', formData.adaParsel); detailsText += addLine('Metresi', formData.size); detailsText += addLine('T.A.K.S.', formData.taks); detailsText += addLine('K.A.K.S.', formData.kaks); detailsText += addLine('Nizam', formData.nizam); detailsText += addLine('Alt Yapı', formData.altYapi);
-    } else if (formData.type.includes("Ticari") || formData.type === "Devren Satılık") { detailsText += addLine('Gayrimenkul Tipi', formData.gayrimenkulTipi); detailsText += addLine('Metresi', formData.size); detailsText += addLine('Kat Sayısı', formData.katSayisiTicari); }
+    } else if (formData.type === "Satılık Arsa") { 
+        detailsText += addLine('Arsa Tipi', formData.arsaTipi); detailsText += addLine('İmar Durumu', formData.imarDurumu); detailsText += addLine('Ada/Parsel', formData.adaParsel); detailsText += addLine('Metresi', formData.size); detailsText += addLine('T.A.K.S.', formData.taks); detailsText += addLine('K.A.K.S.', formData.kaks); detailsText += addLine('Nizam', formData.nizam); detailsText += addLine('Alt Yapı', formData.altYapi);
+    } else if (formData.type === "Satılık Tarla" || formData.type === "Satılık Bahçe") {
+        // --- DÜZENLEME: Tarla ve Bahçe için Sihirli Metin Alanı Eklendi ---
+        detailsText += addLine('Tarla Tipi', formData.tarlaTipi);
+        detailsText += addLine('Bahçe Tipi', formData.bahceTipi);
+        detailsText += addLine('Ada/Parsel', formData.adaParsel);
+        detailsText += addLine('Metresi', formData.size);
+        detailsText += addLine('Su Durumu', formData.suDurumu);
+        detailsText += addLine('Elektrik Durumu', formData.elektrikDurumu);
+        detailsText += addLine('Yol Durumu', formData.yolDurumu);
+        detailsText += addLine('Yola Cephesi', formData.yolaCephesi);
+        detailsText += addLine('Tel Örgü', formData.telOrgu);
+        detailsText += addLine('Ev Durumu', formData.evDurumu);
+        detailsText += addLine('Havuz Durumu', formData.havuzDurumu);
+        detailsText += addLine('Depo/Garaj', formData.depoGaraj);
+        detailsText += addLine('Teçhizat', formData.techizat);
+        detailsText += addLine('Eğim', formData.egim);
+        detailsText += addLine('Meyve Cinsi', formData.meyveCinsi);
+        detailsText += addLine('Ağaç Sayısı', formData.agacSayisi);
+        detailsText += addLine('Ağaç Yaşı', formData.agacYasi);
+        detailsText += addLine('Hisse Durumu', formData.hisseDurumu);
+    } else if (formData.type.includes("Ticari") || formData.type === "Devren Satılık") { 
+        detailsText += addLine('Gayrimenkul Tipi', formData.gayrimenkulTipi); detailsText += addLine('Metresi', formData.size); detailsText += addLine('Kat Sayısı', formData.katSayisiTicari); 
+    }
+
     detailsText += addLine('Cephe', formData.facade);
     if (formData.type !== "Devren Satılık" && !formData.type.includes('Kiralık')) { detailsText += addLine('Krediye Uygun', formData.creditSuitable); detailsText += addLine('Takas', formData.swapAvailable); }
     if (['Bireysel Garaj', 'Ortak Kullanım', 'Var'].includes(formData.garage)) { const garageText = formData.garage === "Var" ? "Otopark İmkanı" : formData.garage; detailsText += `> ÖZELLİK: ${garageText} Mevcuttur\n`; }
@@ -377,12 +401,22 @@ export default function RealEstateAssistant() {
     if (!window.JSZip) { alert("Kütüphaneler Yüklenmedi"); return; }
     setIsDownloading(true);
     const zip = new window.JSZip();
+    
+    // --- DÜZENLEME: Klasör İsimlendirme Güvenliği ---
     let fileDetail = "";
     if (formData.konutTipi) fileDetail = formData.rooms;
     else if (formData.arsaTipi) fileDetail = "Arsa";
-    else if (formData.tarlaTipi.length > 0) fileDetail = "Tarla";
-    else if (formData.bahceTipi) fileDetail = "Bahçe";
-    else fileDetail = getSubTypeLabel();
+    else if (formData.type.includes("Tarla")) {
+        // Tarla Tipi dizi olduğu için kontrol et
+        if (formData.tarlaTipi && formData.tarlaTipi.length > 0) {
+             fileDetail = formData.tarlaTipi.join('-');
+        } else {
+             fileDetail = "Tarla";
+        }
+    }
+    else if (formData.bahceTipi) fileDetail = formData.bahceTipi;
+    else fileDetail = getSubTypeLabel() || formData.type; // Fallback
+    
     const safeNeighborhood = (formData.neighborhood || "Adsiz").trim();
     const safePrice = (formData.price || "0").trim();
     const folderName = `${safeNeighborhood} - ${fileDetail} - ${safePrice} TL`.replace(/[/\\?%*:|"<>]/g, '-');
