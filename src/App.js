@@ -285,8 +285,6 @@ export default function RealEstateAssistant() {
     
     // --- DÜZENLEME: İlan No Mantığı ---
     let detailsText = "";
-    // İlan numarası her zaman gösterilecek (boş olsa bile). 
-    // Başlık ile İlan No arasına 1 satır boşluk koymak için başa \n eklendi.
     detailsText += `\n> İlan No: ${formData.adNumber || ''}\n\n`;
 
     if (formData.type.includes("Daire")) {
@@ -294,7 +292,6 @@ export default function RealEstateAssistant() {
     } else if (formData.type === "Satılık Arsa") { 
         detailsText += addLine('Arsa Tipi', formData.arsaTipi); detailsText += addLine('İmar Durumu', formData.imarDurumu); detailsText += addLine('Ada/Parsel', formData.adaParsel); detailsText += addLine('Metresi', formData.size); detailsText += addLine('T.A.K.S.', formData.taks); detailsText += addLine('K.A.K.S.', formData.kaks); detailsText += addLine('Nizam', formData.nizam); detailsText += addLine('Alt Yapı', formData.altYapi);
     } else if (formData.type === "Satılık Tarla" || formData.type === "Satılık Bahçe") {
-        // --- DÜZENLEME: Tarla ve Bahçe için Sihirli Metin Alanı Eklendi ---
         detailsText += addLine('Tarla Tipi', formData.tarlaTipi);
         detailsText += addLine('Bahçe Tipi', formData.bahceTipi);
         detailsText += addLine('Ada/Parsel', formData.adaParsel);
@@ -326,18 +323,14 @@ export default function RealEstateAssistant() {
     setFormData(prev => ({ ...prev, description: desc }));
   };
 
-  // --- CAPTURE ELEMENT (KESİN ÇÖZÜM - OVERFLOW LOCK) ---
   const captureElement = async (element, width = 1080, height = 1080) => {
     if (!window.html2canvas) return null;
-
-    // 1. Sayfa kaydırmasını kilitle ve başa al (Kaymayı önler)
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
-    // 2. Klon ve Konteyner (Tam Ekran ve Sabit)
     const container = document.createElement('div');
     container.style.position = 'fixed';
     container.style.top = '0';
@@ -358,14 +351,12 @@ export default function RealEstateAssistant() {
     container.appendChild(clone);
     document.body.appendChild(container);
 
-    // 3. Resimlerin yüklenmesini bekle
     const images = clone.getElementsByTagName('img');
     await Promise.all(Array.from(images).map(img => {
         if (img.complete) return Promise.resolve();
         return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
     }));
 
-    // 4. Bekleme (Render için)
     await new Promise(resolve => setTimeout(resolve, 800));
 
     try {
@@ -381,7 +372,7 @@ export default function RealEstateAssistant() {
         backgroundColor: null
       });
       document.body.removeChild(container);
-      document.body.style.overflow = originalOverflow; // Eski haline getir
+      document.body.style.overflow = originalOverflow;
       return canvas;
     } catch (err) {
       console.error("Capture error:", err);
@@ -398,48 +389,61 @@ export default function RealEstateAssistant() {
   };
 
   const handleDownloadProject = async () => {
-    if (!window.JSZip) { alert("Kütüphaneler Yüklenmedi"); return; }
+    if (!window.JSZip) { alert("Kütüphaneler Yüklenmedi. Lütfen sayfayı yenileyin."); return; }
     setIsDownloading(true);
-    const zip = new window.JSZip();
     
-    // --- DÜZENLEME: Klasör İsimlendirme Güvenliği ---
-    let fileDetail = "";
-    if (formData.konutTipi) fileDetail = formData.rooms;
-    else if (formData.arsaTipi) fileDetail = "Arsa";
-    else if (formData.type.includes("Tarla")) {
-        // Tarla Tipi dizi olduğu için kontrol et
-        if (formData.tarlaTipi && formData.tarlaTipi.length > 0) {
-             fileDetail = formData.tarlaTipi.join('-');
-        } else {
-             fileDetail = "Tarla";
+    try {
+        const zip = new window.JSZip();
+        
+        let safeNeighborhood = (formData.neighborhood || "Genel").trim();
+        safeNeighborhood = safeNeighborhood.replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                                           .replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S').replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
+
+        let fileDetail = "Ilan";
+        if (formData.konutTipi) fileDetail = formData.rooms || "Konut";
+        else if (formData.arsaTipi) fileDetail = "Arsa";
+        else if (formData.type.includes("Tarla")) {
+            fileDetail = (formData.tarlaTipi && formData.tarlaTipi.length > 0) ? formData.tarlaTipi[0] : "Tarla";
         }
+        else if (formData.bahceTipi) fileDetail = formData.bahceTipi;
+        else fileDetail = getSubTypeLabel() || formData.type;
+        
+        fileDetail = fileDetail.replace(/[\/\\?%*:|"<>]/g, '').trim();
+        const safePrice = (formData.price || "0").replace(/[^0-9]/g, '');
+        const dateStamp = new Date().toISOString().slice(0,10).replace(/-/g, '');
+        const folderName = `${dateStamp}_${safeNeighborhood}_${fileDetail}_${safePrice}TL`.replace(/\s+/g, '_');
+        
+        const rootFolder = zip.folder(folderName);
+        const hamFolder = rootFolder.folder("1_HAM_FOTOLAR");
+        
+        if (formData.images.length > 0) {
+          const imgPromises = formData.images.map(async (imgUrl, idx) => {
+            try { const response = await fetch(imgUrl); const blob = await response.blob(); hamFolder.file(`resim_${idx + 1}.jpg`, blob); } catch (e) {}
+          }); await Promise.all(imgPromises);
+        }
+        
+        const tasarimFolder = rootFolder.folder("2_TASARIMLI");
+        if (captureContainerRef.current) { const canvas = await captureElement(captureContainerRef.current, 1080, 1080); if (canvas) { const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); tasarimFolder.file(`sosyal_tasarim.png`, blob); } }
+        
+        const metinFolder = rootFolder.folder("3_ILAN_METNI");
+        metinFolder.file("ilan_metni.txt", formData.description || "Lütfen 'Sihirli Metin Oluştur' butonuna basınız.");
+        
+        const ozelFolder = rootFolder.folder("4_OZEL_BILGI");
+        const ozelContent = `MÜŞTERİ BİLGİ FORMU\nTarih: ${privateData.date}\nMüşteri Adı: ${privateData.customerName}\nİletişim: ${privateData.contactInfo}\nAçık Adres: ${privateData.openAddress}\nTaşınmaz No: ${privateData.propertyNo}\nKapı Şifresi: ${privateData.doorCode}\nTapu Durumu: ${privateData.deedStatusPrivate}\nTakas: ${privateData.swapPrivate}\nBiter Fiyat: ${privateData.finalPrice}\nKomisyon: ${privateData.commission}\nNotlar: ${privateData.notes}`;
+        ozelFolder.file("Ozel_Bilgiler.txt", ozelContent);
+        
+        const vitrinFolder = rootFolder.folder("5_VITRIN");
+        if (vitrinPreviewRef.current) { const canvas = await captureElement(vitrinPreviewRef.current, 794, 1123); if (canvas) { const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); vitrinFolder.file(`vitrin_tasarim.png`, blob); } }
+        
+        const content = await zip.generateAsync({ type: "blob" });
+        window.saveAs(content, `${folderName}.zip`);
+
+    } catch (error) {
+        console.error("ZIP Oluşturma Hatası:", error);
+        alert("İndirme sırasında bir hata oluştu: " + error.message);
+    } finally {
+        setIsDownloading(false);
     }
-    else if (formData.bahceTipi) fileDetail = formData.bahceTipi;
-    else fileDetail = getSubTypeLabel() || formData.type; // Fallback
-    
-    const safeNeighborhood = (formData.neighborhood || "Adsiz").trim();
-    const safePrice = (formData.price || "0").trim();
-    const folderName = `${safeNeighborhood} - ${fileDetail} - ${safePrice} TL`.replace(/[/\\?%*:|"<>]/g, '-');
-    
-    const rootFolder = zip.folder(folderName);
-    const hamFolder = rootFolder.folder("1_HAM_FOTOLAR");
-    if (formData.images.length > 0) {
-      const imgPromises = formData.images.map(async (imgUrl, idx) => {
-        try { const response = await fetch(imgUrl); const blob = await response.blob(); hamFolder.file(`resim_${idx + 1}.jpg`, blob); } catch (e) {}
-      }); await Promise.all(imgPromises);
-    }
-    const tasarimFolder = rootFolder.folder("2_TASARIMLI");
-    if (captureContainerRef.current) { const canvas = await captureElement(captureContainerRef.current, 1080, 1080); if (canvas) { const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); tasarimFolder.file(`sosyal_tasarim.png`, blob); } }
-    const metinFolder = rootFolder.folder("3_ILAN_METNI");
-    metinFolder.file("ilan_metni.txt", formData.description || "Lütfen 'Sihirli Metin Oluştur' butonuna basınız.");
-    const ozelFolder = rootFolder.folder("4_OZEL_BILGI");
-    const ozelContent = `MÜŞTERİ BİLGİ FORMU\nTarih: ${privateData.date}\nMüşteri Adı: ${privateData.customerName}\nİletişim: ${privateData.contactInfo}\nAçık Adres: ${privateData.openAddress}\nTaşınmaz No: ${privateData.propertyNo}\nKapı Şifresi: ${privateData.doorCode}\nTapu Durumu: ${privateData.deedStatusPrivate}\nTakas: ${privateData.swapPrivate}\nBiter Fiyat: ${privateData.finalPrice}\nKomisyon: ${privateData.commission}\nNotlar: ${privateData.notes}`;
-    ozelFolder.file("Ozel_Bilgiler.txt", ozelContent);
-    const vitrinFolder = rootFolder.folder("5_VITRIN");
-    if (vitrinPreviewRef.current) { const canvas = await captureElement(vitrinPreviewRef.current, 794, 1123); if (canvas) { const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png')); vitrinFolder.file(`vitrin_tasarim.png`, blob); } }
-    const content = await zip.generateAsync({ type: "blob" });
-    window.saveAs(content, `${folderName}.zip`);
-    setIsDownloading(false);
   };
 
   const renderDynamicFields = () => {
