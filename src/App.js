@@ -139,7 +139,22 @@ const featureCategories = {
 
 const allCities = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalva", "Karabük", "Kilis", "Osmaniye", "Düzce"].sort();
 
-export default function RealEstateAssistant() {
+// DÜZENLEME: Next.js entegrasyonu için userData ve branchesData propları eklendi
+export default function App({ userData = null, branchesData = null }) {
+  // --- NEXT.JS İÇİN KULLANICI VE ŞUBE ALTYAPISI HAZIRLIĞI ---
+  // Canvas ortamında test ederken sorun çıkmaması için varsayılan bir kullanıcı profili oluşturuyoruz.
+  // Gerçek sitede userData prop'u dolduğunda bu varsayılan değerler ezilecek.
+  const defaultUser = {
+    name: 'Özcan AKTAŞ',
+    phone: '0533 638 7000',
+    photo: DEFAULT_PROFILE_PHOTO,
+    role: 'admin', // admin tüm şubeleri görebilir, consultant ise sadece kendi şubesini
+    allowedBranches: ['eregli', 'karaman', 'konya', 'alanya'] 
+  };
+  
+  const activeUser = userData || defaultUser;
+  const availableBranches = branchesData || officeDetails;
+
   const [activeTab, setActiveTab] = useState('social');
   const [designMode, setDesignMode] = useState('single'); // 'single', 'double', 'triple', 'quad'
   const [isManualLocation, setIsManualLocation] = useState(false);
@@ -155,22 +170,27 @@ export default function RealEstateAssistant() {
   const [showWebsiteOzcan, setShowWebsiteOzcan] = useState(true);
   const [showWebsiteEmlaknomi, setShowWebsiteEmlaknomi] = useState(true);
 
+  // Danışman bilgileri artık activeUser (Giriş yapan kullanıcı) verisinden çekiliyor
   const [consultant, setConsultant] = useState({
-    name: 'Özcan AKTAŞ',
-    phone: '0533 638 7000',
-    photo: DEFAULT_PROFILE_PHOTO,
+    name: activeUser.name,
+    phone: activeUser.phone,
+    photo: activeUser.photo || DEFAULT_PROFILE_PHOTO,
     showInfo: true,
     showPhoto: true
   });
 
-  const [selectedOffice, setSelectedOffice] = useState('eregli');
+  // Başlangıç şubesi kullanıcının yetkili olduğu ilk şube olarak seçiliyor
+  const initialOffice = (activeUser.allowedBranches && activeUser.allowedBranches.length > 0) 
+        ? activeUser.allowedBranches[0] 
+        : Object.keys(availableBranches)[0];
+
+  const [selectedOffice, setSelectedOffice] = useState(initialOffice);
     
   const [formData, setFormData] = useState({
     customTitle: '',
     title: '', price: '', currency: 'TL',
     city: 'Konya', district: 'Ereğli', neighborhood: 'Yunuslu',
     type: 'Satılık Daire', adNumber: '', 
-    // ... (Diğer alanlar aynı)
     rooms: '', size: '', netSize: '', totalFloors: '', floor: '', flatCountOnFloor: '', facade: [], age: '',
     masterBath: '', wcCount: '', heating: [], balconyCount: '', glassBalcony: '', insulation: '', elevator: '', pantry: [], garage: '',
     parking: '', usageStatus: '', deedStatus: '', creditSuitable: '', swapAvailable: '', hisseDurumu: '', iskan: '',
@@ -195,7 +215,6 @@ export default function RealEstateAssistant() {
     deedStatusPrivate: '', doorCode: '', swapPrivate: '', openAddress: ''
   });
 
-  // ... (useEffect ve helper fonksiyonlar aynı)
   useEffect(() => {
     document.title = "Özcan AKTAŞ - Emlaknomi Pro";
     const metaViewport = document.querySelector('meta[name="viewport"]');
@@ -218,11 +237,16 @@ export default function RealEstateAssistant() {
     Promise.all([
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'),
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js'),
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
-      loadScript('https://cdn.tailwindcss.com')
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js')
     ]).then(() => {
-        const checkTailwind = setInterval(() => { if (window.tailwind) { clearInterval(checkTailwind); setIsReady(true); } }, 50);
-        setTimeout(() => { clearInterval(checkTailwind); setIsReady(true); }, 2000);
+        const checkReady = setInterval(() => { 
+            // We don't check for tailwind here as Canvas has it natively via classes.
+            if (window.JSZip && window.html2canvas) { 
+                clearInterval(checkReady); 
+                setIsReady(true); 
+            } 
+        }, 50);
+        setTimeout(() => { clearInterval(checkReady); setIsReady(true); }, 2000);
     });
 
     const savedLogo = localStorage.getItem('emlaknomi_custom_logo');
@@ -243,7 +267,8 @@ export default function RealEstateAssistant() {
   
   const handleOfficeChange = (e) => {
     const officeKey = e.target.value; setSelectedOffice(officeKey); setIsManualLocation(false);
-    setConsultant(prev => ({ ...prev, phone: officeDetails[officeKey].phone }));
+    // Seçilen şubeye göre sadece numarayı güncelliyoruz (isim activeUser'da kalıyor)
+    setConsultant(prev => ({ ...prev, phone: availableBranches[officeKey].phone }));
     if (officeKey === 'eregli') setFormData(prev => ({...prev, city: 'Konya', district: 'Ereğli', neighborhood: 'Yunuslu'}));
     else if (officeKey === 'karaman') setFormData(prev => ({...prev, city: 'Karaman', district: 'Merkez', neighborhood: locationData['Karaman']['Merkez'][0]}));
     else if (officeKey === 'alanya') setFormData(prev => ({...prev, city: 'Antalya', district: 'Alanya', neighborhood: locationData['Antalya']['Alanya'][0]}));
@@ -280,7 +305,9 @@ export default function RealEstateAssistant() {
   const getGeneratedTitle = () => { if (formData.customTitle) return formData.customTitle; let parts = []; if (formData.neighborhood) parts.push(`${formData.neighborhood}'da`); if (formData.rooms) parts.push(formData.rooms); if (formData.type.includes('Daire') || formData.konutTipi) { const fd = getFloorDisplay(); if (fd) parts.push(fd); } parts.push(getFullTypeLabel()); return parts.join(' '); };
 
   const generateDescription = () => {
-    const office = officeDetails[selectedOffice]; const generatedTitle = getGeneratedTitle();
+    // Şube bilgileri artık dinamik availableBranches değişkeninden geliyor
+    const office = availableBranches[selectedOffice]; 
+    const generatedTitle = getGeneratedTitle();
     const addLine = (label, value, suffix = '') => { if (!value || value === '' || (Array.isArray(value) && value.length === 0)) return ''; const valStr = Array.isArray(value) ? value.join(', ') : value; return `> ${label}: ${valStr}${suffix}\n`; };
     
     // --- DÜZENLEME: İlan No Mantığı ---
@@ -319,7 +346,11 @@ export default function RealEstateAssistant() {
     if (['Bireysel Garaj', 'Ortak Kullanım', 'Var'].includes(formData.garage)) { const garageText = formData.garage === "Var" ? "Otopark İmkanı" : formData.garage; detailsText += `> ÖZELLİK: ${garageText} Mevcuttur\n`; }
     detailsText += addLine('Diğer Özellikler', formData.digerOzellikler);
     let featuresText = ""; Object.keys(featureCategories).forEach(cat => { const selectedInCat = featureCategories[cat].filter(f => formData.features.includes(f)); if (selectedInCat.length > 0) { featuresText += `\n\n> ${cat.toUpperCase()}:\n` + selectedInCat.join(', '); } });
-    const desc = `EMLAKNOMİ'DEN ${generatedTitle.toUpperCase()}\n\n` + `Konum: ${formData.city} / ${formData.district} / ${formData.neighborhood}\n\n` + `GAYRİMENKUL DETAYLARI\n` + detailsText + `${featuresText}\n\n\n` + `FİYAT: ${formData.price} ${formData.currency}\n\n` + `--------------------------------\n` + `${consultant.showInfo ? `Gayrimenkul Uzmanı - ${consultant.name}\nİletişim: ${consultant.phone}\n` : ''}` + `www.ozcanaktas.com\n\n` + `Ofis Adres: ${office.address}\n\n` + `Taşınmaz Ticareti Yetki Belge No: ${office.authNo}\n` + `www.emlaknomi.com\n\n` + `\nŞubeler: Karaman - Konya - Ereğli - Eskişehir - Alanya - Balıkesir - Kıbrıs`;
+    
+    // DÜZENLEME: office.authNo yoksa varsayılan olarak '7000161' kullanılıyor.
+    const safeAuthNo = office.authNo ? office.authNo : '7000161';
+    
+    const desc = `EMLAKNOMİ'DEN ${generatedTitle.toUpperCase()}\n\n` + `Konum: ${formData.city} / ${formData.district} / ${formData.neighborhood}\n\n` + `GAYRİMENKUL DETAYLARI\n` + detailsText + `${featuresText}\n\n\n` + `FİYAT: ${formData.price} ${formData.currency}\n\n` + `--------------------------------\n` + `${consultant.showInfo ? `Gayrimenkul Uzmanı - ${consultant.name}\nİletişim: ${consultant.phone}\n` : ''}` + `www.ozcanaktas.com\n\n` + `Ofis Adres: ${office.address}\n\n` + `Taşınmaz Ticareti Yetki Belge No: ${safeAuthNo}\n` + `www.emlaknomi.com\n\n` + `\nŞubeler: Karaman - Konya - Ereğli - Eskişehir - Alanya - Balıkesir - Kıbrıs`;
     setFormData(prev => ({ ...prev, description: desc }));
   };
 
@@ -400,19 +431,25 @@ export default function RealEstateAssistant() {
                                            .replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S').replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
 
         let fileDetail = "Ilan";
-        if (formData.konutTipi) fileDetail = formData.rooms || "Konut";
-        else if (formData.arsaTipi) fileDetail = "Arsa";
-        else if (formData.type.includes("Tarla")) {
-            fileDetail = (formData.tarlaTipi && formData.tarlaTipi.length > 0) ? formData.tarlaTipi[0] : "Tarla";
-        }
-        else if (formData.bahceTipi) fileDetail = formData.bahceTipi;
+        if (formData.type.includes("Daire")) fileDetail = formData.rooms || "Daire";
+        else if (formData.type.includes("Arsa")) fileDetail = "Arsa";
+        else if (formData.type.includes("Ticari") || formData.type === "Devren Satılık") fileDetail = formData.gayrimenkulTipi || "Dükkan";
+        else if (formData.type.includes("Tarla")) fileDetail = (formData.tarlaTipi && formData.tarlaTipi.length > 0) ? formData.tarlaTipi[0] : "Tarla";
+        else if (formData.type.includes("Bahçe")) fileDetail = formData.bahceTipi || "Bahçe";
         else fileDetail = getSubTypeLabel() || formData.type;
         
         fileDetail = fileDetail.replace(/[\/\\?%*:|"<>]/g, '').trim();
-        const safePrice = (formData.price || "0").replace(/[^0-9]/g, '');
-        const dateStamp = new Date().toISOString().slice(0,10).replace(/-/g, '');
-        const folderName = `${dateStamp}_${safeNeighborhood}_${fileDetail}_${safePrice}TL`.replace(/\s+/g, '_');
         
+        // --- YENİ KLASÖR İSİMLENDİRME MANTIĞI ---
+        const safeAdNumber = formData.adNumber ? formData.adNumber.trim() : "00000";
+        const safeConsultantName = consultant.name.trim();
+        const formattedPrice = formData.price ? `${formData.price} TL.` : "0 TL.";
+        
+        let folderName = `${safeAdNumber} - ${safeConsultantName} - ${safeNeighborhood} - ${fileDetail} - ${formattedPrice}`;
+        // Dosya sisteminde hataya yol açabilecek özel karakterleri temizliyoruz
+        folderName = folderName.replace(/[\/\\?%*:|"<>]/g, '');
+        // ----------------------------------------
+
         const rootFolder = zip.folder(folderName);
         const hamFolder = rootFolder.folder("1_HAM_FOTOLAR");
         
@@ -817,7 +854,20 @@ export default function RealEstateAssistant() {
           <div className="bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-700 text-white">
             <h2 className="text-lg font-semibold mb-4 flex items-center text-slate-100"><User className="mr-2 text-orange-500" size={20} /> Ayarlar</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div><label className="block text-sm font-medium text-slate-400 mb-1">Şube</label><select value={selectedOffice} onChange={handleOfficeChange} className="w-full p-2 border border-slate-600 rounded-lg bg-slate-700 text-white focus:border-orange-500"><option value="eregli">Ereğli</option><option value="karaman">Karaman</option><option value="konya">Konya</option><option value="alanya">Alanya</option></select></div>
+               <div>
+                 <label className="block text-sm font-medium text-slate-400 mb-1">Şube</label>
+                 {/* DÜZENLEME: Kullanıcının sadece izin verilen şubeleri görmesi sağlandı. Tek şube varsa menü pasif (disabled) olur. */}
+                 <select 
+                    value={selectedOffice} 
+                    onChange={handleOfficeChange} 
+                    disabled={activeUser.allowedBranches && activeUser.allowedBranches.length === 1}
+                    className={`w-full p-2 border border-slate-600 rounded-lg bg-slate-700 text-white focus:border-orange-500 ${activeUser.allowedBranches && activeUser.allowedBranches.length === 1 ? 'opacity-75 cursor-not-allowed' : ''}`}
+                 >
+                    {(activeUser.allowedBranches || Object.keys(availableBranches)).map(key => (
+                        availableBranches[key] ? <option key={key} value={key}>{availableBranches[key].name}</option> : null
+                    ))}
+                 </select>
+               </div>
                <div>
                   <label className="block text-sm font-medium text-slate-400 mb-1">Görünüm & Tema</label>
                   <div className="flex gap-2">
@@ -945,7 +995,7 @@ export default function RealEstateAssistant() {
                 </div>
                 <div className="mt-auto pt-6 border-t text-center text-sm text-slate-400 relative z-10">
                     {showWebsiteEmlaknomi && <span>www.emlaknomi.com &bull; </span>}
-                    {officeDetails[selectedOffice].address}
+                    {availableBranches[selectedOffice]?.address}
                 </div>
              </div>
           </div>
@@ -983,7 +1033,7 @@ export default function RealEstateAssistant() {
                 </div>
                 <div className="mt-auto pt-4 border-t text-center text-xs text-slate-400 relative z-10">
                     {showWebsiteEmlaknomi && <span>www.emlaknomi.com &bull; </span>}
-                    {officeDetails[selectedOffice].address}
+                    {availableBranches[selectedOffice]?.address}
                 </div>
               </div>
               <button onClick={() => window.print()} className="mt-4 w-full py-2 bg-slate-800 text-white rounded font-bold"><Printer size={16} className="inline mr-2"/> Yazdır</button>
