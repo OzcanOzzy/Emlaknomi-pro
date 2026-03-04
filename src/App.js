@@ -234,14 +234,15 @@ export default function App({ userData = null, branchesData = null }) {
       });
     };
 
+    // DÜZENLEME: Tailwind kütüphanesini önizleme ortamında tasarımı bozmaması için yeniden ekledik
     Promise.all([
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'),
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js'),
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js')
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+      loadScript('https://cdn.tailwindcss.com')
     ]).then(() => {
         const checkReady = setInterval(() => { 
-            // We don't check for tailwind here as Canvas has it natively via classes.
-            if (window.JSZip && window.html2canvas) { 
+            if (window.JSZip && window.html2canvas && window.tailwind) { 
                 clearInterval(checkReady); 
                 setIsReady(true); 
             } 
@@ -267,7 +268,6 @@ export default function App({ userData = null, branchesData = null }) {
   
   const handleOfficeChange = (e) => {
     const officeKey = e.target.value; setSelectedOffice(officeKey); setIsManualLocation(false);
-    // Seçilen şubeye göre sadece numarayı güncelliyoruz (isim activeUser'da kalıyor)
     setConsultant(prev => ({ ...prev, phone: availableBranches[officeKey].phone }));
     if (officeKey === 'eregli') setFormData(prev => ({...prev, city: 'Konya', district: 'Ereğli', neighborhood: 'Yunuslu'}));
     else if (officeKey === 'karaman') setFormData(prev => ({...prev, city: 'Karaman', district: 'Merkez', neighborhood: locationData['Karaman']['Merkez'][0]}));
