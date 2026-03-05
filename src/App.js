@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Home, MapPin, CheckCircle, Layout, Upload, User, ChevronDown, ChevronUp, Download, Lock, Loader2, Globe, Car, Building, X, Compass, Calendar, ArrowUpDown } from 'lucide-react';
+import { Camera, Home, MapPin, CheckCircle, Layout, Upload, User, ChevronDown, ChevronUp, Download, Lock, Loader2, Globe, Car, Building, X, Compass, Calendar, ArrowUpDown, FileText } from 'lucide-react';
 
 // --- YARDIMCI BİLEŞENLER ---
-const InputField = ({ label, name, value, onChange, onBlur, placeholder }) => (
-  <div className="mb-2">
-    <label className="block text-xs text-slate-500 mb-1 font-bold">{label}</label>
+const InputField = ({ label, name, value, onChange, onBlur, placeholder, highlight }) => (
+  <div className={`mb-2 ${highlight ? 'bg-slate-200/80 p-2.5 rounded-lg border border-slate-300 shadow-sm' : ''}`}>
+    <label className={`block text-xs ${highlight ? 'text-slate-700' : 'text-slate-500'} mb-1 font-bold`}>{label}</label>
     <input 
       type="text" 
       name={name} 
@@ -17,9 +17,9 @@ const InputField = ({ label, name, value, onChange, onBlur, placeholder }) => (
   </div>
 );
 
-const SelectField = ({ label, name, value, onChange, options }) => (
-  <div className="mb-2">
-    <label className="block text-xs text-slate-500 mb-1 font-bold">{label}</label>
+const SelectField = ({ label, name, value, onChange, options, highlight }) => (
+  <div className={`mb-2 ${highlight ? 'bg-slate-200/80 p-2.5 rounded-lg border border-slate-300 shadow-sm' : ''}`}>
+    <label className={`block text-xs ${highlight ? 'text-slate-700' : 'text-slate-500'} mb-1 font-bold`}>{label}</label>
     <select 
       name={name} 
       value={value} 
@@ -32,9 +32,9 @@ const SelectField = ({ label, name, value, onChange, options }) => (
   </div>
 );
 
-const MultiSelectField = ({ label, field, value, onChange, options, themeColor }) => (
-  <div className="relative group mb-2">
-      <label className="block text-xs text-slate-500 mb-1 font-bold">{label} (Çoklu)</label>
+const MultiSelectField = ({ label, field, value, onChange, options, themeColor, highlight }) => (
+  <div className={`relative group mb-2 ${highlight ? 'bg-slate-200/80 p-2.5 rounded-lg border border-slate-300 shadow-sm' : ''}`}>
+      <label className={`block text-xs ${highlight ? 'text-slate-700' : 'text-slate-500'} mb-1 font-bold`}>{label} (Çoklu)</label>
       <div className="w-full p-2 border rounded-lg text-sm h-24 overflow-y-auto cursor-pointer bg-white text-slate-800 focus-within:border-orange-500 transition-colors border-slate-200">
           {options.map(op => (
           <div key={op} onClick={() => onChange(field, op)} className={`flex items-center p-1.5 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 ${value.includes(op) ? 'font-bold' : ''}`} style={{color: value.includes(op) ? themeColor : 'inherit', backgroundColor: value.includes(op) ? `${themeColor}10` : 'transparent'}}>
@@ -53,7 +53,9 @@ const officeDetails = {
   eregli: { name: 'Ereğli Şubesi', city: 'Konya', address: 'Yunuslu mh. uğur mumcu caddesi 35/A Ereğli/Konya', phone: '0533 638 7000', authNo: '4202207' },
   karaman: { name: 'Karaman Şubesi', city: 'Karaman', address: 'İmaret mahallesi 173. sokak No:3/A Karaman', phone: '0543 306 14 99', authNo: '7000161' },
   konya: { name: 'Konya Şubesi', city: 'Konya', address: 'Konya Merkez', phone: '0543 306 14 99', authNo: '7000161' },
-  alanya: { name: 'Alanya Şubesi', city: 'Antalya', address: 'Alanya Merkez', phone: '0543 306 14 99', authNo: '0704618' }
+  alanya: { name: 'Alanya Şubesi', city: 'Antalya', address: 'Alanya Merkez', phone: '0543 306 14 99', authNo: '0704618' },
+  antalya: { name: 'Antalya Şubesi', city: 'Antalya', address: 'Antalya Merkez', phone: '0543 306 14 99', authNo: '0704618' },
+  eskisehir: { name: 'Eskişehir Şubesi', city: 'Eskişehir', address: 'Eskişehir Merkez', phone: '0543 306 14 99', authNo: '0000000' }
 };
 
 const detailedCities = ["Konya", "Karaman", "Antalya", "Mersin", "Eskişehir"];
@@ -143,7 +145,7 @@ export default function App({ userData = null, branchesData = null }) {
     phone: '0533 638 7000',
     photo: DEFAULT_PROFILE_PHOTO,
     role: 'admin',
-    allowedBranches: ['eregli', 'karaman', 'konya', 'alanya'] 
+    allowedBranches: ['eregli', 'karaman', 'konya', 'alanya', 'antalya', 'eskisehir'] 
   };
   
   const activeUser = userData || defaultUser;
@@ -154,7 +156,6 @@ export default function App({ userData = null, branchesData = null }) {
   const [isManualLocation, setIsManualLocation] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const socialPreviewRef = useRef(null);
-  const vitrinPreviewRef = useRef(null); 
     
   const [isReady, setIsReady] = useState(false);
   const [showLogo, setShowLogo] = useState(true);
@@ -209,9 +210,10 @@ export default function App({ userData = null, branchesData = null }) {
   useEffect(() => {
     document.title = "Özcan AKTAŞ - Emlaknomi Pro";
     const loadScript = (src) => {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
-        const script = document.createElement('script'); script.src = src; script.onload = resolve; document.head.appendChild(script);
+        const script = document.createElement('script'); script.src = src; 
+        script.onload = resolve; script.onerror = reject; document.head.appendChild(script);
       });
     };
 
@@ -219,15 +221,18 @@ export default function App({ userData = null, branchesData = null }) {
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'),
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js'),
       loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js'),
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
       loadScript('https://cdn.tailwindcss.com')
     ]).then(() => {
         const checkReady = setInterval(() => { 
-            if (window.JSZip && window.htmlToImage && window.tailwind) { 
+            if (window.JSZip && window.htmlToImage && window.jspdf && window.tailwind) { 
                 clearInterval(checkReady); 
                 setIsReady(true); 
             } 
         }, 50);
         setTimeout(() => { clearInterval(checkReady); setIsReady(true); }, 2000);
+    }).catch((e) => {
+        console.error("Script loading error: ", e);
     });
 
     const savedLogo = localStorage.getItem('emlaknomi_custom_logo');
@@ -242,7 +247,27 @@ export default function App({ userData = null, branchesData = null }) {
   const handleInputChange = (e) => { const { name, value } = e.target; if (['price', 'kiraBedeli'].includes(name)) { setFormData(prev => ({ ...prev, [name]: formatNumber(value) })); } else { setFormData(prev => ({ ...prev, [name]: value })); } };
   const handleInputBlur = (e) => { const { name, value } = e.target; if (['size', 'netSize', 'yolaTerk', 'yolaCephesi'].includes(name) && value && !value.includes('m²')) { setFormData(prev => ({ ...prev, [name]: `${value} m²` })); } };
   const handleConsultantChange = (e) => { const { name, value, type, checked } = e.target; setConsultant(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value })); };
-  const handleProfilePhotoChange = (e) => { if (e.target.files && e.target.files[0]) { const file = e.target.files[0]; const reader = new FileReader(); reader.onloadend = () => { setConsultant(prev => ({ ...prev, photo: reader.result })); }; reader.readAsDataURL(file); } };
+  
+  const handleProfilePhotoChange = (e) => { 
+      if (e.target.files && e.target.files[0]) { 
+          const file = e.target.files[0]; 
+          const reader = new FileReader(); 
+          reader.onloadend = () => { 
+              const img = new Image();
+              img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = img.width;
+                  canvas.height = img.height;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0);
+                  setConsultant(prev => ({ ...prev, photo: canvas.toDataURL('image/png') }));
+              };
+              img.src = reader.result;
+          }; 
+          reader.readAsDataURL(file); 
+      } 
+  };
+  
   const handlePrivateInputChange = (e) => { const { name, value } = e.target; if (['finalPrice', 'commission'].includes(name)) { setPrivateData(prev => ({ ...prev, [name]: formatNumber(value) })); } else { setPrivateData(prev => ({ ...prev, [name]: value })); } };
   const handleMultiSelect = (field, value) => { const current = Array.isArray(formData[field]) ? formData[field] : []; const updated = current.includes(value) ? current.filter(i => i !== value) : [...current, value]; setFormData(prev => ({ ...prev, [field]: updated })); };
   
@@ -263,7 +288,27 @@ export default function App({ userData = null, branchesData = null }) {
     } else { setIsManualLocation(true); setFormData(prev => ({ ...prev, city: newCity, district: '', neighborhood: '' })); }
   };
   const handleDistrictChange = (e) => { const newDistrict = e.target.value; const neighborhoods = locationData[formData.city]?.[newDistrict] || []; setFormData(prev => ({ ...prev, district: newDistrict, neighborhood: neighborhoods[0] || '' })); };
-  const handleImageUpload = (e) => { if (e.target.files) { const newImages = Array.from(e.target.files).map(file => URL.createObjectURL(file)); setFormData(prev => ({ ...prev, images: [...prev.images, ...newImages] })); } };
+  
+  const handleImageUpload = (e) => { 
+    if (e.target.files) { 
+      Array.from(e.target.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              const img = new Image();
+              img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = img.width;
+                  canvas.height = img.height;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0);
+                  setFormData(prev => ({ ...prev, images: [...prev.images, canvas.toDataURL('image/jpeg', 0.8)] }));
+              };
+              img.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+      });
+    } 
+  };
   
   const removeImage = (index, e) => {
     e.stopPropagation();
@@ -274,14 +319,50 @@ export default function App({ userData = null, branchesData = null }) {
     setFormData(prev => ({ ...prev, images: newImages, coverImageIndex: newCoverIndex }));
   };
 
-  const handleLogoChange = (e) => { if (e.target.files && e.target.files[0]) { const file = e.target.files[0]; const reader = new FileReader(); reader.onloadend = () => { const base64Data = reader.result; setCustomLogo(base64Data); setShowLogo(true); try { localStorage.setItem('emlaknomi_custom_logo', base64Data); } catch (err) {} }; reader.readAsDataURL(file); } };
-  const handleFeatureToggle = (feature) => { const newFeatures = formData.features.includes(feature) ? formData.features.filter(f => f !== feature) : [...formData.features, feature]; setFormData(prev => ({ ...prev, features: newFeatures })); };
-  const copyToClipboard = (text) => navigator.clipboard.writeText(text);
-
+  const handleLogoChange = (e) => { 
+      if (e.target.files && e.target.files[0]) { 
+          const file = e.target.files[0]; 
+          const reader = new FileReader(); 
+          reader.onloadend = () => { 
+              const img = new Image();
+              img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = img.width;
+                  canvas.height = img.height;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0);
+                  const dataUrl = canvas.toDataURL('image/png');
+                  setCustomLogo(dataUrl); 
+                  setShowLogo(true); 
+                  try { localStorage.setItem('emlaknomi_custom_logo', dataUrl); } catch (err) {} 
+              };
+              img.src = reader.result;
+          }; 
+          reader.readAsDataURL(file); 
+      } 
+  };
+  
   const getFloorDisplay = () => { const { floor, totalFloors } = formData; if (!floor) return null; if (isNaN(floor)) return floor; const fl = parseInt(floor); const tf = parseInt(totalFloors); if (!isNaN(tf)) { if (fl === tf) return "Son Kat"; if (fl > 0 && fl < tf) return "Ara Kat"; } return `${floor}. Kat`; };
   const getSubTypeLabel = () => { if (formData.konutTipi) return formData.konutTipi; if (formData.arsaTipi) return formData.arsaTipi; if (formData.gayrimenkulTipi) return formData.gayrimenkulTipi; if (formData.bahceTipi) return formData.bahceTipi; if (formData.tarlaTipi && formData.tarlaTipi.length > 0) return formData.tarlaTipi[0]; const split = formData.type.split(' '); if (split.length > 1) return split.slice(1).join(' '); return formData.type; };
   const getFullTypeLabel = () => { const operation = formData.type.split(' ')[0]; const subType = getSubTypeLabel(); return `${operation} ${subType}`.trim(); };
   const getGeneratedTitle = () => { if (formData.customTitle) return formData.customTitle; let parts = []; if (formData.neighborhood) parts.push(`${formData.neighborhood}'da`); if (formData.rooms) parts.push(formData.rooms); if (formData.type.includes('Daire') || formData.konutTipi) { const fd = getFloorDisplay(); if (fd) parts.push(fd); } parts.push(getFullTypeLabel()); return parts.join(' '); };
+
+  const getFileNameBase = () => {
+    let detail = "Ilan";
+    if (formData.type.includes("Daire")) detail = formData.rooms || "Daire";
+    else if (formData.type.includes("Arsa")) detail = "Arsa";
+    else if (formData.type.includes("Ticari") || formData.type === "Devren Satılık") detail = formData.gayrimenkulTipi || "Dükkan";
+    else if (formData.type.includes("Tarla")) detail = (formData.tarlaTipi && formData.tarlaTipi.length > 0) ? formData.tarlaTipi[0] : "Tarla";
+    else if (formData.type.includes("Bahçe")) detail = formData.bahceTipi || "Bahçe";
+    else detail = getSubTypeLabel() || formData.type;
+    
+    const safeAdNumber = formData.adNumber ? formData.adNumber.trim() : "00000";
+    let safeNeighborhood = (formData.neighborhood || "Genel").trim();
+    const formattedPrice = formData.price ? `${formData.price} TL` : "0 TL";
+    
+    let fileName = `${safeAdNumber} - ${safeNeighborhood} - ${detail} - ${formattedPrice}`;
+    return fileName.replace(/[\/\\?%*:|"<>]/g, '');
+  };
 
   const generateDescription = () => {
     const office = availableBranches[selectedOffice]; 
@@ -313,142 +394,33 @@ export default function App({ userData = null, branchesData = null }) {
     setFormData(prev => ({ ...prev, description: desc }));
   };
 
-  // Modern ve tamamen sorunsuz Html-To-Image yakalama fonksiyonu
-  const captureElement = async (elementId, width = 1080, height = 1080) => {
-    if (!window.htmlToImage) {
-        alert("Görsel motoru henüz yüklenmedi, lütfen sayfayı yenileyip tekrar deneyin.");
-        return null;
-    }
-    
-    const targetElement = document.getElementById(elementId);
-    if (!targetElement) return null;
-
-    // Fotoğrafların önceden tamamen yüklendiğinden emin oluyoruz
-    const images = Array.from(targetElement.getElementsByTagName('img'));
-    await Promise.all(images.map(img => {
-        if (img.complete) return Promise.resolve();
-        return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
-    }));
-
-    // Dom'un render edilmesi için kısa bir süre bekle
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    try {
-      // Doğrudan hedef elementi render et ve PNG data URL'sine çevir
-      const dataUrl = await window.htmlToImage.toPng(targetElement, { 
-          width: width, 
-          height: height,
-          pixelRatio: 1,
-          style: {
-              transform: 'none',
-              margin: '0',
-              padding: '0'
-          },
-          cacheBust: true
-      });
-      // Veriyi blob'a çevir
-      return await (await fetch(dataUrl)).blob();
-    } catch (err) {
-      console.error("Görsel yakalama hatası:", err);
-      alert("Görsel oluşturulurken hata meydana geldi: " + err.message);
-      return null;
-    }
-  };
-
-  const handleDownloadImageOnly = async () => {
-      setIsDownloading(true);
-      try {
-          const blob = await captureElement('social-capture-element', 1080, 1080);
-          if (blob) { 
-              window.saveAs(blob, `Emlak_Tasarim.png`); 
-          }
-      } catch (err) {
-          console.error(err);
-      } finally {
-          setIsDownloading(false);
-      }
-  };
-
-  const handleDownloadProject = async () => {
-    if (!window.JSZip) { alert("Kütüphaneler Yüklenmedi. Lütfen sayfayı yenileyin."); return; }
-    setIsDownloading(true);
-    try {
-        const zip = new window.JSZip();
-        let safeNeighborhood = (formData.neighborhood || "Genel").trim();
-        safeNeighborhood = safeNeighborhood.replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-                                           .replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S').replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
-        let fileDetail = "Ilan";
-        if (formData.type.includes("Daire")) fileDetail = formData.rooms || "Daire";
-        else if (formData.type.includes("Arsa")) fileDetail = "Arsa";
-        else if (formData.type.includes("Ticari") || formData.type === "Devren Satılık") fileDetail = formData.gayrimenkulTipi || "Dükkan";
-        else if (formData.type.includes("Tarla")) fileDetail = (formData.tarlaTipi && formData.tarlaTipi.length > 0) ? formData.tarlaTipi[0] : "Tarla";
-        else if (formData.type.includes("Bahçe")) fileDetail = formData.bahceTipi || "Bahçe";
-        else fileDetail = getSubTypeLabel() || formData.type;
-        fileDetail = fileDetail.replace(/[\/\\?%*:|"<>]/g, '').trim();
-        const safeAdNumber = formData.adNumber ? formData.adNumber.trim() : "00000";
-        const safeConsultantName = consultant.name.trim();
-        const formattedPrice = formData.price ? `${formData.price} TL.` : "0 TL.";
-        let folderName = `${safeAdNumber} - ${safeConsultantName} - ${safeNeighborhood} - ${fileDetail} - ${formattedPrice}`;
-        folderName = folderName.replace(/[\/\\?%*:|"<>]/g, '');
-        
-        const rootFolder = zip.folder(folderName);
-        const hamFolder = rootFolder.folder("1_HAM_FOTOLAR");
-        if (formData.images.length > 0) {
-          const imgPromises = formData.images.map(async (imgUrl, idx) => {
-            try { const response = await fetch(imgUrl); const blob = await response.blob(); hamFolder.file(`resim_${idx + 1}.jpg`, blob); } catch (e) {}
-          }); await Promise.all(imgPromises);
-        }
-        
-        const tasarimFolder = rootFolder.folder("2_TASARIMLI");
-        
-        // Sosyal Medya Tasarımı İndirme
-        const socialBlob = await captureElement('social-capture-element', 1080, 1080); 
-        if (socialBlob) { 
-            tasarimFolder.file(`sosyal_tasarim.png`, socialBlob); 
-        }
-        
-        const metinFolder = rootFolder.folder("3_ILAN_METNI");
-        metinFolder.file("ilan_metni.txt", formData.description || "Lütfen 'Sihirli Metin Oluştur' butonuna basınız.");
-        
-        const ozelFolder = rootFolder.folder("4_OZEL_BILGI");
-        const ozelContent = `MÜŞTERİ BİLGİ FORMU\nTarih: ${privateData.date}\nMüşteri Adı: ${privateData.customerName}\nİletişim: ${privateData.contactInfo}\nAçık Adres: ${privateData.openAddress}\nTaşınmaz No: ${privateData.propertyNo}\nKapı Şifresi: ${privateData.doorCode}\nTapu Durumu: ${privateData.deedStatusPrivate}\nTakas: ${privateData.swapPrivate}\nBiter Fiyat: ${privateData.finalPrice}\nKomisyon: ${privateData.commission}\nNotlar: ${privateData.notes}`;
-        ozelFolder.file("Ozel_Bilgiler.txt", ozelContent);
-        
-        const content = await zip.generateAsync({ type: "blob" });
-        window.saveAs(content, `${folderName}.zip`);
-    } catch (error) { 
-        console.error("ZIP Hatası:", error);
-    } finally { 
-        setIsDownloading(false); 
-    }
-  };
-
   const renderDynamicFields = () => {
       const t = formData.type;
       const renderKonutFields = () => (
         <>
-            <SelectField label="Konut Tipi" name="konutTipi" value={formData.konutTipi} onChange={handleInputChange} options={options.konutTipi} />
-            <SelectField label="Oda Sayısı" name="rooms" value={formData.rooms} onChange={handleInputChange} options={options.rooms} />
-            <InputField label="Brüt m²" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
-            <InputField label="Net m²" name="netSize" value={formData.netSize} onChange={handleInputChange} onBlur={handleInputBlur} />
-            <SelectField label="Bulunduğu Kat" name="floor" value={formData.floor} onChange={handleInputChange} options={options.floors} />
-            <SelectField label="Kat Sayısı" name="totalFloors" value={formData.totalFloors} onChange={handleInputChange} options={options.totalFloors} />
-            <SelectField label="Kattaki Daire" name="flatCountOnFloor" value={formData.flatCountOnFloor} onChange={handleInputChange} options={options.flatCount} />
-            <SelectField label="Kat Tipi" name="katTipi" value={formData.katTipi} onChange={handleInputChange} options={options.katTipi} />
-            <MultiSelectField label="Cephe" field="facade" value={formData.facade} onChange={handleMultiSelect} options={options.facade} themeColor={themeColor} />
-            <SelectField label="Bina Yaşı" name="age" value={formData.age} onChange={handleInputChange} options={options.age} />
+            <SelectField label="Konut Tipi" name="konutTipi" value={formData.konutTipi} onChange={handleInputChange} options={options.konutTipi} highlight />
+            <SelectField label="Oda Sayısı" name="rooms" value={formData.rooms} onChange={handleInputChange} options={options.rooms} highlight />
+            <InputField label="Brüt m²" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} highlight />
+            <InputField label="Net m²" name="netSize" value={formData.netSize} onChange={handleInputChange} onBlur={handleInputBlur} highlight />
+            <SelectField label="Bulunduğu Kat" name="floor" value={formData.floor} onChange={handleInputChange} options={options.floors} highlight />
+            <SelectField label="Kat Sayısı" name="totalFloors" value={formData.totalFloors} onChange={handleInputChange} options={options.totalFloors} highlight />
+            <SelectField label="Kattaki Daire" name="flatCountOnFloor" value={formData.flatCountOnFloor} onChange={handleInputChange} options={options.flatCount} highlight />
+            <SelectField label="Kat Tipi" name="katTipi" value={formData.katTipi} onChange={handleInputChange} options={options.katTipi} highlight />
+            <SelectField label="Bina Yaşı" name="age" value={formData.age} onChange={handleInputChange} options={options.age} highlight />
+            <SelectField label="Asansör" name="elevator" value={formData.elevator} onChange={handleInputChange} options={options.elevator} highlight />
+            <MultiSelectField label="Cephe" field="facade" value={formData.facade} onChange={handleMultiSelect} options={options.facade} themeColor={themeColor} highlight />
+            <MultiSelectField label="Isıtma Tipi" field="heating" value={formData.heating} onChange={handleMultiSelect} options={options.heating} themeColor={themeColor} highlight />
+            
             <SelectField label="Banyo Sayısı" name="banyoSayisi" value={formData.banyoSayisi} onChange={handleInputChange} options={options.banyoSayisi} />
             <SelectField label="Ebeveyn Banyo" name="masterBath" value={formData.masterBath} onChange={handleInputChange} options={["Var", "Yok"]} />
             <SelectField label="Tuvalet Sayısı" name="wcCount" value={formData.wcCount} onChange={handleInputChange} options={options.wcCount} />
             <MultiSelectField label="Tuvalet Tipi" field="tuvaletTipi" value={formData.tuvaletTipi} onChange={handleMultiSelect} options={options.tuvaletTipi} themeColor={themeColor} />
-            <MultiSelectField label="Isıtma Tipi" field="heating" value={formData.heating} onChange={handleMultiSelect} options={options.heating} themeColor={themeColor} />
             <SelectField label="Isı Yalıtım" name="insulation" value={formData.insulation} onChange={handleInputChange} options={options.insulation} />
             <SelectField label="Balkon Sayısı" name="balconyCount" value={formData.balconyCount} onChange={handleInputChange} options={options.balcony} />
             <SelectField label="Cam Balkon" name="glassBalcony" value={formData.glassBalcony} onChange={handleInputChange} options={options.glassBalcony} />
             <SelectField label="Kızartma Mutfağı" name="kizartmaMutfagi" value={formData.kizartmaMutfagi} onChange={handleInputChange} options={["Var", "Yok"]} />
             <SelectField label="Giyinme Odası" name="giyinmeOdasi" value={formData.giyinmeOdasi} onChange={handleInputChange} options={["Var", "Yok"]} />
             <SelectField label="Çamaşır Odası" name="camasirOdasi" value={formData.camasirOdasi} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Asansör" name="elevator" value={formData.elevator} onChange={handleInputChange} options={options.elevator} />
             <SelectField label="İç Kapılar" name="icKapilar" value={formData.icKapilar} onChange={handleInputChange} options={options.icKapilar} />
             <SelectField label="Pencereler" name="pencereler" value={formData.pencereler} onChange={handleInputChange} options={options.pencereler} />
             <SelectField label="Asma Tavan" name="asmaTavan" value={formData.asmaTavan} onChange={handleInputChange} options={["Var", "Yok"]} />
@@ -579,7 +551,6 @@ export default function App({ userData = null, branchesData = null }) {
       return null;
   };
 
-  // --- SOSYAL MEDYA TASARIMI ---
   const SocialDesign = ({ isCapture = false }) => {
       const renderImages = () => {
           const imgs = formData.images;
@@ -620,7 +591,6 @@ export default function App({ userData = null, branchesData = null }) {
           return null;
       };
 
-      // DİNAMİK İKON MANTIĞI
       const activeFeatures = [
           { icon: Home, label: 'Oda', value: formData.rooms },
           { icon: Layout, label: 'Metre', value: formData.size },
@@ -639,7 +609,7 @@ export default function App({ userData = null, branchesData = null }) {
       }
       
       const displayFeatures = activeFeatures.filter(f => f.value && f.value !== '-' && f.value !== '');
-      const limitedFeatures = displayFeatures.slice(0, 6); // Maksimum 6 özellik göster
+      const limitedFeatures = displayFeatures.slice(0, 6);
 
       return (
         <div className="w-[1080px] h-[1080px] bg-slate-100 relative flex-shrink-0 font-sans text-left overflow-hidden">
@@ -648,53 +618,44 @@ export default function App({ userData = null, branchesData = null }) {
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/30 pointer-events-none"></div>
             </div>
 
-            {/* SOL ÜST KISIM: EMLAK TİPİ VE KONUM */}
             <div className="absolute top-12 left-0 flex flex-col items-start gap-1.5 z-20">
-                <div className="text-white pl-8 pr-6 py-2 text-xl font-black shadow-lg rounded-r-2xl tracking-tight uppercase" style={{backgroundColor: themeColor}}>
-                    {getFullTypeLabel()}
+                <div className="text-white pl-8 pr-6 py-2 text-xl font-black shadow-lg rounded-r-2xl tracking-tight" style={{backgroundColor: themeColor}}>
+                    {getFullTypeLabel().toLocaleUpperCase('tr-TR')}
                 </div>
-                <div className="bg-white text-slate-900 px-5 py-1.5 text-sm font-bold shadow-xl rounded-r-xl border-l-[5px] uppercase tracking-widest ml-1" style={{borderColor: themeColor}}>
-                    {formData.neighborhood} Mh. • {formData.district} / {formData.city}
+                <div className="bg-white text-slate-900 px-5 py-1.5 text-sm font-bold shadow-xl rounded-r-xl border-l-[5px] tracking-widest ml-1" style={{borderColor: themeColor}}>
+                    {`${formData.neighborhood} Mh. • ${formData.district} / ${formData.city}`.toLocaleUpperCase('tr-TR')}
                 </div>
                 {formData.adNumber && (
                     <div className="bg-black/75 text-white px-5 py-1 text-sm font-bold shadow-md rounded-r-xl ml-2 border-l-4 border-white/50 mt-1">
-                        İlan No: <span className="font-mono">{formData.adNumber}</span>
+                        İLAN NO: <span className="font-mono">{formData.adNumber}</span>
                     </div>
                 )}
             </div>
 
-            {/* SAĞ ÜST KISIM: LOGO (Engel kaldırıldı, doğrudan konumlandırma ve boyutlandırma eklendi) */}
             {showLogo && (
-                <img 
-                    src={customLogo || FIXED_LOGO_URL} 
-                    crossOrigin="anonymous" 
-                    className="absolute top-0 right-8 z-20 h-[200px] w-auto max-w-[400px] object-contain object-right-top drop-shadow-xl pointer-events-none" 
-                />
+                <div className="absolute top-12 right-8 z-20 flex items-start justify-end h-[240px] w-[750px] pointer-events-none">
+                    <img src={customLogo || FIXED_LOGO_URL} crossOrigin="anonymous" className="max-w-full max-h-full object-contain object-right-top drop-shadow-xl" />
+                </div>
             )}
 
-            {/* ALT KISIM: MODERN KART */}
             <div className="absolute bottom-8 left-8 right-8 bg-white/90 rounded-[1.5rem] p-5 shadow-2xl z-20 border border-white/60 flex flex-col gap-3">
-                
-                {/* 1. BAŞLIK */}
                 <div className="h-[65px] overflow-hidden">
                     <h2 className="text-[1.75rem] font-extrabold leading-tight drop-shadow-sm" style={{color: themeColor}}>
                         {getGeneratedTitle()}
                     </h2>
                 </div>
 
-                {/* FİYAT */}
                 <div className="text-[1.75rem] font-black text-slate-800 flex items-center gap-2">
-                    <span className="text-sm text-slate-500 font-bold uppercase tracking-widest">Fiyat:</span>
+                    <span className="text-sm text-slate-500 font-bold tracking-widest">FİYAT:</span>
                     {formData.price} {formData.currency}
                 </div>
 
-                {/* 2. ÖZELLİKLER (TEK PARÇA ARKA PLAN) */}
                 <div className="bg-slate-100/80 border border-white/60 rounded-[1.25rem] py-3 px-4 shadow-inner">
                     <div className="flex flex-row items-center justify-around gap-2">
                         {limitedFeatures.map((feat, idx) => (
                             <div key={idx} className="flex flex-col items-center justify-center text-center gap-0.5 flex-1 min-w-[50px] max-w-[120px]">
                                 <feat.icon size={22} className="mb-0.5" style={{color: themeColor}} />
-                                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{feat.label}</span>
+                                <span className="text-[9px] text-slate-500 font-bold tracking-widest">{feat.label.toLocaleUpperCase('tr-TR')}</span>
                                 <span className="text-[15px] font-black text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis block w-full">
                                     {feat.value}
                                </span>
@@ -703,30 +664,30 @@ export default function App({ userData = null, branchesData = null }) {
                     </div>
                 </div>
 
-                {/* 3. DANIŞMAN BİLGİLERİ & WEBSİTELER (Yan yana) */}
                 {consultant.showInfo && (
                     <div className="mt-1 pt-3 border-t border-slate-200/60 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                             {consultant.showPhoto && (
-                                <div className="w-[60px] h-[60px] rounded-full border-[2px] shadow-md overflow-hidden bg-slate-200" style={{borderColor: themeColor}}>
+                                <div className="w-[80px] h-[80px] rounded-xl border-[2px] shadow-md overflow-hidden bg-slate-200" style={{borderColor: themeColor}}>
                                     <img src={consultant.photo} className="w-full h-full object-cover object-top" crossOrigin="anonymous"/>
                                 </div>
                             )}
-                            <div className="flex flex-col justify-center">
-                                <span className="text-xl leading-none font-black text-slate-800 mb-1">{consultant.name}</span>
-                                <span className="text-base font-extrabold" style={{color: themeColor}}>{consultant.phone}</span>
+                            <div className="flex items-center">
+                                <span className="text-2xl font-black text-slate-800">
+                                    {consultant.name} - <span style={{color: themeColor}}>{consultant.phone}</span>
+                                </span>
                             </div>
                         </div>
                         
                         <div className="flex flex-row items-center justify-end gap-2">
                             {showWebsiteOzcan && (
-                                <div className="bg-slate-800 text-white px-2.5 py-1 rounded-lg text-xs font-bold flex items-center shadow-md whitespace-nowrap">
-                                    <Globe size={14} className="mr-1.5" style={{color: themeColor}}/> www.ozcanaktas.com
+                                <div className="bg-slate-800 text-white px-3 py-2 rounded-lg text-[13px] font-bold flex items-center shadow-md whitespace-nowrap">
+                                    <Globe size={16} className="mr-1.5" style={{color: themeColor}}/> www.ozcanaktas.com
                                 </div>
                             )}
                             {showWebsiteEmlaknomi && (
-                                <div className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold flex items-center border border-slate-200 shadow-sm whitespace-nowrap">
-                                    <Globe size={14} className="mr-1.5 text-slate-400"/> www.emlaknomi.com
+                                <div className="bg-slate-800 text-white px-3 py-2 rounded-lg text-[13px] font-bold flex items-center shadow-md whitespace-nowrap">
+                                    <Globe size={16} className="mr-1.5" style={{color: themeColor}}/> www.emlaknomi.com
                                 </div>
                             )}
                         </div>
@@ -737,7 +698,207 @@ export default function App({ userData = null, branchesData = null }) {
       );
   };
 
-  if (!isReady) return <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800"><Loader2 className="animate-spin text-orange-600 mb-4" size={48} /><h2 className="text-xl font-bold">Hazırlanıyor...</h2></div>;
+  const executeCapture = async (elementId, width = 1080, height = 1080) => {
+    if (!window.htmlToImage) {
+        alert("Görsel motoru henüz yüklenmedi, lütfen sayfayı yenileyip tekrar deneyin.");
+        return null;
+    }
+    
+    const targetElement = document.getElementById(elementId);
+    if (!targetElement) return null;
+
+    const images = Array.from(targetElement.getElementsByTagName('img'));
+    
+    const loadImg = (img) => {
+        return new Promise((resolve) => {
+            if (img.complete) {
+                resolve();
+            } else {
+                img.onload = resolve;
+                img.onerror = () => {
+                   console.warn("Resim yüklenemedi: " + img.src);
+                   resolve();
+                };
+            }
+        });
+    };
+
+    await Promise.all(images.map(img => loadImg(img)));
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    try {
+      const dataUrl = await window.htmlToImage.toPng(targetElement, { 
+          width: width, 
+          height: height,
+          pixelRatio: 1,
+          style: {
+              transform: 'none',
+              margin: '0',
+              padding: '0'
+          },
+          cacheBust: true
+      });
+      return await (await fetch(dataUrl)).blob();
+    } catch (err) {
+      console.error("Görsel yakalama hatası:", err);
+      return null;
+    }
+  };
+  
+  const executePdfCapture = async () => {
+    if (!window.jspdf || !window.htmlToImage) {
+        alert("PDF kütüphaneleri yükleniyor, lütfen bekleyin.");
+        return null;
+    }
+    
+    const targetElement = document.getElementById('pdf-capture-element');
+    if (!targetElement) return null;
+
+    const images = Array.from(targetElement.getElementsByTagName('img'));
+    const loadImg = (img) => {
+        return new Promise((resolve) => {
+            if (img.complete) { resolve(); } 
+            else { 
+              img.onload = resolve; 
+              img.onerror = () => {
+                  console.warn("Resim yüklenemedi: " + img.src);
+                  resolve();
+              }; 
+            }
+        });
+    };
+    await Promise.all(images.map(img => loadImg(img)));
+
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    try {
+        const dataUrl = await window.htmlToImage.toPng(targetElement, {
+            width: 794,
+            pixelRatio: 2, 
+            style: { transform: 'none', margin: '0', padding: '0' },
+            cacheBust: true
+        });
+        
+        const img = new Image();
+        img.src = dataUrl;
+        await new Promise(resolve => { 
+            img.onload = resolve; 
+            img.onerror = resolve; 
+        });
+        
+        const pdfWidth = 210;
+        const pdfHeight = (img.height * pdfWidth) / img.width;
+        
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: [pdfWidth, pdfHeight]
+        });
+        
+        pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        return pdf.output('blob');
+    } catch(e) {
+        console.error("PDF yakalama hatası:", e);
+        return null;
+    }
+  };
+
+  const onDownloadImageOnly = async () => {
+      setIsDownloading(true);
+      try {
+          const blob = await executeCapture('social-capture-element', 1080, 1080);
+          if (blob) { 
+              window.saveAs(blob, `Emlak_Tasarim.png`); 
+          } else {
+             alert("Görsel oluşturulamadı. Lütfen CORS ayarları olan yerel dosyalar kullanıldığından emin olun.");
+          }
+      } catch (err) {
+          console.error(err);
+      } finally {
+          setIsDownloading(false);
+      }
+  };
+  
+  const onDownloadPdfOnly = async () => {
+      setIsDownloading(true);
+      try {
+          const blob = await executePdfCapture();
+          if (blob) { 
+              window.saveAs(blob, `${getFileNameBase()}.pdf`); 
+          } else {
+             alert("PDF oluşturulamadı.");
+          }
+      } catch (err) {
+          console.error(err);
+      } finally {
+          setIsDownloading(false);
+      }
+  };
+
+  const onDownloadProject = async () => {
+    if (!window.JSZip) { alert("Kütüphaneler Yüklenmedi. Lütfen sayfayı yenileyin."); return; }
+    setIsDownloading(true);
+    try {
+        const zip = new window.JSZip();
+        
+        let safeNeighborhood = (formData.neighborhood || "Genel").trim();
+        safeNeighborhood = safeNeighborhood.replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+                                           .replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S').replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
+        let fileDetail = "Ilan";
+        if (formData.type.includes("Daire")) fileDetail = formData.rooms || "Daire";
+        else if (formData.type.includes("Arsa")) fileDetail = "Arsa";
+        else if (formData.type.includes("Ticari") || formData.type === "Devren Satılık") fileDetail = formData.gayrimenkulTipi || "Dükkan";
+        else if (formData.type.includes("Tarla")) fileDetail = (formData.tarlaTipi && formData.tarlaTipi.length > 0) ? formData.tarlaTipi[0] : "Tarla";
+        else if (formData.type.includes("Bahçe")) fileDetail = formData.bahceTipi || "Bahçe";
+        else fileDetail = getSubTypeLabel() || formData.type;
+        fileDetail = fileDetail.replace(/[\/\\?%*:|"<>]/g, '').trim();
+        
+        const safeAdNumber = formData.adNumber ? formData.adNumber.trim() : "00000";
+        const safeConsultantName = consultant.name.trim();
+        const formattedPrice = formData.price ? `${formData.price} TL` : "0 TL";
+        
+        let zipFolderName = `${safeAdNumber} - ${safeConsultantName} - ${safeNeighborhood} - ${fileDetail} - ${formattedPrice}`;
+        zipFolderName = zipFolderName.replace(/[\/\\?%*:|"<>]/g, '');
+
+        const pdfFileName = getFileNameBase();
+        
+        const rootFolder = zip.folder(zipFolderName);
+        const hamFolder = rootFolder.folder("1_HAM_FOTOLAR");
+        if (formData.images.length > 0) {
+          const imgPromises = formData.images.map(async (imgUrl, idx) => {
+            try { const response = await fetch(imgUrl); const blob = await response.blob(); hamFolder.file(`resim_${idx + 1}.jpg`, blob); } catch (e) {}
+          }); await Promise.all(imgPromises);
+        }
+        
+        const tasarimFolder = rootFolder.folder("2_TASARIMLI");
+        const socialBlob = await executeCapture('social-capture-element', 1080, 1080); 
+        if (socialBlob) { 
+            tasarimFolder.file(`sosyal_tasarim.png`, socialBlob); 
+        }
+        
+        const pdfBlob = await executePdfCapture();
+        if (pdfBlob) {
+            const pdfFolder = rootFolder.folder("3_PDF_SUNUM");
+            pdfFolder.file(`${pdfFileName}.pdf`, pdfBlob);
+        }
+        
+        const metinFolder = rootFolder.folder("4_ILAN_METNI");
+        metinFolder.file("ilan_metni.txt", formData.description || "Lütfen 'Sihirli Metin Oluştur' butonuna basınız.");
+        
+        const ozelFolder = rootFolder.folder("5_OZEL_BILGI");
+        const ozelContent = `MÜŞTERİ BİLGİ FORMU\nTarih: ${privateData.date}\nMüşteri Adı: ${privateData.customerName}\nİletişim: ${privateData.contactInfo}\nAçık Adres: ${privateData.openAddress}\nTaşınmaz No: ${privateData.propertyNo}\nKapı Şifresi: ${privateData.doorCode}\nTapu Durumu: ${privateData.deedStatusPrivate}\nTakas: ${privateData.swapPrivate}\nBiter Fiyat: ${privateData.finalPrice}\nKomisyon: ${privateData.commission}\nNotlar: ${privateData.notes}`;
+        ozelFolder.file("Ozel_Bilgiler.txt", ozelContent);
+        
+        const content = await zip.generateAsync({ type: "blob" });
+        window.saveAs(content, `${zipFolderName}.zip`);
+    } catch (error) { 
+        console.error("ZIP Hatası:", error);
+    } finally { 
+        setIsDownloading(false); 
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-orange-200 selection:text-orange-900">
@@ -745,7 +906,7 @@ export default function App({ userData = null, branchesData = null }) {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2"><Home className="text-orange-500" size={28} /><h1 className="text-xl font-bold">Özcan AKTAŞ - Emlaknomi <span className="text-orange-500 font-light">Pro</span></h1></div>
           <div className="flex items-center space-x-4">
-             <button onClick={handleDownloadProject} disabled={isDownloading} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center font-bold text-sm transition-colors disabled:opacity-50">{isDownloading ? 'Hazırlanıyor...' : <><Download size={18} className="mr-2"/> İndir (ZIP)</>}</button>
+             <button onClick={onDownloadProject} disabled={isDownloading} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center font-bold text-sm transition-colors disabled:opacity-50">{isDownloading ? 'Hazırlanıyor...' : <><Download size={18} className="mr-2"/> İndir (ZIP)</>}</button>
              <div className="h-8 w-8 bg-orange-500 rounded flex items-center justify-center font-bold border border-orange-600">ÖA</div>
           </div>
         </div>
@@ -840,14 +1001,14 @@ export default function App({ userData = null, branchesData = null }) {
         <div className="space-y-6">
           <div className="flex bg-white p-1 rounded border">
             <button onClick={() => setActiveTab('social')} className={`flex-1 py-2 text-xs font-bold rounded ${activeTab === 'social' ? 'bg-orange-500 text-white' : 'text-slate-500'}`}>Sosyal Medya</button>
-            <button onClick={() => setActiveTab('whatsapp')} className={`flex-1 py-2 text-xs font-bold rounded ${activeTab === 'whatsapp' ? 'bg-green-500 text-white' : 'text-slate-500'}`}>WhatsApp</button>
+            <button onClick={() => setActiveTab('pdf')} className={`flex-1 py-2 text-xs font-bold rounded ${activeTab === 'pdf' ? 'bg-red-500 text-white' : 'text-slate-500'}`}>PDF Sunum</button>
           </div>
 
           {activeTab === 'social' && (
             <div className="bg-white p-4 rounded shadow border">
               <div className="flex justify-between mb-4">
                   <span className="text-xs font-bold text-slate-500">INSTAGRAM (1080x1080)</span>
-                  <button onClick={handleDownloadImageOnly} disabled={isDownloading} className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded font-bold disabled:opacity-50">
+                  <button onClick={onDownloadImageOnly} disabled={isDownloading} className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded font-bold disabled:opacity-50">
                       {isDownloading ? 'Hazırlanıyor...' : 'Görsel İndir'}
                   </button>
               </div>
@@ -858,10 +1019,9 @@ export default function App({ userData = null, branchesData = null }) {
                       </button>
                   ))}
               </div>
-              {/* BURASI SADECE ÖN İZLEME İÇİN */}
               <div className="w-full overflow-hidden flex justify-center bg-slate-900" style={{height: '380px'}}> 
                   <div style={{transform: 'scale(0.35)', transformOrigin: 'top center', width: '1080px', height: '1080px'}}>
-                    <div ref={socialPreviewRef} className="shadow-2xl">
+                    <div className="shadow-2xl">
                          <SocialDesign isCapture={false} />
                     </div>
                   </div>
@@ -869,20 +1029,100 @@ export default function App({ userData = null, branchesData = null }) {
             </div>
           )}
 
-          {/* İNDİRME İÇİN KULLANILAN GİZLİ (STABİL) KONTEYNER */}
+          {activeTab === 'pdf' && (
+            <div className="bg-white p-4 rounded shadow border">
+              <div className="flex justify-between mb-4">
+                  <span className="text-xs font-bold text-slate-500">PDF SUNUM</span>
+                  <button onClick={onDownloadPdfOnly} disabled={isDownloading} className="bg-red-100 text-red-800 text-xs px-3 py-1 rounded font-bold disabled:opacity-50 hover:bg-red-200 transition-colors">
+                      {isDownloading ? 'Hazırlanıyor...' : 'PDF İndir'}
+                  </button>
+              </div>
+              <div className="bg-slate-50 p-8 rounded-xl border border-slate-200 text-center flex flex-col items-center justify-center gap-3">
+                  <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mb-2">
+                      <FileText size={32} />
+                  </div>
+                  <h4 className="font-bold text-slate-700 text-lg">PDF Sunum Dosyası</h4>
+                  <p className="text-sm text-slate-500 max-w-sm">
+                      Tasarımlı kapak resmi, diğer fotoğraflar, detaylı ilan metni ve danışman bilgilerinden oluşan profesyonel sunum dosyanızı anında indirebilirsiniz.
+                  </p>
+                  <div className="text-xs font-mono bg-slate-200 px-3 py-1.5 rounded mt-2 text-slate-600 font-bold border border-slate-300">
+                      Dosya: {getFileNameBase()}.pdf
+                  </div>
+              </div>
+            </div>
+          )}
+
+          {/* İNDİRME İÇİN KULLANILAN GİZLİ (STABİL) KONTEYNERLER */}
           <div style={{ position: 'fixed', top: '0px', left: '0px', zIndex: -9999, opacity: 0, pointerEvents: 'none' }}>
              <div id="social-capture-element" className="w-[1080px] h-[1080px] bg-white relative overflow-hidden font-sans">
                 <SocialDesign isCapture={true} />
              </div>
+             
+             {/* PDF ÖZEL GİZLİ ŞABLONU (A4 Genişliği 794px baz alınarak tasarlandı) */}
+             <div id="pdf-capture-element" className="w-[794px] bg-white text-slate-800 flex flex-col font-sans relative overflow-hidden">
+                {/* 1. Sayfa: Kapak Görseli (Sosyal Medya Tasarımı) */}
+                <div className="w-[794px] h-[794px] relative overflow-hidden bg-slate-100 flex-shrink-0">
+                   <div style={{transform: 'scale(0.73518)', transformOrigin: 'top left', width: '1080px', height: '1080px'}}>
+                       <SocialDesign isCapture={true} />
+                   </div>
+                </div>
+                
+                {/* 2. Bölüm: Diğer Fotoğraflar (Kapağın Yarı Boyutu Grid) */}
+                {formData.images.length > 1 && (
+                   <div className="px-8 pt-8 bg-white">
+                       <h3 className="text-2xl font-black mb-4 border-b-4 pb-2 text-slate-800" style={{borderColor: themeColor}}>Diğer Görseller</h3>
+                       <div className="grid grid-cols-2 gap-6">
+                           {formData.images.filter((_, i) => i !== formData.coverImageIndex).slice(0, 6).map((img, i) => (
+                               <div key={i} className="aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden shadow-md border border-slate-200">
+                                   <img src={img} className="w-full h-full object-cover" crossOrigin="anonymous"/>
+                               </div>
+                           ))}
+                       </div>
+                   </div>
+                )}
+                
+                {/* 3. Bölüm: İlan Metni / Şablonu */}
+                <div className="p-8 flex-grow bg-white">
+                   <h3 className="text-2xl font-black mb-4 border-b-4 pb-2 text-slate-800" style={{borderColor: themeColor}}>İlan Detayları</h3>
+                   <div className="whitespace-pre-wrap font-mono text-[15px] leading-[1.8] text-slate-700 bg-slate-50 p-8 rounded-2xl border border-slate-200 shadow-sm">
+                       {formData.description || 'İlan metni henüz oluşturulmadı. Lütfen sol taraftaki "Sihirli Metin Oluştur" butonunu kullanın.'}
+                   </div>
+                </div>
+                
+                {/* 4. Bölüm: Büyük Danışman Bilgi Kartı */}
+                <div className="px-8 pb-8 pt-4 mt-auto bg-white">
+                    <div className="bg-slate-800 text-white rounded-[2rem] p-8 shadow-2xl flex items-center gap-8 relative overflow-hidden border-b-[8px]" style={{borderColor: themeColor}}>
+                       <div className="absolute top-0 right-0 opacity-10 pointer-events-none">
+                           <User size={250} />
+                       </div>
+                       {consultant.showPhoto && (
+                           <div className="w-[160px] h-[160px] rounded-2xl border-4 shadow-xl overflow-hidden bg-slate-200 flex-shrink-0 relative z-10" style={{borderColor: themeColor}}>
+                               <img src={consultant.photo} className="w-full h-full object-cover object-top" crossOrigin="anonymous"/>
+                           </div>
+                       )}
+                       <div className="flex flex-col justify-center relative z-10">
+                           <span className="text-base font-bold text-slate-400 uppercase tracking-widest mb-1">Gayrimenkul Uzmanı</span>
+                           <span className="text-[2.75rem] font-black text-white leading-none mb-3">{consultant.name}</span>
+                           <span className="text-[2.25rem] font-extrabold" style={{color: themeColor}}>{consultant.phone}</span>
+                           
+                           <div className="flex flex-row items-center gap-4 mt-4">
+                              {showWebsiteOzcan && (
+                                  <div className="bg-white/10 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center border border-white/20">
+                                      <Globe size={16} className="mr-2" style={{color: themeColor}}/> www.ozcanaktas.com
+                                  </div>
+                              )}
+                              {showWebsiteEmlaknomi && (
+                                  <div className="bg-white/10 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center border border-white/20">
+                                      <Globe size={16} className="mr-2" style={{color: themeColor}}/> www.emlaknomi.com
+                                  </div>
+                              )}
+                          </div>
+                       </div>
+                    </div>
+                </div>
+                <div className="h-8 bg-white w-full"></div> {/* Footer Padding */}
+             </div>
           </div>
-          
-          {activeTab === 'whatsapp' && (
-            <div className="bg-white p-4 rounded shadow border">
-              <h3 className="text-xs font-bold text-slate-500 mb-2">WHATSAPP</h3>
-              <div className="bg-green-50 p-3 rounded border border-green-200 text-xs font-mono whitespace-pre-wrap h-64 overflow-y-auto">{formData.description}</div>
-              <button onClick={() => copyToClipboard(formData.description)} className="mt-2 w-full py-2 bg-green-600 text-white rounded font-bold">Kopyala</button>
-            </div>
-          )}
         </div>
       </main>
     </div>
