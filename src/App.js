@@ -633,7 +633,7 @@ export default function App({ userData = null, branchesData = null }) {
             </div>
 
             {showLogo && (
-                <div className="absolute top-12 right-8 z-20 flex items-start justify-end h-[240px] w-[750px] pointer-events-none">
+                <div className="absolute top-0 right-8 z-20 flex items-start justify-end h-[240px] w-[750px] pointer-events-none">
                     <img src={customLogo || FIXED_LOGO_URL} crossOrigin="anonymous" className="max-w-full max-h-full object-contain object-right-top drop-shadow-xl" />
                 </div>
             )}
