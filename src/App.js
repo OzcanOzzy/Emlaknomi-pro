@@ -1,1130 +1,1776 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Home, MapPin, CheckCircle, Layout, Upload, User, ChevronDown, ChevronUp, Download, Lock, Loader2, Globe, Car, Building, X, Compass, Calendar, ArrowUpDown, FileText } from 'lucide-react';
+import { 
+  Mic, Send, Plus, Trash2, Download, Settings, Upload,
+  X, User, Phone, Pencil, Smartphone, Menu, CheckSquare, Briefcase, Map, Home,
+  Calendar, Bell, BellOff, Clock, Tag, Filter, ArrowUpDown, Banknote, FileText,
+  Sprout, Flower, MapPin, Key, Store, Wallet, Volume2, LogOut, Loader2, CalendarDays, ChevronLeft, ChevronRight, Lock, AlertTriangle, RefreshCcw, FolderInput, List, Building2, Users, FileDown, ArrowRightLeft
+} from 'lucide-react';
 
-// --- YARDIMCI BİLEŞENLER ---
-const InputField = ({ label, name, value, onChange, onBlur, placeholder, highlight }) => (
-  <div className={`mb-2 ${highlight ? 'bg-slate-200/80 p-2.5 rounded-lg border border-slate-300 shadow-sm' : ''}`}>
-    <label className={`block text-xs ${highlight ? 'text-slate-700' : 'text-slate-500'} mb-1 font-bold`}>{label}</label>
-    <input 
-      type="text" 
-      name={name} 
-      value={value} 
-      onChange={onChange} 
-      onBlur={onBlur}
-      className="w-full p-2 border rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:border-orange-500 transition-colors" 
-      placeholder={placeholder}
-    />
-  </div>
-);
-
-const SelectField = ({ label, name, value, onChange, options, highlight }) => (
-  <div className={`mb-2 ${highlight ? 'bg-slate-200/80 p-2.5 rounded-lg border border-slate-300 shadow-sm' : ''}`}>
-    <label className={`block text-xs ${highlight ? 'text-slate-700' : 'text-slate-500'} mb-1 font-bold`}>{label}</label>
-    <select 
-      name={name} 
-      value={value} 
-      onChange={onChange} 
-      className="w-full p-2 border rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:border-orange-500 transition-colors"
-    >
-      <option value="">Seçiniz</option>
-      {options.map(o => <option key={o} value={o}>{o}</option>)}
-    </select>
-  </div>
-);
-
-const MultiSelectField = ({ label, field, value, onChange, options, themeColor, highlight }) => (
-  <div className={`relative group mb-2 ${highlight ? 'bg-slate-200/80 p-2.5 rounded-lg border border-slate-300 shadow-sm' : ''}`}>
-      <label className={`block text-xs ${highlight ? 'text-slate-700' : 'text-slate-500'} mb-1 font-bold`}>{label} (Çoklu)</label>
-      <div className="w-full p-2 border rounded-lg text-sm h-24 overflow-y-auto cursor-pointer bg-white text-slate-800 focus-within:border-orange-500 transition-colors border-slate-200">
-          {options.map(op => (
-          <div key={op} onClick={() => onChange(field, op)} className={`flex items-center p-1.5 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 ${value.includes(op) ? 'font-bold' : ''}`} style={{color: value.includes(op) ? themeColor : 'inherit', backgroundColor: value.includes(op) ? `${themeColor}10` : 'transparent'}}>
-              {value.includes(op) ? <CheckCircle size={14} className="mr-2" style={{color: themeColor}}/> : <div className="w-3.5 h-3.5 border-2 rounded-full mr-2 border-slate-300"></div>}
-              {op}
-          </div>
-      ))}</div>
-  </div>
-);
-
-// --- SABİT VERİLER ---
-const FIXED_LOGO_URL = "https://i.hizliresim.com/fa4ibjl.png"; 
-const DEFAULT_PROFILE_PHOTO = "https://i.hizliresim.com/eqya4c4.png";
-
-const officeDetails = {
-  eregli: { name: 'Ereğli Şubesi', city: 'Konya', address: 'Yunuslu mh. uğur mumcu caddesi 35/A Ereğli/Konya', phone: '0533 638 7000', authNo: '4202207' },
-  karaman: { name: 'Karaman Şubesi', city: 'Karaman', address: 'İmaret mahallesi 173. sokak No:3/A Karaman', phone: '0543 306 14 99', authNo: '7000161' },
-  konya: { name: 'Konya Şubesi', city: 'Konya', address: 'Konya Merkez', phone: '0543 306 14 99', authNo: '7000161' },
-  alanya: { name: 'Alanya Şubesi', city: 'Antalya', address: 'Alanya Merkez', phone: '0543 306 14 99', authNo: '0704618' },
-  antalya: { name: 'Antalya Şubesi', city: 'Antalya', address: 'Antalya Merkez', phone: '0543 306 14 99', authNo: '0704618' },
-  eskisehir: { name: 'Eskişehir Şubesi', city: 'Eskişehir', address: 'Eskişehir Merkez', phone: '0543 306 14 99', authNo: '0000000' }
-};
-
-const detailedCities = ["Konya", "Karaman", "Antalya", "Mersin", "Eskişehir"];
-const locationData = {
-  "Konya": {
-    "Ereğli": ["500 Evler", "Acıkuyu", "Acıpınar", "Adabağ", "Akhüyük", "Alhan", "Alpaslan", "Aşağı Göndelen", "Aşıklar", "Atakent", "Aydınlar", "Aziziye", "Bahçeli", "Barbaros", "Batı Alagözlü", "Batı Elagözlü", "Belceağaç", "Belkaya", "Beyköy", "Beyören", "Boyacıali", "Bulgurluk", "Burhaniye", "Büyükdede", "Cahı", "Camikebir", "Cinler", "Cumhuriyet", "Çakmak", "Çayhan", "Çiller", "Çimencik", "Çömlekçi", "Dalmaz", "Doğu Alagözlü", "Doğu Elagözlü", "Eti", "Fatih", "Gaybi", "Gökçeyazı", "Göktöme", "Gülbahçe", "Hacı Memiş", "Hacımustafa", "Hacımutahir", "Hamidiye", "Hıdırlı", "Hortu", "Kamışlıkuyu", "Karaburun", "Kargacı", "Kazancı", "Kızılgedik", "Kuskuncuk", "Kutören", "Kuzukuyu", "Mehmet Akif", "Melicek", "Mimar Sinan", "Namık Kemal", "Orhangazi", "Orhaniye", "Özgürler", "Pınarözü", "Pirömer", "Sarıca", "Sarıtopallı", "Selçuklu", "Servili", "Sümer", "Şinasi", "Talatpaşa", "Taşağıl", "Taşbudak", "Tatlıkuyu", "Toros", "Türbe", "Türkmen", "Ulumeşe", "Üçgöz", "Yazlık", "Yellice", "Yenibağlar", "Yeniköy", "Yıldırım Beyazıt", "Yıldızlı", "Yukarı Göndelen", "Yunuslu", "Zengen", "Ziya Gökalp"],
-    "Karatay": ["Akabe", "Fetih", "Fevzi Çakmak", "İstiklal", "Karaaslan", "Keçeciler", "Mengene", "Nakipoğlu", "Saraçoğlu", "Selimsultan", "Yediler", "Kumköprü", "Şeyh Ulema Recep Ağa", "Akifpaşa", "Bozkır", "Karkent", "Ulubatlıhasan"],
-    "Meram": ["Alavardı", "Aybahçe", "Dere", "Gödene", "Havzan", "Konevi", "Kovanağzı", "Lalebahçe", "Melikşah", "Uluırmak", "Yaka", "Zafer", "Aşkan", "Kürden", "Ladikli", "Mamuriye", "Muradiye", "Pirebi", "Turgutreis", "Yorgancı"],
-    "Selçuklu": ["Aydınlıkevler", "Bosna Hersek", "Cumhuriyet", "Fatih", "Feritpaşa", "Hocacihan", "Işıklar", "Nişantaşı", "Parsana", "Sancak", "Şeker", "Yazır", "Binkonutlar", "Dumlupınar", "Esenler", "Ferhuniye", "Hacıkaymak", "Hanaybaşı", "Hüsamettin Çelebi", "İhsaniye", "Kılınçarslan", "Kosova", "Malazgirt", "Mehmet Akif", "Musalla Bağları", "Sakarya", "Selahaddin Eyyubi", "Şeyh Şamil"]
-  },
-  "Karaman": {
-    "Merkez": ["Abbas", "Ahiosman", "Ahmet Yesevi", "Alacasuluk", "Alişahane", "Atatürk", "Bahçelievler", "Başakşehir", "Beyazkent", "Cedit", "Cumhuriyet", "Çeltek", "Elmaşehir", "Fatih", "Fenari", "Gazidükkan", "Gazi", "Gevher Hatun", "Hacıcelal", "Hamidiye", "Hisar", "Hürriyet", "İbrahim Hakkı Konyalı", "İmaret", "Karamanoğlu Mehmet Bey", "Kazım Karabekir Paşa", "Ketenci", "Kırbağı", "Kirişçi", "Koçakdede", "Külhan", "Larende", "Mahmudiye", "Mansurdede", "Mehmet Akif Ersoy", "Mümine Hatun", "Nefise Sultan", "Organize Sanayi", "Osmangazi", "Piri Reis", "Rauf Denktaş", "Sakabaşı", "Sekiçeşme", "Siyahser", "Sümer", "Şeyh Edebali", "Şeyh Şamil", "Tabduk Emre", "Tahsin Ünal", "Topucak", "Urgan", "Üniversite", "Valide Sultan", "Yeni", "Yenimahalle", "Yenişehir", "Yeşilada", "Yunus Emre", "Yunuskent", "Zembilli Ali Efendi", "Ziya Gökalp", "Akçaşehir", "Sudurağı", "Kılbasan", "Yeşildere", "Taşkale"],
-    "Ermenek": ["Taşbaşı", "Seyran", "Meydan", "Susaklı", "Orta", "Değirmenlik", "Sandıklı", "Güllük", "Keşillik"]
-  },
-  "Antalya": {
-    "Alanya": ["Avsallar", "Bektaş", "Büyükhasbahçe", "Cikcilli", "Cumhuriyet", "Çarşı", "Çıplaklı", "Demirtaş", "Dinek", "Fığla", "Güller Pınarı", "Hacet", "Hisariçi", "İncekum", "Kadıpaşa", "Kargıcak", "Kestel", "Kızlar Pınarı", "Konaklı", "Küçükhasbahçe", "Mahmutlar", "Oba", "Okurcalar", "Payallar", "Saray", "Sugözü", "Şekerhane", "Tepe", "Tosmur", "Türkler", "Yaylalı"],
-    "Muratpaşa": ["Bahçelievler", "Çağlayan", "Dutlubahçe", "Fener", "Güzeloba", "Kızıltoprak", "Lara", "Meltem", "Şirinyalı", "Yenigün"]
+// --- HATA KALKANI ---
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
   }
-};
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Uygulama Hatası:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center h-screen p-6 bg-red-50 text-red-900 text-center">
+          <AlertTriangle size={64} className="mb-4 text-red-600"/>
+          <h1 className="text-2xl font-bold mb-2">Bir Hata Oluştu</h1>
+          <p className="text-sm mb-4 bg-white p-4 rounded border border-red-200 font-mono text-left w-full overflow-auto">
+            {this.state.error?.toString()}
+          </p>
+          <button onClick={() => window.location.reload()} className="bg-red-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-red-700 transition-all flex items-center gap-2">
+             <RefreshCcw size={20}/> Sayfayı Yenile
+          </button>
+        </div>
+      );
+    }
+    return this.props.children; 
+  }
+}
 
-// --- SEÇENEK LİSTELERİ ---
-const options = {
-  rooms: ["1+0", "1+1", "2+0", "2+1", "3+0", "3+1", "4+0", "4+1", "5+1", "5+2", "6+1", "6+2", "6+3", "7+1", "7+2", "7+3", "7+4", "8+1", "8+2", "8+3", "8+4", "Diğer"],
-  floors: ["Zemin Kat", "Yüksek Giriş", "Dükkan Üstü", "Bodrum Kat", ...Array.from({length: 25}, (_, i) => (i + 1).toString())],
-  totalFloors: Array.from({length: 25}, (_, i) => (i + 1).toString()),
-  flatCount: ["Müstakil", ...Array.from({length: 15}, (_, i) => (i + 2).toString())],
-  age: ["Sıfır", "İnşaat Hali", "1", "2", "3", "4", "5", "6-10 arası", "11-15 arası", "16-20 arası", "21-25 arası", "26-30 arası", "30 üstü"],
-  facade: ["Kuzey", "Güney", "Doğu", "Batı"],
-  wcCount: ["1", "2", "3", "4", "5"],
-  heating: ["Bireysel Kombi", "Merkezi (Pay ölçer)", "Yerden Isıtma", "Sobalı", "Elektrik", "Klima"],
-  balcony: ["Yok", "1", "2", "3", "4", "5", "6"],
-  glassBalcony: ["Var", "Yok", "1", "2", "3", "4", "5", "6"],
-  insulation: ["Var", "Yok", "İçten", "Dıştan", "İçten ve Dıştan"],
-  elevator: ["Var", "Yok", "Çift Asansör", "Yapım Aşamasında"],
-  garage: ["Var", "Yok", "Bireysel Garaj", "Ortak Kullanım"],
-  parking: ["Var", "Yok", "Açık", "Kapalı", "Açık ve Kapalı"],
-  usage: ["Mülk Sahibi", "Boş", "Kiracılı", "Yapım Aşamasında"],
-  swap: ["Var", "Yok", "Değerlendirilir", "Araç ile takas", "Daire ile Takas", "Gayrimenkul ile takas"],
-  credit: ["Evet", "Hayır", "Bilinmiyor", "Kısmen"],
-  deed: ["Kat Mülkiyeti", "Kat İrtifakı", "Arsa Tapulu"],
-  hisse: ["Hisseli", "Müstakil"],
-  iskan: ["Var", "Yok", "Alınacak"],
-    
-  konutTipi: ["Apart", "Daire", "Dublex", "Triplex", "Villa", "Müstakil Ev", "Devremülk", "Diğer"],
-  katTipi: ["Ara Kat", "Çatı Katı", "Bahçe Katı", "Teras Kat", "Diğer"],
-  banyoSayisi: ["1", "2", "3", "4", "5"],
-  tuvaletTipi: ["Alaturka", "Alafranga"],
-  icKapilar: ["Panel", "Lake", "Ahşap", "Pvc", "Metal", "Diğer"],
-  pencereler: ["Pvc", "Ahşap", "Metal", "Diğer"],
-  zeminler: ["Laminant", "Granit", "Ahşap Parke", "Fayans", "Beton", "Diğer"],
-  mutfakDolabi: ["Sıfır", "Yeni", "İyi", "Orta", "Kötü", "Yok"],
-  bahce: ["Var", "Yok", "Bireysel", "Ortak Kullanım", "Kış Bahçeli"],
-  panjur: ["Var", "Yok", "Otomatik Panjur", "Manuel Panjur"],
-  guvenlik: ["Var", "Yok", "Kamera Sistemi", "Güvenlik"],
-  aktivite: ["Spa", "Sauna", "Hamam", "Açık Havuz", "Kapalı Havuz", "Spor Salonu", "Tenis Kortu", "Basketbol Sahası", "Futbol Sahası", "Toplantı salonu", "Kreş"],
-  kiler: ["Var", "Yok", "Dairede", "Bodrumda", "Çatıda", "Balkonda", "Bahçede"],
-    
-  arsaTipi: ["Konut", "Ticari", "Konut + Ticari", "Otel", "Sanayi", "AVM", "Diğer"],
-  imarDurumu: ["İmarlı", "İmarsız", "18. Madde kapsamında", "Diğer"],
-  nizam: ["Ayrık", "Bitişik", "Blok", "İkiz", "Birlikte Yapılaşma", "Diğer"],
-  altYapi: ["Elektrik", "Su", "Sanayi Elektriği", "Doğalgaz", "İnternet", "Telekom", "Fiber", "Kanalizasyon", "Yol"],
-  tarlaTipi: ["Sulu", "Kıraç", "Verimli", "Taşlık", "Marjinal"],
-  suDurumu: ["Var", "Yok", "Şebeke", "Kooperatif", "Sondaj Kuyu", "Kanaldan Sulama", "Dereden", "Diğer"],
-  elektrikDurumu: ["Var", "Yok", "Alınabilir"],
-  yolDurumu: ["Var", "Yok", "Patika yol", "Kadastro Yolu"],
-  evDurumu: ["Var", "Yok", "1+1", "2+1", "3+1", "4+1", "Dublex", "Triplex"],
-  havuzDurumu: ["Var", "Yok", "Sulama Havuzu", "Yüzme Havuzu", "Bilinmiyor"],
-  bahceTipi: ["Elma Bahçesi", "Ceviz Bahçesi", "Zeytin Bahçesi", "Badem Bahçesi", "Erik Bahçesi", "Kiraz Bahçesi", "Üzüm Bağı", "Meyve Bahçesi (Karışık)", "Hobi bahçesi", "Diğer"],
-    
-  ticariTipi: ["Dükkan", "Ofis", "Depo", "Sanayi Dükkanı", "Otel", "Fabrika", "Diğer"],
-  katSayisiTicari: ["Bodrum", "Zemin", "Asma Kat", "1", "2", "3", "4", "5", "6"],
-  mevki: ["Çarşı", "İlkokul", "Lise", "Üniversite", "Hastane", "Sağlık Ocağı", "Pazar", "AVM", "Market", "Eczane", "Belediye", "Dolmuş Hattı", "Otobüs Durağı", "Ana Cadde", "Ara Sokak"]
-};
+const LOCAL_STORAGE_KEY = 'emlaknomi_app_data';
 
-const featureCategories = {
-  "İç Özellikler": ["ADSL", "Ahşap Doğrama", "Akıllı Ev", "Alarm", "Alaturka Tuvalet", "Alüminyum Doğrama", "Amerikan Kapı", "Amerikan Mutfak", "Ankastre Fırın", "Barbükü", "Beyaz Eşya", "Boyalı", "Bulaşık Makinesi", "Buzdolabı", "Çamaşır Odası", "Çelik Kapı", "Duşakabin", "Duvar Kağıdı", "Fiber İnternet", "Fırın", "Giyinme Odası", "Gömme Dolap", "Görüntülü Diafon", "Hilton Banyo", "Isıcam", "Jakuzi", "Kartonpiyer", "Klima", "Laminat Zemin", "Marley", "Mobilyalı", "Panjur", "Parke Zemin", "PVC Doğrama", "Seramik Zemin", "Spot Aydınlatma", "Şömine", "Teras", "Vestiyer", "Wi-Fi", "Yüz Tanıma & Parmak İzi"],
-  "Dış Özellikler": ["Araç Şarj İstasyonu", "24 Saat Güvenlik", "Apartman Görevlisi", "Buhar Odası", "Çocuk Oyun Parkı", "Hidrofor", "Jeneratör", "Kablo TV", "Kamera Sistemi", "Kapalı Otopark", "Kreş", "Müstakil Havuzlu", "Oyun Parkı", "Sauna", "Ses Yalıtımı", "Siding", "Spor Alanı", "Su Deposu", "Tenis Kortu", "Uydu", "Yangın Merdiveni", "Yüzme Havuzu (Açık)", "Yüzme Havuzu (Kapalı)"],
-  "Muhit / Konum": ["Alışveriş Merkezi", "Belediye", "Cami", "Cemevi", "Denize Sıfır", "Eczane", "Eğlence Merkezi", "Fuar Alanı", "Göl Manzaralı", "Hastane", "Havra", "İlkokul-Ortaokul", "İtfaiye", "Kilise", "Lise", "Market", "Merkezi", "Park", "Polis Merkezi", "Sağlık Ocağı", "Semt Pazarı", "Şehir Manzaralı", "Şehir Merkezi", "Üniversite"],
-  "Ulaşım": ["Anayol", "Avrasya Tüneli", "Boğaz Köprüleri", "Cadde", "Dolmuş", "E-5", "Havaalanı", "İskele", "Marmaray", "Metro", "Metrobüs", "Minibüs", "Otobüs Durağı", "Sahil", "TEM", "Teleferik", "Tramvay", "Tren İstasyonu", "Troleybüs"]
-};
+// --- ANA İÇERİK ---
+function MainApp() {
+  // Website tarafından iletilecek olan Kullanıcı Bilgisi
+  const [emlaknomiUser, setEmlaknomiUser] = useState({
+     name: 'Kullanıcı',
+     branch: 'Ereğli', 
+     phone: '',
+     role: 'admin' // admin veya firma_sahibi değilse normal kullanıcı sayılır
+  });
 
-const allCities = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalva", "Karabük", "Kilis", "Osmaniye", "Düzce"].sort();
+  const [activeBranch, setActiveBranch] = useState(emlaknomiUser.branch);
 
-export default function App({ userData = null, branchesData = null }) {
-  const defaultUser = {
-    name: 'Özcan AKTAŞ',
-    phone: '0533 638 7000',
-    photo: DEFAULT_PROFILE_PHOTO,
-    role: 'admin',
-    allowedBranches: ['eregli', 'karaman', 'konya', 'alanya', 'antalya', 'eskisehir'] 
-  };
+  const defaultCategories = [
+    { id: 'cat_randevu', title: 'Randevular', keywords: 'randevu,görüşme,buluşma,toplantı,yarın,saat,gösterilecek,gösterim,sunum,bakılacak', items: [], icon: 'calendar' },
+    { id: 'cat_todo', title: 'Yapılacaklar', keywords: 'yapılacak,hatırlat,alınacak,git,gel,ara,sor,gönder,hazırla,not', items: [], icon: 'check' },
+    { id: 'cat_konut', title: 'Konut', keywords: 'ev,daire,konut,villa,yalı,rezidans,bina,site,kat,apartman,stüdyo,1+1,2+1,3+1,4+1', items: [], icon: 'home' },
+    { id: 'cat_ticari', title: 'Ticari', keywords: 'ofis,dükkan,depo,işyeri,plaza,mağaza,fabrika,imalathane,büro', items: [], icon: 'store' },
+    { id: 'cat_devren', title: 'Devren', keywords: 'devren,devir,devredilecek,isim hakkı', items: [], icon: 'key' },
+    { id: 'cat_arsa', title: 'Arsa', keywords: 'arsa,arazi,parsel,imarlı,yatırım,metrekare,tek tapu,hisseli,ifrazlı', items: [], icon: 'map' },
+    { id: 'cat_tarla', title: 'Tarla', keywords: 'tarla,ekim,biçim,sulak,kuru,dönüm,tarım', items: [], icon: 'sprout' },
+    { id: 'cat_bahce', title: 'Bahçe', keywords: 'bahçe,meyve,ağaç,fidan,hobi bahçesi,bağ', items: [], icon: 'flower' },
+    { id: 'cat_trash', title: 'Çöp Kutusu', keywords: '', items: [], icon: 'trash' }
+  ];
+
+  const defaultCities = [
+    { id: 'city_eregli', title: 'Ereğli', keywords: 'ereğli,toros,toros mahallesi,toki,organize' },
+    { id: 'city_konya', title: 'Konya', keywords: 'konya,meram,selçuklu,karatay,bosna' },
+    { id: 'city_karaman', title: 'Karaman', keywords: 'karaman,ermenek' },
+    { id: 'city_alanya', title: 'Alanya', keywords: 'alanya,mahmutlar,kestel' },
+    { id: 'city_eskisehir', title: 'Eskişehir', keywords: 'eskişehir,odunpazarı,tepebaşı' }
+  ];
+
+  const defaultTags = ["1+1", "2+1", "3+1", "4+1", "Müstakil", "Eşyalı", "Yatırımlık", "Garajlı", "Site İçinde", "Ara Kat", "Zemin Kat", "Güney Cephe", "Kuzey Cephe", "Sıfır"];
+  const defaultBranches = ['Ereğli', 'Konya', 'Karaman', 'Alanya', 'Eskişehir'];
+
+  const [categories, setCategories] = useState(defaultCategories);
+  const [cities, setCities] = useState(defaultCities);
+  const [availableTags, setAvailableTags] = useState(defaultTags);
+  const [branches, setBranches] = useState(defaultBranches);
+  const [lastAdNumber, setLastAdNumber] = useState(1000);
+
+  const [activeTabId, setActiveTabId] = useState('cat_randevu');
+  const [activeCityFilter, setActiveCityFilter] = useState('all'); 
+  const [activeDealType, setActiveDealType] = useState('all'); 
+  const [ownershipFilter, setOwnershipFilter] = useState('all'); // 'all', 'me', 'others'
+
+  const [inputText, setInputText] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [feedbackMsg, setFeedbackMsg] = useState('');
+  const [activeFilters, setActiveFilters] = useState([]);
+  const [sortOption, setSortOption] = useState('date_desc');
+  const [priceFilter, setPriceFilter] = useState({ min: '', max: '' });
+  const [showFilters, setShowFilters] = useState(false);
+   
+  const [isCalendarView, setIsCalendarView] = useState(false);
+  const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
   
-  const activeUser = userData || defaultUser;
-  const availableBranches = branchesData || officeDetails;
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState(null); 
+  const [calendarInputText, setCalendarInputText] = useState('');
+  const [calendarInputTime, setCalendarInputTime] = useState('09:00'); // Takvim yeni saat inputu
+  const [viewingDayDate, setViewingDayDate] = useState(null); 
 
-  const [activeTab, setActiveTab] = useState('social');
-  const [designMode, setDesignMode] = useState('single');
-  const [isManualLocation, setIsManualLocation] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const socialPreviewRef = useRef(null);
-    
-  const [isReady, setIsReady] = useState(false);
-  const [showLogo, setShowLogo] = useState(true);
-  const [customLogo, setCustomLogo] = useState(null); 
-  const [themeColor, setThemeColor] = useState('#ea580c');
-  const [showWebsiteOzcan, setShowWebsiteOzcan] = useState(true);
-  const [showWebsiteEmlaknomi, setShowWebsiteEmlaknomi] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showTagManagerModal, setShowTagManagerModal] = useState(false);
+  const [showCityManagerModal, setShowCityManagerModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showCustomersModal, setShowCustomersModal] = useState(false);
+  const [showBranchModal, setShowBranchModal] = useState(false); 
+  const [showAddBranchModal, setShowAddBranchModal] = useState(false); // Yeni Şube Ekle Modalı
+  
+  const [editingItem, setEditingItem] = useState(null);
+  const [transferringItem, setTransferringItem] = useState(null); 
 
-  const [consultant, setConsultant] = useState({
-    name: activeUser.name,
-    phone: activeUser.phone,
-    photo: activeUser.photo || DEFAULT_PROFILE_PHOTO,
-    showInfo: true,
-    showPhoto: true
-  });
+  const [editingCategoryData, setEditingCategoryData] = useState({ id: '', title: '', keywords: '' });
+  const [newCatTitle, setNewCatTitle] = useState('');
+  const [newCatKeywords, setNewCatKeywords] = useState('');
+  const [newCityTitle, setNewCityTitle] = useState('');
+  const [newCityKeywords, setNewCityKeywords] = useState('');
+  const [newTagName, setNewTagName] = useState('');
+  const [newBranchName, setNewBranchName] = useState('');
+  const [importTarget, setImportTarget] = useState('auto');
 
-  const initialOffice = (activeUser.allowedBranches && activeUser.allowedBranches.length > 0) 
-        ? activeUser.allowedBranches[0] 
-        : Object.keys(availableBranches)[0];
+  const [selectedInputCat, setSelectedInputCat] = useState('auto');
+  const [showInputCatMenu, setShowInputCatMenu] = useState(false);
+  
+  const [customDialog, setCustomDialog] = useState({ isOpen: false, type: 'alert', message: '', onConfirm: null });
+  
+  const showDialog = (type, message, onConfirm = null) => {
+      setCustomDialog({ isOpen: true, type, message, onConfirm });
+  };
+  const closeDialog = () => {
+      setCustomDialog({ isOpen: false, type: 'alert', message: '', onConfirm: null });
+  };
 
-  const [selectedOffice, setSelectedOffice] = useState(initialOffice);
-    
-  const [formData, setFormData] = useState({
-    customTitle: '',
-    title: '', price: '', currency: 'TL',
-    city: 'Konya', district: 'Ereğli', neighborhood: 'Yunuslu',
-    type: 'Satılık Daire', adNumber: '', 
-    rooms: '', size: '', netSize: '', totalFloors: '', floor: '', flatCountOnFloor: '', facade: [], age: '',
-    masterBath: '', wcCount: '', heating: [], balconyCount: '', glassBalcony: '', insulation: '', elevator: '', pantry: [], garage: '',
-    parking: '', usageStatus: '', deedStatus: '', creditSuitable: '', swapAvailable: '', hisseDurumu: '', iskan: '',
-    konutTipi: '', katTipi: '', banyoSayisi: '', tuvaletTipi: [], kizartmaMutfagi: '', giyinmeOdasi: '', camasirOdasi: '',
-    icKapilar: '', pencereler: '', asmaTavan: '', dusakabin: '', vestiyer: '', catiKaplama: '', zeminler: '', mutfakDolabi: '',
-    celikKapi: '', bahce: [], esyali: '', panjur: [], ankastre: '', siteIci: '', oyunParki: '', kamelya: '', guvenlik: [], aktivite: [],
-    aidat: '', kiraBedeli: '',
-    arsaTipi: '', imarDurumu: '', adaParsel: '', taks: '', kaks: '', katAdedi: '', yukseklik: '', yolaTerk: '', nizam: '', yolaCephesi: '',
-    altYapi: [], katKarsiligi: '',
-    tarlaTipi: [], suDurumu: [], elektrikDurumu: '', yolDurumu: [], telOrgu: '', evDurumu: [], havuzDurumu: '', depoGaraj: '', sulamaTesisati: '', techizat: '', egim: '',
-    bahceTipi: '', meyveCinsi: '', agacSayisi: '', agacYasi: '',
-    gayrimenkulTipi: '', onCepheUzunluk: '', kiracilimi: '', mevki: [],
-    katSayisiTicari: [],
-    digerOzellikler: '',
-    features: [], description: '',
-    images: [], coverImageIndex: 0, logo: FIXED_LOGO_URL 
-  });
+  const [customerFilter, setCustomerFilter] = useState('Tümü');
+  const [customerBranchFilter, setCustomerBranchFilter] = useState('Tümü');
+  const [customerConsultantFilter, setCustomerConsultantFilter] = useState('Tümü');
+  const [expandedCustomer, setExpandedCustomer] = useState(null);
 
-  const [privateData, setPrivateData] = useState({
-    customerName: '', contactInfo: '', finalPrice: '', commission: '', propertyNo: '', notes: '', 
-    date: new Date().toISOString().split('T')[0],
-    deedStatusPrivate: '', doorCode: '', swapPrivate: '', openAddress: ''
-  });
+  const alarmSound = useRef(null);
+
+  const activeProfile = window.EMLAKNOMI_USER || emlaknomiUser;
+  const isAdmin = activeProfile.role === 'admin' || activeProfile.role === 'firma_sahibi';
 
   useEffect(() => {
-    document.title = "Özcan AKTAŞ - Emlaknomi Pro";
-    const loadScript = (src) => {
-      return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
-        const script = document.createElement('script'); script.src = src; 
-        script.onload = resolve; script.onerror = reject; document.head.appendChild(script);
-      });
-    };
+    document.body.style.backgroundColor = '#f8fafc';
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.height = ''; 
 
-    Promise.all([
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'),
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js'),
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js'),
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'),
-      loadScript('https://cdn.tailwindcss.com')
-    ]).then(() => {
-        const checkReady = setInterval(() => { 
-            if (window.JSZip && window.htmlToImage && window.jspdf && window.tailwind) { 
-                clearInterval(checkReady); 
-                setIsReady(true); 
-            } 
-        }, 50);
-        setTimeout(() => { clearInterval(checkReady); setIsReady(true); }, 2000);
-    }).catch((e) => {
-        console.error("Script loading error: ", e);
-    });
+    if (window.EMLAKNOMI_USER) {
+       setEmlaknomiUser(window.EMLAKNOMI_USER);
+       if (!localStorage.getItem('emlaknomi_active_branch')) {
+           setActiveBranch(window.EMLAKNOMI_USER.branch);
+       }
+    }
 
-    const savedLogo = localStorage.getItem('emlaknomi_custom_logo');
-    if (savedLogo) { setCustomLogo(savedLogo); setShowLogo(true); }
+    const savedBranch = localStorage.getItem('emlaknomi_active_branch');
+    if (savedBranch) {
+        setActiveBranch(savedBranch);
+    }
+
+    const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        
+        const dbCategories = data.categories || [];
+        const mergedDefaults = defaultCategories.map(defCat => {
+           const foundInDb = dbCategories.find(c => c.id === defCat.id);
+           return foundInDb ? { ...defCat, items: foundInDb.items } : defCat;
+        });
+        const customCategories = dbCategories.filter(dbCat => 
+           !defaultCategories.some(defCat => defCat.id === dbCat.id)
+        );
+        setCategories([...mergedDefaults, ...customCategories]);
+
+        const dbCities = data.cities || [];
+        const mergedCities = defaultCities.map(defCity => {
+           const foundInDb = dbCities.find(c => c.id === defCity.id);
+           return foundInDb || defCity;
+        });
+        const customCities = dbCities.filter(dbCity => 
+           !defaultCities.some(defCity => defCity.id === dbCity.id)
+        );
+        setCities([...mergedCities, ...customCities]);
+
+        const dbTags = data.tags || [];
+        const mergedTags = Array.from(new Set([...defaultTags, ...dbTags]));
+        setAvailableTags(mergedTags);
+
+        const dbBranches = data.branches || defaultBranches;
+        setBranches(dbBranches);
+
+        if(data.lastAdNumber) setLastAdNumber(data.lastAdNumber);
+
+        if(!window.EMLAKNOMI_USER && data.emlaknomiProfile) {
+           setEmlaknomiUser(prev => ({ ...prev, ...data.emlaknomiProfile }));
+           if (!savedBranch) setActiveBranch(data.emlaknomiProfile.branch);
+        }
+      } catch (error) {
+         console.error("Veri okuma hatası:", error);
+      }
+    }
+
+    try {
+      alarmSound.current = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+    } catch(e) {}
+    
+    if ("Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
   }, []);
 
-  const [openCategories, setOpenCategories] = useState({ "İç Özellikler": true, "Dış Özellikler": true, "Muhit / Konum": false, "Ulaşım": false });
-  const toggleCategory = (category) => setOpenCategories(prev => ({...prev, [category]: !prev[category]}));
-  const placeholderImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80';
-
-  const formatNumber = (value) => { if (!value) return ''; return value.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, "."); };
-  const handleInputChange = (e) => { const { name, value } = e.target; if (['price', 'kiraBedeli'].includes(name)) { setFormData(prev => ({ ...prev, [name]: formatNumber(value) })); } else { setFormData(prev => ({ ...prev, [name]: value })); } };
-  const handleInputBlur = (e) => { const { name, value } = e.target; if (['size', 'netSize', 'yolaTerk', 'yolaCephesi'].includes(name) && value && !value.includes('m²')) { setFormData(prev => ({ ...prev, [name]: `${value} m²` })); } };
-  const handleConsultantChange = (e) => { const { name, value, type, checked } = e.target; setConsultant(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value })); };
-  
-  const handleProfilePhotoChange = (e) => { 
-      if (e.target.files && e.target.files[0]) { 
-          const file = e.target.files[0]; 
-          const reader = new FileReader(); 
-          reader.onloadend = () => { 
-              const img = new Image();
-              img.onload = () => {
-                  const canvas = document.createElement('canvas');
-                  canvas.width = img.width;
-                  canvas.height = img.height;
-                  const ctx = canvas.getContext('2d');
-                  ctx.drawImage(img, 0, 0);
-                  setConsultant(prev => ({ ...prev, photo: canvas.toDataURL('image/png') }));
-              };
-              img.src = reader.result;
-          }; 
-          reader.readAsDataURL(file); 
-      } 
-  };
-  
-  const handlePrivateInputChange = (e) => { const { name, value } = e.target; if (['finalPrice', 'commission'].includes(name)) { setPrivateData(prev => ({ ...prev, [name]: formatNumber(value) })); } else { setPrivateData(prev => ({ ...prev, [name]: value })); } };
-  const handleMultiSelect = (field, value) => { const current = Array.isArray(formData[field]) ? formData[field] : []; const updated = current.includes(value) ? current.filter(i => i !== value) : [...current, value]; setFormData(prev => ({ ...prev, [field]: updated })); };
-  
-  const handleOfficeChange = (e) => {
-    const officeKey = e.target.value; setSelectedOffice(officeKey); setIsManualLocation(false);
-    setConsultant(prev => ({ ...prev, phone: availableBranches[officeKey].phone }));
-    if (officeKey === 'eregli') setFormData(prev => ({...prev, city: 'Konya', district: 'Ereğli', neighborhood: 'Yunuslu'}));
-    else if (officeKey === 'karaman') setFormData(prev => ({...prev, city: 'Karaman', district: 'Merkez', neighborhood: locationData['Karaman']['Merkez'][0]}));
-    else if (officeKey === 'alanya') setFormData(prev => ({...prev, city: 'Antalya', district: 'Alanya', neighborhood: locationData['Antalya']['Alanya'][0]}));
-    else if (officeKey === 'konya') setFormData(prev => ({...prev, city: 'Konya', district: 'Selçuklu', neighborhood: locationData['Konya']['Selçuklu'][0]}));
-  };
-
-  const handleCityChange = (e) => {
-    const newCity = e.target.value;
-    if (detailedCities.includes(newCity)) {
-        setIsManualLocation(false); const districts = Object.keys(locationData[newCity] || {}); const firstDistrict = districts[0] || ''; const neighborhoods = locationData[newCity]?.[firstDistrict] || [];
-        setFormData(prev => ({ ...prev, city: newCity, district: firstDistrict, neighborhood: neighborhoods[0] || '' }));
-    } else { setIsManualLocation(true); setFormData(prev => ({ ...prev, city: newCity, district: '', neighborhood: '' })); }
-  };
-  const handleDistrictChange = (e) => { const newDistrict = e.target.value; const neighborhoods = locationData[formData.city]?.[newDistrict] || []; setFormData(prev => ({ ...prev, district: newDistrict, neighborhood: neighborhoods[0] || '' })); };
-  
-  const handleImageUpload = (e) => { 
-    if (e.target.files) { 
-      Array.from(e.target.files).forEach(file => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-              const img = new Image();
-              img.onload = () => {
-                  const canvas = document.createElement('canvas');
-                  canvas.width = img.width;
-                  canvas.height = img.height;
-                  const ctx = canvas.getContext('2d');
-                  ctx.drawImage(img, 0, 0);
-                  setFormData(prev => ({ ...prev, images: [...prev.images, canvas.toDataURL('image/jpeg', 0.8)] }));
-              };
-              img.src = reader.result;
-          };
-          reader.readAsDataURL(file);
-      });
-    } 
-  };
-  
-  const removeImage = (index, e) => {
-    e.stopPropagation();
-    const newImages = formData.images.filter((_, i) => i !== index);
-    let newCoverIndex = formData.coverImageIndex;
-    if (index === formData.coverImageIndex) newCoverIndex = 0;
-    else if (index < formData.coverImageIndex) newCoverIndex--;
-    setFormData(prev => ({ ...prev, images: newImages, coverImageIndex: newCoverIndex }));
-  };
-
-  const handleLogoChange = (e) => { 
-      if (e.target.files && e.target.files[0]) { 
-          const file = e.target.files[0]; 
-          const reader = new FileReader(); 
-          reader.onloadend = () => { 
-              const img = new Image();
-              img.onload = () => {
-                  const canvas = document.createElement('canvas');
-                  canvas.width = img.width;
-                  canvas.height = img.height;
-                  const ctx = canvas.getContext('2d');
-                  ctx.drawImage(img, 0, 0);
-                  const dataUrl = canvas.toDataURL('image/png');
-                  setCustomLogo(dataUrl); 
-                  setShowLogo(true); 
-                  try { localStorage.setItem('emlaknomi_custom_logo', dataUrl); } catch (err) {} 
-              };
-              img.src = reader.result;
-          }; 
-          reader.readAsDataURL(file); 
-      } 
-  };
-  
-  const getFloorDisplay = () => { const { floor, totalFloors } = formData; if (!floor) return null; if (isNaN(floor)) return floor; const fl = parseInt(floor); const tf = parseInt(totalFloors); if (!isNaN(tf)) { if (fl === tf) return "Son Kat"; if (fl > 0 && fl < tf) return "Ara Kat"; } return `${floor}. Kat`; };
-  const getSubTypeLabel = () => { if (formData.konutTipi) return formData.konutTipi; if (formData.arsaTipi) return formData.arsaTipi; if (formData.gayrimenkulTipi) return formData.gayrimenkulTipi; if (formData.bahceTipi) return formData.bahceTipi; if (formData.tarlaTipi && formData.tarlaTipi.length > 0) return formData.tarlaTipi[0]; const split = formData.type.split(' '); if (split.length > 1) return split.slice(1).join(' '); return formData.type; };
-  const getFullTypeLabel = () => { const operation = formData.type.split(' ')[0]; const subType = getSubTypeLabel(); return `${operation} ${subType}`.trim(); };
-  const getGeneratedTitle = () => { if (formData.customTitle) return formData.customTitle; let parts = []; if (formData.neighborhood) parts.push(`${formData.neighborhood}'da`); if (formData.rooms) parts.push(formData.rooms); if (formData.type.includes('Daire') || formData.konutTipi) { const fd = getFloorDisplay(); if (fd) parts.push(fd); } parts.push(getFullTypeLabel()); return parts.join(' '); };
-
-  const getFileNameBase = () => {
-    let detail = "Ilan";
-    if (formData.type.includes("Daire")) detail = formData.rooms || "Daire";
-    else if (formData.type.includes("Arsa")) detail = "Arsa";
-    else if (formData.type.includes("Ticari") || formData.type === "Devren Satılık") detail = formData.gayrimenkulTipi || "Dükkan";
-    else if (formData.type.includes("Tarla")) detail = (formData.tarlaTipi && formData.tarlaTipi.length > 0) ? formData.tarlaTipi[0] : "Tarla";
-    else if (formData.type.includes("Bahçe")) detail = formData.bahceTipi || "Bahçe";
-    else detail = getSubTypeLabel() || formData.type;
-    
-    const safeAdNumber = formData.adNumber ? formData.adNumber.trim() : "00000";
-    let safeNeighborhood = (formData.neighborhood || "Genel").trim();
-    const formattedPrice = formData.price ? `${formData.price} TL` : "0 TL";
-    
-    let fileName = `${safeAdNumber} - ${safeNeighborhood} - ${detail} - ${formattedPrice}`;
-    return fileName.replace(/[\/\\?%*:|"<>]/g, '');
-  };
-
-  const generateDescription = () => {
-    const office = availableBranches[selectedOffice]; 
-    const generatedTitle = getGeneratedTitle();
-    const addLine = (label, value, suffix = '') => { if (!value || value === '' || (Array.isArray(value) && value.length === 0)) return ''; const valStr = Array.isArray(value) ? value.join(', ') : value; return `> ${label}: ${valStr}${suffix}\n`; };
-    
-    let detailsText = "";
-    detailsText += `\n> İlan No: ${formData.adNumber || ''}\n\n`;
-
-    if (formData.type.includes("Daire")) {
-        detailsText += addLine('Konut Tipi', formData.konutTipi); detailsText += addLine('Oda Sayısı', formData.rooms); detailsText += addLine('Brüt m²', formData.size); detailsText += addLine('Net m²', formData.netSize); detailsText += addLine('Bulunduğu Kat', formData.floor); detailsText += addLine('Binadaki Kat', formData.totalFloors); detailsText += addLine('Kattaki Daire', formData.flatCountOnFloor); detailsText += addLine('Kat Tipi', formData.katTipi); detailsText += addLine('Bina Yaşı', formData.age); detailsText += addLine('Banyo Sayısı', formData.banyoSayisi); detailsText += addLine('Ebeveyn Banyo', formData.masterBath); detailsText += addLine('Tuvalet Sayısı', formData.wcCount); detailsText += addLine('Tuvalet Tipi', formData.tuvaletTipi); detailsText += addLine('Isıtma Tipi', formData.heating); detailsText += addLine('Isı Yalıtım', formData.insulation); detailsText += addLine('Balkon', formData.balconyCount); detailsText += addLine('Cam Balkon', formData.glassBalcony); detailsText += addLine('Kızartma Mutfağı', formData.kizartmaMutfagi); detailsText += addLine('Giyinme Odası', formData.giyinmeOdasi); detailsText += addLine('Çamaşır Odası', formData.camasirOdasi); detailsText += addLine('Asansör', formData.elevator); detailsText += addLine('İç Kapılar', formData.icKapilar); detailsText += addLine('Pencereler', formData.pencereler); detailsText += addLine('Asma Tavan', formData.asmaTavan); detailsText += addLine('Duşakabin', formData.dusakabin); detailsText += addLine('Vestiyer', formData.vestiyer); detailsText += addLine('Çatı Kaplama', formData.catiKaplama); detailsText += addLine('Zeminler', formData.zeminler); detailsText += addLine('Mutfak Dolabı', formData.mutfakDolabi); detailsText += addLine('Çelik Kapı', formData.celikKapi); detailsText += addLine('Kiler', formData.pantry); detailsText += addLine('Garaj', formData.garage); detailsText += addLine('Bahçe', formData.bahce); detailsText += addLine('Eşyalı mı', formData.esyali); detailsText += addLine('Otopark', formData.parking); detailsText += addLine('Panjur', formData.panjur); detailsText += addLine('Ankastre', formData.ankastre); detailsText += addLine('Site İçi', formData.siteIci); detailsText += addLine('Oyun Parkı', formData.oyunParki); detailsText += addLine('Kamelya', formData.kamelya); detailsText += addLine('Güvenlik', formData.guvenlik); detailsText += addLine('Aktivite', formData.aktivite); detailsText += addLine('Muhit', formData.mevki); detailsText += addLine('Aidat', formData.aidat); detailsText += addLine('Tapu Durumu', formData.deedStatus); detailsText += addLine('İskan/Oturum', formData.iskan); detailsText += addLine('Kullanım Durumu', formData.usageStatus); detailsText += addLine('Hisse Durumu', formData.hisseDurumu); detailsText += addLine('Kira Bedeli', formData.kiraBedeli);
-    } else if (formData.type === "Satılık Arsa") { 
-        detailsText += addLine('Arsa Tipi', formData.arsaTipi); detailsText += addLine('İmar Durumu', formData.imarDurumu); detailsText += addLine('Ada/Parsel', formData.adaParsel); detailsText += addLine('Metresi', formData.size); detailsText += addLine('T.A.K.S.', formData.taks); detailsText += addLine('K.A.K.S.', formData.kaks); detailsText += addLine('Nizam', formData.nizam); detailsText += addLine('Alt Yapı', formData.altYapi);
-    } else if (formData.type === "Satılık Tarla" || formData.type === "Satılık Bahçe") {
-        detailsText += addLine('Tarla Tipi', formData.tarlaTipi); detailsText += addLine('Bahçe Tipi', formData.bahceTipi); detailsText += addLine('Ada/Parsel', formData.adaParsel); detailsText += addLine('Metresi', formData.size); detailsText += addLine('Su Durumu', formData.suDurumu); detailsText += addLine('Elektrik Durumu', formData.elektrikDurumu); detailsText += addLine('Yol Durumu', formData.yolDurumu); detailsText += addLine('Yola Cephesi', formData.yolaCephesi); detailsText += addLine('Tel Örgü', formData.telOrgu); detailsText += addLine('Ev Durumu', formData.evDurumu); detailsText += addLine('Havuz Durumu', formData.havuzDurumu); detailsText += addLine('Depo/Garaj', formData.depoGaraj); detailsText += addLine('Teçhizat', formData.techizat); detailsText += addLine('Eğim', formData.egim); detailsText += addLine('Meyve Cinsi', formData.meyveCinsi); detailsText += addLine('Ağaç Sayısı', formData.agacSayisi); detailsText += addLine('Ağaç Yaşı', formData.agacYasi); detailsText += addLine('Hisse Durumu', formData.hisseDurumu);
-    } else if (formData.type.includes("Ticari") || formData.type === "Devren Satılık") { 
-        detailsText += addLine('Gayrimenkul Tipi', formData.gayrimenkulTipi); detailsText += addLine('Metresi', formData.size); detailsText += addLine('Kat Sayısı', formData.katSayisiTicari); 
-    }
-
-    detailsText += addLine('Cephe', formData.facade);
-    if (formData.type !== "Devren Satılık" && !formData.type.includes('Kiralık')) { detailsText += addLine('Krediye Uygun', formData.creditSuitable); detailsText += addLine('Takas', formData.swapAvailable); }
-    if (['Bireysel Garaj', 'Ortak Kullanım', 'Var'].includes(formData.garage)) { const garageText = formData.garage === "Var" ? "Otopark İmkanı" : formData.garage; detailsText += `> ÖZELLİK: ${garageText} Mevcuttur\n`; }
-    detailsText += addLine('Diğer Özellikler', formData.digerOzellikler);
-    let featuresText = ""; Object.keys(featureCategories).forEach(cat => { const selectedInCat = featureCategories[cat].filter(f => formData.features.includes(f)); if (selectedInCat.length > 0) { featuresText += `\n\n> ${cat.toUpperCase()}:\n` + selectedInCat.join(', '); } });
-    
-    const safeAuthNo = office.authNo ? office.authNo : '7000161';
-    
-    const desc = `EMLAKNOMİ'DEN ${generatedTitle.toUpperCase()}\n\n` + `Konum: ${formData.city} / ${formData.district} / ${formData.neighborhood}\n\n` + `GAYRİMENKUL DETAYLARI\n` + detailsText + `${featuresText}\n\n\n` + `FİYAT: ${formData.price} ${formData.currency}\n\n` + `--------------------------------\n` + `${consultant.showInfo ? `Gayrimenkul Uzmanı - ${consultant.name}\nİletişim: ${consultant.phone}\n` : ''}` + `www.ozcanaktas.com\n\n` + `Ofis Adres: ${office.address}\n\n` + `Taşınmaz Ticareti Yetki Belge No: ${safeAuthNo}\n` + `www.emlaknomi.com\n\n` + `\nŞubeler: Karaman - Konya - Ereğli - Eskişehir - Alanya - Balıkesir - Kıbrıs`;
-    setFormData(prev => ({ ...prev, description: desc }));
-  };
-
-  const renderDynamicFields = () => {
-      const t = formData.type;
-      const renderKonutFields = () => (
-        <>
-            <SelectField label="Konut Tipi" name="konutTipi" value={formData.konutTipi} onChange={handleInputChange} options={options.konutTipi} highlight />
-            <SelectField label="Oda Sayısı" name="rooms" value={formData.rooms} onChange={handleInputChange} options={options.rooms} highlight />
-            <InputField label="Brüt m²" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} highlight />
-            <InputField label="Net m²" name="netSize" value={formData.netSize} onChange={handleInputChange} onBlur={handleInputBlur} highlight />
-            <SelectField label="Bulunduğu Kat" name="floor" value={formData.floor} onChange={handleInputChange} options={options.floors} highlight />
-            <SelectField label="Kat Sayısı" name="totalFloors" value={formData.totalFloors} onChange={handleInputChange} options={options.totalFloors} highlight />
-            <SelectField label="Kattaki Daire" name="flatCountOnFloor" value={formData.flatCountOnFloor} onChange={handleInputChange} options={options.flatCount} highlight />
-            <SelectField label="Kat Tipi" name="katTipi" value={formData.katTipi} onChange={handleInputChange} options={options.katTipi} highlight />
-            <SelectField label="Bina Yaşı" name="age" value={formData.age} onChange={handleInputChange} options={options.age} highlight />
-            <SelectField label="Asansör" name="elevator" value={formData.elevator} onChange={handleInputChange} options={options.elevator} highlight />
-            <MultiSelectField label="Cephe" field="facade" value={formData.facade} onChange={handleMultiSelect} options={options.facade} themeColor={themeColor} highlight />
-            <MultiSelectField label="Isıtma Tipi" field="heating" value={formData.heating} onChange={handleMultiSelect} options={options.heating} themeColor={themeColor} highlight />
-            
-            <SelectField label="Banyo Sayısı" name="banyoSayisi" value={formData.banyoSayisi} onChange={handleInputChange} options={options.banyoSayisi} />
-            <SelectField label="Ebeveyn Banyo" name="masterBath" value={formData.masterBath} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Tuvalet Sayısı" name="wcCount" value={formData.wcCount} onChange={handleInputChange} options={options.wcCount} />
-            <MultiSelectField label="Tuvalet Tipi" field="tuvaletTipi" value={formData.tuvaletTipi} onChange={handleMultiSelect} options={options.tuvaletTipi} themeColor={themeColor} />
-            <SelectField label="Isı Yalıtım" name="insulation" value={formData.insulation} onChange={handleInputChange} options={options.insulation} />
-            <SelectField label="Balkon Sayısı" name="balconyCount" value={formData.balconyCount} onChange={handleInputChange} options={options.balcony} />
-            <SelectField label="Cam Balkon" name="glassBalcony" value={formData.glassBalcony} onChange={handleInputChange} options={options.glassBalcony} />
-            <SelectField label="Kızartma Mutfağı" name="kizartmaMutfagi" value={formData.kizartmaMutfagi} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Giyinme Odası" name="giyinmeOdasi" value={formData.giyinmeOdasi} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Çamaşır Odası" name="camasirOdasi" value={formData.camasirOdasi} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="İç Kapılar" name="icKapilar" value={formData.icKapilar} onChange={handleInputChange} options={options.icKapilar} />
-            <SelectField label="Pencereler" name="pencereler" value={formData.pencereler} onChange={handleInputChange} options={options.pencereler} />
-            <SelectField label="Asma Tavan" name="asmaTavan" value={formData.asmaTavan} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Duşakabin" name="dusakabin" value={formData.dusakabin} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Vestiyer" name="vestiyer" value={formData.vestiyer} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Çatı Kaplama" name="catiKaplama" value={formData.catiKaplama} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Zeminler" name="zeminler" value={formData.zeminler} onChange={handleInputChange} options={options.zeminler} />
-            <SelectField label="Mutfak Dolabı" name="mutfakDolabi" value={formData.mutfakDolabi} onChange={handleInputChange} options={options.mutfakDolabi} />
-            <SelectField label="Çelik Kapı" name="celikKapi" value={formData.celikKapi} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <MultiSelectField label="Kiler" field="pantry" value={formData.pantry} onChange={handleMultiSelect} options={options.kiler} themeColor={themeColor} />
-            <SelectField label="Garaj" name="garage" value={formData.garage} onChange={handleInputChange} options={options.garage} />
-            <MultiSelectField label="Bahçe" field="bahce" value={formData.bahce} onChange={handleMultiSelect} options={options.bahce} themeColor={themeColor} />
-            <SelectField label="Eşyalı mı" name="esyali" value={formData.esyali} onChange={handleInputChange} options={["Evet", "Hayır"]} />
-            <SelectField label="Otopark" name="parking" value={formData.parking} onChange={handleInputChange} options={options.parking} />
-            <MultiSelectField label="Panjur" field="panjur" value={formData.panjur} onChange={handleMultiSelect} options={options.panjur} themeColor={themeColor} />
-            <SelectField label="Ankastre" name="ankastre" value={formData.ankastre} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Site İçi mi" name="siteIci" value={formData.siteIci} onChange={handleInputChange} options={["Evet", "Hayır"]} />
-            <SelectField label="Oyun Parkı" name="oyunParki" value={formData.oyunParki} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Kamelya" name="kamelya" value={formData.kamelya} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <MultiSelectField label="Güvenlik" field="guvenlik" value={formData.guvenlik} onChange={handleMultiSelect} options={options.guvenlik} themeColor={themeColor} />
-            <MultiSelectField label="Aktivite" field="aktivite" value={formData.aktivite} onChange={handleMultiSelect} options={options.aktivite} themeColor={themeColor} />
-            <MultiSelectField label="Muhit" field="mevki" value={formData.mevki} onChange={handleMultiSelect} options={options.mevki} themeColor={themeColor} />
-            <InputField label="Aidat" name="aidat" value={formData.aidat} onChange={handleInputChange} placeholder="TL" />
-            <SelectField label="Tapu Durumu" name="deedStatus" value={formData.deedStatus} onChange={handleInputChange} options={options.deed} />
-            <SelectField label="İskan/Oturum" name="iskan" value={formData.iskan} onChange={handleInputChange} options={options.iskan} />
-            <SelectField label="Kullanım Durumu" name="usageStatus" value={formData.usageStatus} onChange={handleInputChange} options={options.usage} />
-            <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
-        </>
-      );
-      if (t === "Satılık Daire" || t === "Kiralık Daire") {
-          return (
-              <>
-                {renderKonutFields()}
-                {t === "Satılık Daire" && (
-                    <>
-                        <InputField label="Kira Bedeli" name="kiraBedeli" value={formData.kiraBedeli} onChange={handleInputChange} />
-                        <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
-                        <SelectField label="Krediye Uygun" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
-                    </>
-                )}
-              </>
-          );
-      }
-      if (t === "Satılık Arsa") {
-          return (
-              <>
-                <SelectField label="Arsa Tipi" name="arsaTipi" value={formData.arsaTipi} onChange={handleInputChange} options={options.arsaTipi} />
-                <SelectField label="İmar Durumu" name="imarDurumu" value={formData.imarDurumu} onChange={handleInputChange} options={options.imarDurumu} />
-                <InputField label="Ada/Parsel" name="adaParsel" value={formData.adaParsel} onChange={handleInputChange} />
-                <InputField label="Metresi (m²)" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
-                <InputField label="T.A.K.S." name="taks" value={formData.taks} onChange={handleInputChange} />
-                <InputField label="K.A.K.S." name="kaks" value={formData.kaks} onChange={handleInputChange} />
-                <InputField label="Kat Adedi" name="katAdedi" value={formData.katAdedi} onChange={handleInputChange} />
-                <InputField label="Yükseklik" name="yukseklik" value={formData.yukseklik} onChange={handleInputChange} />
-                <InputField label="Yola Terk (m²)" name="yolaTerk" value={formData.yolaTerk} onChange={handleInputChange} onBlur={handleInputBlur} />
-                <SelectField label="Nizam" name="nizam" value={formData.nizam} onChange={handleInputChange} options={options.nizam} />
-                <InputField label="Yola Cephesi" name="yola Cephesi" value={formData.yolaCephesi} onChange={handleInputChange} onBlur={handleInputBlur} />
-                <MultiSelectField label="Alt Yapı" field="altYapi" value={formData.altYapi} onChange={handleMultiSelect} options={options.altYapi} themeColor={themeColor} />
-                <SelectField label="Kat Karşılığı" name="katKarsiligi" value={formData.katKarsiligi} onChange={handleInputChange} options={["Evet", "Hayır", "Bilinmiyor"]} />
-                <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
-                <SelectField label="Kredi" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
-                <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
-              </>
-          );
-      }
-      if (t === "Satılık Tarla") {
-          return (
-              <>
-                <MultiSelectField label="Tarla Tipi" field="tarlaTipi" value={formData.tarlaTipi} onChange={handleMultiSelect} options={options.tarlaTipi} themeColor={themeColor} />
-                <InputField label="Ada/Parsel" name="adaParsel" value={formData.adaParsel} onChange={handleInputChange} />
-                <InputField label="Metresi (m²)" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
-                <MultiSelectField label="Su Durumu" field="suDurumu" value={formData.suDurumu} onChange={handleMultiSelect} options={options.suDurumu} themeColor={themeColor} />
-                <SelectField label="Elektrik Durumu" name="elektrikDurumu" value={formData.elektrikDurumu} onChange={handleInputChange} options={options.elektrikDurumu} />
-                <MultiSelectField label="Yol Durumu" field="yolDurumu" value={formData.yolDurumu} onChange={handleMultiSelect} options={options.yolDurumu} themeColor={themeColor} />
-                <InputField label="Yola Cephe (m²)" name="yolaCephesi" value={formData.yolaCephesi} onChange={handleInputChange} onBlur={handleInputBlur} />
-                <SelectField label="Tel Örgü" name="telOrgu" value={formData.telOrgu} onChange={handleInputChange} options={["Var", "Yok"]} />
-                <MultiSelectField label="Ev" field="evDurumu" value={formData.evDurumu} onChange={handleMultiSelect} options={options.evDurumu} themeColor={themeColor} />
-                <MultiSelectField label="Havuz" field="havuzDurumu" value={formData.havuzDurumu} onChange={handleMultiSelect} options={options.havuzDurumu} themeColor={themeColor} />
-                <SelectField label="Depo/Garaj" name="depoGaraj" value={formData.depoGaraj} onChange={handleInputChange} options={["Var", "Yok"]} />
-                <InputField label="Teçhizat/Aletler" name="techizat" value={formData.techizat} onChange={handleInputChange} />
-                <InputField label="Eğim (Derece)" name="egim" value={formData.egim} onChange={handleInputChange} />
-                <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
-                <SelectField label="Kredi" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
-                <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
-              </>
-          );
-      }
-      if (t === "Satılık Bahçe") {
-          return (
-              <>
-                <SelectField label="Bahçe Tipi" name="bahceTipi" value={formData.bahceTipi} onChange={handleInputChange} options={options.bahceTipi} />
-                <InputField label="Ada/Parsel" name="adaParsel" value={formData.adaParsel} onChange={handleInputChange} />
-                <InputField label="Metresi (m²)" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
-                <InputField label="Meyve Cinsi" name="meyveCinsi" value={formData.meyveCinsi} onChange={handleInputChange} />
-                <InputField label="Ağaç Sayısı" name="agacSayisi" value={formData.agacSayisi} onChange={handleInputChange} />
-                <InputField label="Ağaç Yaşı" name="agacYasi" value={formData.agacYasi} onChange={handleInputChange} />
-                <MultiSelectField label="Su Durumu" field="suDurumu" value={formData.suDurumu} onChange={handleMultiSelect} options={options.suDurumu} themeColor={themeColor} />
-                <SelectField label="Elektrik" name="elektrikDurumu" value={formData.elektrikDurumu} onChange={handleInputChange} options={options.elektrikDurumu} />
-                <MultiSelectField label="Yol" field="yolDurumu" value={formData.yolDurumu} onChange={handleMultiSelect} options={options.yolDurumu} themeColor={themeColor} />
-                <InputField label="Yola Cephe" name="yolaCephesi" value={formData.yolaCephesi} onChange={handleInputChange} onBlur={handleInputBlur} />
-                <SelectField label="Tel Örgü" name="telOrgu" value={formData.telOrgu} onChange={handleInputChange} options={["Var", "Yok"]} />
-                <MultiSelectField label="Ev" field="evDurumu" value={formData.evDurumu} onChange={handleMultiSelect} options={options.evDurumu} themeColor={themeColor} />
-                <MultiSelectField label="Havuz" field="havuzDurumu" value={formData.havuzDurumu} onChange={handleMultiSelect} options={options.havuzDurumu} themeColor={themeColor} />
-                <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
-                <SelectField label="Kredi" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
-                <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
-              </>
-          );
-      }
-      if (t === "Satılık Ticari" || t === "Devren Satılık" || t === "Kiralık Ticari") {
-          return (
-              <>
-                <SelectField label="Gayrimenkul Tipi" name="gayrimenkulTipi" value={formData.gayrimenkulTipi} onChange={handleInputChange} options={options.ticariTipi} />
-                <InputField label="Metresi (m²)" name="size" value={formData.size} onChange={handleInputChange} onBlur={handleInputBlur} />
-                <MultiSelectField label="Kat Sayısı" field="katSayisiTicari" value={formData.katSayisiTicari} onChange={handleMultiSelect} options={options.katSayisiTicari} themeColor={themeColor} />
-                <InputField label="Ön Cephe (m)" name="onCepheUzunluk" value={formData.onCepheUzunluk} onChange={handleInputChange} />
-                <SelectField label="Bina Yaşı" name="age" value={formData.age} onChange={handleInputChange} options={options.age} />
-                <MultiSelectField label="Cephe" field="facade" value={formData.facade} onChange={handleMultiSelect} options={options.facade} themeColor={themeColor} />
-                <InputField label="Kira Bedeli" name="kiraBedeli" value={formData.kiraBedeli} onChange={handleInputChange} />
-                <MultiSelectField label="Alt Yapı" field="altYapi" value={formData.altYapi} onChange={handleMultiSelect} options={options.altYapi} themeColor={themeColor} />
-                <MultiSelectField label="Mevki" field="mevki" value={formData.mevki} onChange={handleMultiSelect} options={options.mevki} themeColor={themeColor} />
-                <SelectField label="Takas" name="swapAvailable" value={formData.swapAvailable} onChange={handleInputChange} options={options.swap} />
-                <SelectField label="Kredi" name="creditSuitable" value={formData.creditSuitable} onChange={handleInputChange} options={options.credit} />
-                <SelectField label="Hisse Durumu" name="hisseDurumu" value={formData.hisseDurumu} onChange={handleInputChange} options={options.hisse} />
-              </>
-          );
-      }
-      return null;
-  };
-
-  const SocialDesign = ({ isCapture = false }) => {
-      const renderImages = () => {
-          const imgs = formData.images;
-          const count = imgs.length;
-          const defaultImg = placeholderImage;
-          if (designMode === 'single' || count === 0) {
-              return <img src={imgs[formData.coverImageIndex] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/>;
-          }
-          if (designMode === 'double') {
-              return (
-                  <div className="grid grid-cols-2 h-full w-full">
-                      <div className="border-r-4 border-white h-full overflow-hidden"><img src={imgs[0] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/></div>
-                      <div className="h-full overflow-hidden"><img src={imgs[1] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/></div>
-                  </div>
-              );
-          }
-          if (designMode === 'triple') {
-              return (
-                  <div className="grid grid-cols-2 h-full w-full">
-                      <div className="border-r-4 border-white h-full overflow-hidden"><img src={imgs[0] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/></div>
-                      <div className="grid grid-rows-2 h-full">
-                          <div className="border-b-4 border-white h-full overflow-hidden"><img src={imgs[1] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/></div>
-                          <div className="h-full overflow-hidden"><img src={imgs[2] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/></div>
-                      </div>
-                  </div>
-              );
-          }
-          if (designMode === 'quad') {
-              return (
-                  <div className="grid grid-cols-2 grid-rows-2 h-full w-full">
-                      <div className="border-r-4 border-b-4 border-white h-full overflow-hidden"><img src={imgs[0] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/></div>
-                      <div className="border-b-4 border-white h-full overflow-hidden"><img src={imgs[1] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/></div>
-                      <div className="border-r-4 border-white h-full overflow-hidden"><img src={imgs[2] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/></div>
-                      <div className="h-full overflow-hidden"><img src={imgs[3] || defaultImg} className="w-full h-full object-cover" crossOrigin="anonymous"/></div>
-                  </div>
-              );
-          }
-          return null;
+  const saveToLocal = (newCats, newCities, newTags, newAdNum, newBranches = branches) => {
+    try {
+      const currentProfile = window.EMLAKNOMI_USER || emlaknomiUser;
+      const dataToSave = {
+        categories: newCats,
+        cities: newCities,
+        tags: newTags,
+        branches: newBranches,
+        lastAdNumber: newAdNum,
+        emlaknomiProfile: currentProfile,
+        updatedAt: new Date().toISOString()
       };
-
-      const activeFeatures = [
-          { icon: Home, label: 'Oda', value: formData.rooms },
-          { icon: Layout, label: 'Metre', value: formData.size },
-          { icon: Building, label: 'Kat', value: getFloorDisplay() },
-          { icon: Compass, label: 'Cephe', value: formData.facade && formData.facade.length > 0 ? (Array.isArray(formData.facade) ? formData.facade[0] : formData.facade) : null },
-      ];
-      
-      if (formData.age && formData.age !== '') {
-          activeFeatures.push({ icon: Calendar, label: 'Yaş', value: formData.age });
-      }
-      if (formData.garage && formData.garage !== 'Yok' && formData.garage !== '') {
-          activeFeatures.push({ icon: Car, label: 'Garaj', value: formData.garage === 'Bireysel Garaj' || formData.garage === 'Ortak Kullanım' || formData.garage === 'Var' ? 'Var' : formData.garage });
-      }
-      if (formData.elevator && formData.elevator !== 'Yok' && formData.elevator !== '') {
-          activeFeatures.push({ icon: ArrowUpDown, label: 'Asansör', value: formData.elevator === 'Var' || formData.elevator === 'Çift Asansör' ? 'Var' : formData.elevator });
-      }
-      
-      const displayFeatures = activeFeatures.filter(f => f.value && f.value !== '-' && f.value !== '');
-      const limitedFeatures = displayFeatures.slice(0, 6);
-
-      return (
-        <div className="w-[1080px] h-[1080px] bg-slate-100 relative flex-shrink-0 font-sans text-left overflow-hidden">
-            <div className="absolute inset-0 z-0">
-                {renderImages()}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/30 pointer-events-none"></div>
-            </div>
-
-            <div className="absolute top-12 left-0 flex flex-col items-start gap-1.5 z-20">
-                <div className="text-white pl-8 pr-6 py-2 text-xl font-black shadow-lg rounded-r-2xl tracking-tight" style={{backgroundColor: themeColor}}>
-                    {getFullTypeLabel().toLocaleUpperCase('tr-TR')}
-                </div>
-                <div className="bg-white text-slate-900 px-5 py-1.5 text-sm font-bold shadow-xl rounded-r-xl border-l-[5px] tracking-widest ml-1" style={{borderColor: themeColor}}>
-                    {`${formData.neighborhood} Mh. • ${formData.district} / ${formData.city}`.toLocaleUpperCase('tr-TR')}
-                </div>
-                {formData.adNumber && (
-                    <div className="bg-black/75 text-white px-5 py-1 text-sm font-bold shadow-md rounded-r-xl ml-2 border-l-4 border-white/50 mt-1">
-                        İLAN NO: <span className="font-mono">{formData.adNumber}</span>
-                    </div>
-                )}
-            </div>
-
-            {showLogo && (
-                <div className="absolute top-0 right-8 z-20 flex items-start justify-end h-[240px] w-[750px] pointer-events-none">
-                    <img src={customLogo || FIXED_LOGO_URL} crossOrigin="anonymous" className="max-w-full max-h-full object-contain object-right-top drop-shadow-xl" />
-                </div>
-            )}
-
-            <div className="absolute bottom-8 left-8 right-8 bg-white/90 rounded-[1.5rem] p-5 shadow-2xl z-20 border border-white/60 flex flex-col gap-3">
-                <div className="h-[65px] overflow-hidden">
-                    <h2 className="text-[1.75rem] font-extrabold leading-tight drop-shadow-sm" style={{color: themeColor}}>
-                        {getGeneratedTitle()}
-                    </h2>
-                </div>
-
-                <div className="text-[1.75rem] font-black text-slate-800 flex items-center gap-2">
-                    <span className="text-sm text-slate-500 font-bold tracking-widest">FİYAT:</span>
-                    {formData.price} {formData.currency}
-                </div>
-
-                <div className="bg-slate-100/80 border border-white/60 rounded-[1.25rem] py-3 px-4 shadow-inner">
-                    <div className="flex flex-row items-center justify-around gap-2">
-                        {limitedFeatures.map((feat, idx) => (
-                            <div key={idx} className="flex flex-col items-center justify-center text-center gap-0.5 flex-1 min-w-[50px] max-w-[120px]">
-                                <feat.icon size={22} className="mb-0.5" style={{color: themeColor}} />
-                                <span className="text-[9px] text-slate-500 font-bold tracking-widest">{feat.label.toLocaleUpperCase('tr-TR')}</span>
-                                <span className="text-[15px] font-black text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis block w-full">
-                                    {feat.value}
-                               </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {consultant.showInfo && (
-                    <div className="mt-1 pt-3 border-t border-slate-200/60 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            {consultant.showPhoto && (
-                                <div className="w-[80px] h-[80px] rounded-xl border-[2px] shadow-md overflow-hidden bg-slate-200" style={{borderColor: themeColor}}>
-                                    <img src={consultant.photo} className="w-full h-full object-cover object-top" crossOrigin="anonymous"/>
-                                </div>
-                            )}
-                            <div className="flex items-center">
-                                <span className="text-2xl font-black text-slate-800">
-                                    {consultant.name} - <span style={{color: themeColor}}>{consultant.phone}</span>
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div className="flex flex-row items-center justify-end gap-2">
-                            {showWebsiteOzcan && (
-                                <div className="bg-slate-800 text-white px-3 py-2 rounded-lg text-[13px] font-bold flex items-center shadow-md whitespace-nowrap">
-                                    <Globe size={16} className="mr-1.5" style={{color: themeColor}}/> www.ozcanaktas.com
-                                </div>
-                            )}
-                            {showWebsiteEmlaknomi && (
-                                <div className="bg-slate-800 text-white px-3 py-2 rounded-lg text-[13px] font-bold flex items-center shadow-md whitespace-nowrap">
-                                    <Globe size={16} className="mr-1.5" style={{color: themeColor}}/> www.emlaknomi.com
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-      );
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch (e) {
+      console.error("Kayıt Hatası:", e);
+      setFeedbackMsg("⚠️ Kayıt Başarısız!");
+    }
   };
 
-  const executeCapture = async (elementId, width = 1080, height = 1080) => {
-    if (!window.htmlToImage) {
-        alert("Görsel motoru henüz yüklenmedi, lütfen sayfayı yenileyip tekrar deneyin.");
-        return null;
-    }
-    
-    const targetElement = document.getElementById(elementId);
-    if (!targetElement) return null;
+  const getUniqueBranches = () => {
+      let branchSet = new Set(branches);
+      if (activeProfile.branch) branchSet.add(activeProfile.branch);
+      if (activeBranch) branchSet.add(activeBranch);
 
-    const images = Array.from(targetElement.getElementsByTagName('img'));
-    
-    const loadImg = (img) => {
-        return new Promise((resolve) => {
-            if (img.complete) {
-                resolve();
-            } else {
-                img.onload = resolve;
-                img.onerror = () => {
-                   console.warn("Resim yüklenemedi: " + img.src);
-                   resolve();
-                };
-            }
-        });
-    };
-
-    await Promise.all(images.map(img => loadImg(img)));
-
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    try {
-      const dataUrl = await window.htmlToImage.toPng(targetElement, { 
-          width: width, 
-          height: height,
-          pixelRatio: 1,
-          style: {
-              transform: 'none',
-              margin: '0',
-              padding: '0'
-          },
-          cacheBust: true
+      categories.forEach(cat => {
+          if (cat.id === 'cat_trash') return;
+          cat.items.forEach(item => {
+              if (item.branchName) branchSet.add(item.branchName);
+          });
       });
-      return await (await fetch(dataUrl)).blob();
-    } catch (err) {
-      console.error("Görsel yakalama hatası:", err);
-      return null;
+      return Array.from(branchSet).sort();
+  };
+
+  const getUniqueConsultants = () => {
+      let s = new Set();
+      categories.forEach(cat => cat.items.forEach(i => {
+          if(i.consultantName) s.add(i.consultantName);
+      }));
+      return Array.from(s).sort();
+  };
+
+  const handleBranchChange = (newBranch) => {
+      setActiveBranch(newBranch);
+      localStorage.setItem('emlaknomi_active_branch', newBranch);
+      setShowBranchModal(false);
+      setFeedbackMsg(`📍 Aktif Şube "${newBranch}" olarak değiştirildi.`);
+      setTimeout(() => setFeedbackMsg(''), 3000);
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      categories.forEach(cat => {
+        if(cat.id === 'cat_trash') return; 
+        cat.items.forEach(item => {
+          if (item.alarmActive && item.alarmTime) {
+            const diff = now - new Date(item.alarmTime);
+            if (diff >= 0 && diff < 60000) triggerNotification(item.text);
+          }
+        });
+      });
+    }, 30000); 
+    return () => clearInterval(interval);
+  }, [categories]);
+
+  const triggerNotification = (text) => {
+    if(alarmSound.current) alarmSound.current.play().catch(e=>console.log(e));
+    if (Notification.permission === "granted") {
+      if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(reg => reg.showNotification("Emlak Asistanı", { body: text, icon: 'https://i.hizliresim.com/arpast7.jpeg', vibrate: [200, 100, 200] }));
+      } else {
+        new Notification("Emlak Asistanı", { body: text, icon: 'https://i.hizliresim.com/arpast7.jpeg' });
+      }
     }
   };
-  
-  const executePdfCapture = async () => {
-    if (!window.jspdf || !window.htmlToImage) {
-        alert("PDF kütüphaneleri yükleniyor, lütfen bekleyin.");
-        return null;
+
+  const addToNativeCalendar = (item) => {
+    let startDate;
+    if (item.alarmTime) {
+      startDate = new Date(item.alarmTime);
+    } else {
+      startDate = new Date();
+      startDate.setHours(startDate.getHours() + 1);
+      startDate.setMinutes(0);
+    }
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); 
+
+    const formatDate = (date) => {
+        return date.toISOString().replace(/-|:|\.\d+/g, ''); 
+    };
+
+    const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Emlaknomi//TR',
+        'BEGIN:VEVENT',
+        `UID:${item.id}@emlaknomi.com`,
+        `DTSTAMP:${formatDate(new Date())}`,
+        `DTSTART:${formatDate(startDate)}`,
+        `DTEND:${formatDate(endDate)}`,
+        `SUMMARY:Randevu: ${item.contactName || 'Müşteri'}`,
+        `DESCRIPTION:${item.text.replace(/\n/g, '\\n')} \\nTel: ${item.phone || '-'}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Randevu_${item.adNo || item.id}.ics`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayOfWeek = new Date(year, month, 1).getDay(); 
+    const adjustedFirstDay = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+    const days = [];
+    for (let i = 0; i < adjustedFirstDay; i++) days.push(null);
+    for (let i = 1; i <= daysInMonth; i++) days.push(new Date(year, month, i));
+    return days;
+  };
+
+  const extractInfo = (text) => {
+    const phoneRegex = /(0?5\d{2})[\s-]?(\d{3})[\s-]?(\d{2})[\s-]?(\d{2})|(\d{10,11})/;
+    const phoneMatch = text.match(phoneRegex);
+    let phone = ''; if (phoneMatch) phone = phoneMatch[0];
+    let price = 0;
+    const lowerText = text.toLocaleLowerCase('tr-TR');
+    const millionMatch = lowerText.match(/(\d+([.,]\d+)?)\s*milyon/);
+    if (millionMatch) price = parseFloat(millionMatch[1].replace(',', '.')) * 1000000;
+    else {
+      const thousandMatch = lowerText.match(/(\d+([.,]\d+)?)\s*bin/);
+      if (thousandMatch) price = parseFloat(thousandMatch[1].replace(',', '.')) * 1000;
+      else {
+        const rawMoneyMatch = lowerText.match(/(\d{1,3}(?:[.,]\d{3})*)\s*(tl|lira)/);
+        if (rawMoneyMatch) price = parseFloat(rawMoneyMatch[1].replace(/\./g, '').replace(/,/g, '.'));
+      }
+    }
+    return { phone, text, price };
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const content = e.target.result;
+      const lines = content.split(/\r?\n/);
+      let importedCount = 0;
+      let currentAdNo = lastAdNumber;
+      let tempCategories = [...categories];
+
+      lines.forEach(line => {
+        if (!line.trim()) return;
+        let cleanText = line.replace(/^[\d-]+\.?\s*/, '').trim();
+        if(!cleanText) return;
+        let { phone, text, price } = extractInfo(cleanText);
+        const now = new Date();
+        const fullDate = `${now.toLocaleDateString('tr-TR')} ${now.toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})}`;
+        const detectedTags = availableTags.filter(tag => cleanText.toLocaleLowerCase('tr-TR').includes(tag.toLocaleLowerCase('tr-TR')));
+        
+        let itemBranch = activeBranch;
+        const branchMatch = cleanText.toLocaleLowerCase('tr-TR').match(/([a-zğüşöçı]+)\s+şube/i);
+        if (branchMatch) itemBranch = branchMatch[1].charAt(0).toUpperCase() + branchMatch[1].slice(1);
+
+        let detectedCityId = null; let detectedCityName = '';
+        for (const city of cities) { 
+           const cityKeys = city.keywords.split(',').map(k=>k.trim().toLocaleLowerCase('tr-TR')).filter(k=>k!=='');
+           if (cityKeys.some(k=>cleanText.toLocaleLowerCase('tr-TR').includes(k))) { 
+               detectedCityId = city.id; 
+               detectedCityName = city.title; 
+               break; 
+           } 
+        }
+
+        if (!detectedCityId) {
+            const matchedCity = cities.find(c => c.title.toLocaleLowerCase('tr-TR') === itemBranch.toLocaleLowerCase('tr-TR'));
+            if (matchedCity) {
+                detectedCityId = matchedCity.id;
+                detectedCityName = matchedCity.title;
+            } else {
+                const defaultCity = cities.find(c => c.title === activeBranch);
+                if(defaultCity) {
+                    detectedCityId = defaultCity.id;
+                    detectedCityName = defaultCity.title;
+                }
+            }
+        }
+
+        let dealType = 'sale'; if (cleanText.toLowerCase().includes('kira')) dealType = 'rent';
+        
+        let targetCatId = 'cat_todo';
+        if (importTarget !== 'auto') targetCatId = importTarget;
+        else {
+             const priorityOrder = ['cat_devren', 'cat_ticari', 'cat_tarla', 'cat_bahce', 'cat_arsa', 'cat_konut', 'cat_randevu'];
+             for (const catId of priorityOrder) {
+               const cat = tempCategories.find(c => c.id === catId);
+               if (cat && cat.keywords.split(',').some(k=>cleanText.toLowerCase().includes(k.trim()))) { targetCatId = cat.id; break; }
+             }
+        }
+        currentAdNo++;
+        const newItem = { 
+            id: Date.now() + Math.random(), adNo: currentAdNo, text: cleanText, phone, contactName: '', 
+            date: fullDate, price, alarmTime: '', alarmActive: false, tags: detectedTags, 
+            cityId: detectedCityId, cityName: detectedCityName, dealType, branchName: itemBranch,
+            consultantName: activeProfile.name
+        };
+        tempCategories = tempCategories.map(c => { if (c.id === targetCatId) { return { ...c, items: [newItem, ...c.items] }; } return c; });
+        importedCount++;
+      });
+      setCategories(tempCategories);
+      setLastAdNumber(currentAdNo);
+      saveToLocal(tempCategories, cities, availableTags, currentAdNo);
+      setFeedbackMsg(`${importedCount} kayıt yüklendi!`);
+      setShowImportModal(false);
+    };
+    reader.readAsText(file, "UTF-8");
+  };
+
+  const parseDateFromText = (text) => {
+    const now = new Date();
+    const lower = text.toLocaleLowerCase('tr-TR');
+    let targetDate = new Date();
+    let found = false;
+
+    const days = ['pazar', 'pazartesi', 'salı', 'çarşamba', 'perşembe', 'cuma', 'cumartesi'];
+    const currentDayIndex = now.getDay();
+    let targetDayIndex = -1;
+
+    for (let i = 0; i < days.length; i++) {
+        if (lower.includes(days[i])) {
+            targetDayIndex = i;
+            found = true;
+            break;
+        }
+    }
+
+    let addWeeks = 0;
+    if (lower.includes('haftaya') || lower.includes('gelecek') || lower.includes('önümüzdeki')) {
+        addWeeks = 1;
+        found = true;
+    }
+
+    if (lower.includes('yarın')) {
+        targetDate.setDate(targetDate.getDate() + 1);
+        found = true;
+    } else if (targetDayIndex !== -1) {
+        let diff = targetDayIndex - currentDayIndex;
+        if (diff <= 0) diff += 7; 
+        targetDate.setDate(targetDate.getDate() + diff + (addWeeks * 7));
+    } else if (addWeeks > 0) {
+        targetDate.setDate(targetDate.getDate() + 7);
+    }
+
+    let hours = 9; 
+    let minutes = 0;
+    let timeFound = false;
+
+    const explicitTime = lower.match(/(\d{1,2})[.:](\d{2})/);
+    if (explicitTime) {
+        hours = parseInt(explicitTime[1]);
+        minutes = parseInt(explicitTime[2]);
+        timeFound = true;
+    } 
+    else {
+        const suffixTime = lower.match(/(\d{1,2})\s*(?:'|’)?\s*(?:de|da|te|ta)\b/);
+        const saatWordTime = lower.match(/saat\s*(\d{1,2})/);
+
+        if (suffixTime) {
+             hours = parseInt(suffixTime[1]);
+             timeFound = true;
+        } else if (saatWordTime) {
+             hours = parseInt(saatWordTime[1]);
+             timeFound = true;
+        }
+    }
+
+    if (timeFound) {
+        if (hours < 8 && !lower.includes('sabah') && !lower.includes('gece')) {
+            hours += 12;
+        }
+        targetDate.setHours(hours, minutes, 0, 0);
+        found = true;
+    } else {
+        targetDate.setHours(9, 0, 0, 0);
+    }
+
+    if (found) {
+        const y = targetDate.getFullYear();
+        const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const d = String(targetDate.getDate()).padStart(2, '0');
+        const h = String(targetDate.getHours()).padStart(2, '0');
+        const min = String(targetDate.getMinutes()).padStart(2, '0');
+        return `${y}-${m}-${d}T${h}:${min}`;
+    }
+    return null;
+  };
+
+  const processCommand = (rawText, specificContact = null, forcedDateString = null) => {
+    if (!rawText.trim() && !specificContact) return;
+    
+    let textToProcess = rawText.replace(/(\d)\s*\+\s*(\d)/g, '$1+$2'); 
+    const now = new Date();
+    const fullDate = `${now.toLocaleDateString('tr-TR')} ${now.toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'})}`;
+    const timestamp = Date.now();
+    const lowerText = textToProcess.toLocaleLowerCase('tr-TR');
+    
+    let { phone, text, price } = extractInfo(textToProcess);
+    let contactName = '';
+    
+    if (!phone && activeProfile.phone) phone = activeProfile.phone;
+
+    if (specificContact) { 
+        contactName = specificContact.name; 
+        if (specificContact.tel) phone = specificContact.tel; 
+    } 
+    
+    let itemBranch = activeBranch || 'Ereğli';
+    let isBranchExtractedFromText = false;
+    const branchMatch = lowerText.match(/([a-zğüşöçı]+)\s+şube/i);
+    if (branchMatch) {
+        itemBranch = branchMatch[1].charAt(0).toUpperCase() + branchMatch[1].slice(1);
+        isBranchExtractedFromText = true;
+    }
+
+    let detectedCityId = null; let detectedCityName = '';
+    for (const city of cities) {
+      const cityKeys = city.keywords.split(',').map(k => k.trim().toLocaleLowerCase('tr-TR')).filter(k => k !== '');
+      if (cityKeys.some(key => lowerText.includes(key))) { detectedCityId = city.id; detectedCityName = city.title; break; }
     }
     
-    const targetElement = document.getElementById('pdf-capture-element');
-    if (!targetElement) return null;
-
-    const images = Array.from(targetElement.getElementsByTagName('img'));
-    const loadImg = (img) => {
-        return new Promise((resolve) => {
-            if (img.complete) { resolve(); } 
-            else { 
-              img.onload = resolve; 
-              img.onerror = () => {
-                  console.warn("Resim yüklenemedi: " + img.src);
-                  resolve();
-              }; 
+    if (!detectedCityId) {
+        const matchedCity = cities.find(c => c.title.toLocaleLowerCase('tr-TR') === itemBranch.toLocaleLowerCase('tr-TR'));
+        if (matchedCity) {
+            detectedCityId = matchedCity.id;
+            detectedCityName = matchedCity.title;
+        } else {
+            const defaultCity = cities.find(c => c.title === activeBranch);
+            if(defaultCity) {
+                detectedCityId = defaultCity.id;
+                detectedCityName = defaultCity.title;
             }
-        });
+        }
+    }
+
+    let dealType = 'sale'; 
+    if (lowerText.includes('kiralık') || lowerText.includes('kira')) dealType = 'rent'; 
+    else if (lowerText.includes('satılık')) dealType = 'sale';
+    const detectedTags = availableTags.filter(tag => lowerText.includes(tag.toLocaleLowerCase('tr-TR')));
+    const newAdNo = lastAdNumber + 1;
+    
+    let alarmTime = '';
+    let alarmActive = false;
+
+    if (forcedDateString) {
+        const d = new Date(forcedDateString); 
+        const year = d.getFullYear(); const month = String(d.getMonth() + 1).padStart(2, '0'); const day = String(d.getDate()).padStart(2, '0');
+        const hrs = String(d.getHours()).padStart(2, '0');
+        const mins = String(d.getMinutes()).padStart(2, '0');
+        alarmTime = `${year}-${month}-${day}T${hrs}:${mins}`;
+        alarmActive = true;
+    } else {
+        const detectedDate = parseDateFromText(textToProcess);
+        if (detectedDate) {
+            alarmTime = detectedDate;
+            alarmActive = true;
+        }
+    }
+
+    const newItem = { 
+       id: timestamp, 
+       adNo: newAdNo, 
+       text: text, 
+       phone, 
+       contactName, 
+       date: fullDate, 
+       price, 
+       alarmTime: alarmTime, 
+       alarmActive: alarmActive, 
+       tags: detectedTags, 
+       cityId: detectedCityId, 
+       cityName: detectedCityName, 
+       dealType: dealType,
+       branchName: itemBranch,
+       consultantName: activeProfile.name
     };
-    await Promise.all(images.map(img => loadImg(img)));
+    
+    let targetCategoryId = 'cat_todo';
+    
+    if (selectedInputCat !== 'auto') {
+        targetCategoryId = selectedInputCat;
+    } else {
+        const appointmentTriggers = ['randevu', 'gösterim', 'gösterilecek', 'sunum', 'yer gösterme', 'bakılacak', 'yarın', 'saat', 'toplantı', 'haftaya', 'gün'];
+        const isAppointment = appointmentTriggers.some(trigger => lowerText.includes(trigger));
+        
+        if (alarmActive || isAppointment) { targetCategoryId = 'cat_randevu'; } 
+        else if (lowerText.includes('devren')) { targetCategoryId = 'cat_devren'; } 
+        else {
+            const priorityOrder = ['cat_ticari', 'cat_tarla', 'cat_bahce', 'cat_arsa', 'cat_konut'];
+            for (const catId of priorityOrder) {
+              const cat = categories.find(c => c.id === catId);
+              if (cat) {
+                const keys = cat.keywords.split(',').map(k => k.trim().toLowerCase()).filter(k => k !== '');
+                if (keys.some(key => lowerText.includes(key))) { targetCategoryId = cat.id; break; }
+              }
+            }
+        }
+    }
 
-    await new Promise(resolve => setTimeout(resolve, 800));
+    const commitSave = () => {
+        const newCategories = categories.map(c => { if (c.id === targetCategoryId) { return { ...c, items: [newItem, ...c.items] }; } return c; });
+        setCategories(newCategories);
+        setLastAdNumber(newAdNo);
+        saveToLocal(newCategories, cities, availableTags, newAdNo); 
+        const targetCategory = categories.find(c => c.id === targetCategoryId);
+        setFeedbackMsg(`✅ #${newAdNo} - "${targetCategory?.title}" eklendi.`);
+        setActiveTabId(targetCategoryId);
+        if(detectedCityId) setActiveCityFilter(detectedCityId);
+        setInputText('');
+        setTimeout(() => setFeedbackMsg(''), 3000);
 
-    try {
-        const dataUrl = await window.htmlToImage.toPng(targetElement, {
-            width: 794,
-            pixelRatio: 2, 
-            style: { transform: 'none', margin: '0', padding: '0' },
-            cacheBust: true
-        });
-        
-        const img = new Image();
-        img.src = dataUrl;
-        await new Promise(resolve => { 
-            img.onload = resolve; 
-            img.onerror = resolve; 
-        });
-        
-        const pdfWidth = 210;
-        const pdfHeight = (img.height * pdfWidth) / img.width;
-        
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({
-            orientation: 'p',
-            unit: 'mm',
-            format: [pdfWidth, pdfHeight]
-        });
-        
-        pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        return pdf.output('blob');
-    } catch(e) {
-        console.error("PDF yakalama hatası:", e);
-        return null;
+        if (targetCategoryId === 'cat_randevu') {
+           addToNativeCalendar(newItem);
+        }
+    };
+
+    if (isBranchExtractedFromText && itemBranch !== activeBranch) {
+        showDialog('confirm', `Bu kayıt "${itemBranch}" şubesine eklenecek. Onaylıyor musunuz?`, commitSave);
+    } else {
+        commitSave();
     }
   };
 
-  const onDownloadImageOnly = async () => {
-      setIsDownloading(true);
-      try {
-          const blob = await executeCapture('social-capture-element', 1080, 1080);
-          if (blob) { 
-              window.saveAs(blob, `Emlak_Tasarim.png`); 
-          } else {
-             alert("Görsel oluşturulamadı. Lütfen CORS ayarları olan yerel dosyalar kullanıldığından emin olun.");
-          }
-      } catch (err) {
-          console.error(err);
-      } finally {
-          setIsDownloading(false);
-      }
+  const executeDelete = (catId, itemId) => {
+    if (catId === 'cat_trash') {
+        const newCategories = categories.map(c => { if (c.id === catId) return {...c, items: c.items.filter(i => i.id !== itemId)}; return c; });
+        setCategories(newCategories);
+        saveToLocal(newCategories, cities, availableTags, lastAdNumber);
+    } else {
+        let itemToMove = null;
+        let newCategories = categories.map(c => {
+            if (c.id === catId) {
+                itemToMove = c.items.find(i => i.id === itemId);
+                return {...c, items: c.items.filter(i => i.id !== itemId)};
+            }
+            return c;
+        });
+        if (itemToMove) {
+            newCategories = newCategories.map(c => {
+                if (c.id === 'cat_trash') return {...c, items: [itemToMove, ...c.items]};
+                return c;
+            });
+        }
+        setCategories(newCategories);
+        saveToLocal(newCategories, cities, availableTags, lastAdNumber);
+        setFeedbackMsg(`🗑️ Öğe çöp kutusuna taşındı.`);
+        setTimeout(() => setFeedbackMsg(''), 3000);
+    }
+  };
+
+  const requestDelete = (catId, itemId) => {
+    if (catId === 'cat_trash') {
+        showDialog('confirm', "Bu öğeyi kalıcı olarak silmek istediğinize emin misiniz?", () => executeDelete(catId, itemId));
+    } else {
+        showDialog('confirm', "Bu öğe çöp kutusuna taşınacak. Emin misiniz?", () => executeDelete(catId, itemId));
+    }
+  };
+
+  const executeEmptyTrash = () => {
+    const newCategories = categories.map(c => {
+        if (c.id === 'cat_trash') return {...c, items: []};
+        return c;
+    });
+    setCategories(newCategories);
+    saveToLocal(newCategories, cities, availableTags, lastAdNumber);
+    setFeedbackMsg(`✨ Çöp kutusu boşaltıldı.`);
+    setTimeout(() => setFeedbackMsg(''), 3000);
+  };
+
+  const requestEmptyTrash = () => {
+      showDialog('confirm', "Çöp kutusundaki tüm öğeler KALICI olarak silinecektir. Emin misiniz?", executeEmptyTrash);
+  };
+
+  const saveItemChanges = () => {
+    if (!editingItem) return;
+    
+    let newCategories = [...categories];
+    const { originalCatId, targetCatId, item } = editingItem;
+
+    if (originalCatId === targetCatId) {
+      newCategories = newCategories.map(c => {
+        if (c.id === originalCatId) return { ...c, items: c.items.map(i => i.id === item.id ? item : i) };
+        return c;
+      });
+    } else {
+      newCategories = newCategories.map(c => { if (c.id === originalCatId) return { ...c, items: c.items.filter(i => i.id !== item.id) }; return c; });
+      newCategories = newCategories.map(c => { if (c.id === targetCatId) return { ...c, items: [item, ...c.items] }; return c; });
+    }
+
+    setCategories(newCategories);
+    saveToLocal(newCategories, cities, availableTags, lastAdNumber);
+    setEditingItem(null);
+  };
+
+  const executeTransfer = () => {
+     if(!transferringItem) return;
+     let newCategories = [...categories];
+     const { originalCatId, targetCatId, targetBranchName, item } = transferringItem;
+     
+     const updatedItem = { ...item, branchName: targetBranchName };
+
+     newCategories = newCategories.map(c => { if (c.id === originalCatId) return { ...c, items: c.items.filter(i => i.id !== item.id) }; return c; });
+     newCategories = newCategories.map(c => { if (c.id === targetCatId) return { ...c, items: [updatedItem, ...c.items] }; return c; });
+
+     setCategories(newCategories);
+     saveToLocal(newCategories, cities, availableTags, lastAdNumber);
+     setTransferringItem(null);
+     setFeedbackMsg(`🔄 Öğe başarıyla transfer edildi.`);
+     setTimeout(() => setFeedbackMsg(''), 3000);
+  };
+
+  const handleCalendarAdd = () => { 
+      if(!calendarInputText) return; 
+      const [hours, minutes] = calendarInputTime.split(':');
+      const d = new Date(calendarSelectedDate);
+      d.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      processCommand(calendarInputText, null, d.toISOString()); 
+      setCalendarSelectedDate(null); 
+      setCalendarInputText(''); 
   };
   
-  const onDownloadPdfOnly = async () => {
-      setIsDownloading(true);
-      try {
-          const blob = await executePdfCapture();
-          if (blob) { 
-              window.saveAs(blob, `${getFileNameBase()}.pdf`); 
-          } else {
-             alert("PDF oluşturulamadı.");
-          }
-      } catch (err) {
-          console.error(err);
-      } finally {
-          setIsDownloading(false);
-      }
+  const startListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return showDialog('alert', "Ses algılama tarayıcınız tarafından desteklenmiyor.");
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'tr-TR';
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      setInputText(transcript);
+      processCommand(transcript);
+    };
+    recognition.start();
   };
 
-  const onDownloadProject = async () => {
-    if (!window.JSZip) { alert("Kütüphaneler Yüklenmedi. Lütfen sayfayı yenileyin."); return; }
-    setIsDownloading(true);
-    try {
-        const zip = new window.JSZip();
-        
-        let safeNeighborhood = (formData.neighborhood || "Genel").trim();
-        safeNeighborhood = safeNeighborhood.replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
-                                           .replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S').replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C');
-        let fileDetail = "Ilan";
-        if (formData.type.includes("Daire")) fileDetail = formData.rooms || "Daire";
-        else if (formData.type.includes("Arsa")) fileDetail = "Arsa";
-        else if (formData.type.includes("Ticari") || formData.type === "Devren Satılık") fileDetail = formData.gayrimenkulTipi || "Dükkan";
-        else if (formData.type.includes("Tarla")) fileDetail = (formData.tarlaTipi && formData.tarlaTipi.length > 0) ? formData.tarlaTipi[0] : "Tarla";
-        else if (formData.type.includes("Bahçe")) fileDetail = formData.bahceTipi || "Bahçe";
-        else fileDetail = getSubTypeLabel() || formData.type;
-        fileDetail = fileDetail.replace(/[\/\\?%*:|"<>]/g, '').trim();
-        
-        const safeAdNumber = formData.adNumber ? formData.adNumber.trim() : "00000";
-        const safeConsultantName = consultant.name.trim();
-        const formattedPrice = formData.price ? `${formData.price} TL` : "0 TL";
-        
-        let zipFolderName = `${safeAdNumber} - ${safeConsultantName} - ${safeNeighborhood} - ${fileDetail} - ${formattedPrice}`;
-        zipFolderName = zipFolderName.replace(/[\/\\?%*:|"<>]/g, '');
-
-        const pdfFileName = getFileNameBase();
-        
-        const rootFolder = zip.folder(zipFolderName);
-        const hamFolder = rootFolder.folder("1_HAM_FOTOLAR");
-        if (formData.images.length > 0) {
-          const imgPromises = formData.images.map(async (imgUrl, idx) => {
-            try { const response = await fetch(imgUrl); const blob = await response.blob(); hamFolder.file(`resim_${idx + 1}.jpg`, blob); } catch (e) {}
-          }); await Promise.all(imgPromises);
-        }
-        
-        const tasarimFolder = rootFolder.folder("2_TASARIMLI");
-        const socialBlob = await executeCapture('social-capture-element', 1080, 1080); 
-        if (socialBlob) { 
-            tasarimFolder.file(`sosyal_tasarim.png`, socialBlob); 
-        }
-        
-        const pdfBlob = await executePdfCapture();
-        if (pdfBlob) {
-            const pdfFolder = rootFolder.folder("3_PDF_SUNUM");
-            pdfFolder.file(`${pdfFileName}.pdf`, pdfBlob);
-        }
-        
-        const metinFolder = rootFolder.folder("4_ILAN_METNI");
-        metinFolder.file("ilan_metni.txt", formData.description || "Lütfen 'Sihirli Metin Oluştur' butonuna basınız.");
-        
-        const ozelFolder = rootFolder.folder("5_OZEL_BILGI");
-        const ozelContent = `MÜŞTERİ BİLGİ FORMU\nTarih: ${privateData.date}\nMüşteri Adı: ${privateData.customerName}\nİletişim: ${privateData.contactInfo}\nAçık Adres: ${privateData.openAddress}\nTaşınmaz No: ${privateData.propertyNo}\nKapı Şifresi: ${privateData.doorCode}\nTapu Durumu: ${privateData.deedStatusPrivate}\nTakas: ${privateData.swapPrivate}\nBiter Fiyat: ${privateData.finalPrice}\nKomisyon: ${privateData.commission}\nNotlar: ${privateData.notes}`;
-        ozelFolder.file("Ozel_Bilgiler.txt", ozelContent);
-        
-        const content = await zip.generateAsync({ type: "blob" });
-        window.saveAs(content, `${zipFolderName}.zip`);
-    } catch (error) { 
-        console.error("ZIP Hatası:", error);
-    } finally { 
-        setIsDownloading(false); 
+  const startListeningCalendar = () => { 
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; 
+      if (!SpeechRecognition) return showDialog('alert', "Ses algılama tarayıcınız tarafından desteklenmiyor."); 
+      const recognition = new SpeechRecognition(); 
+      recognition.lang = 'tr-TR'; 
+      recognition.onstart = () => setIsListening(true); 
+      recognition.onend = () => setIsListening(false); 
+      recognition.onresult = (e) => setCalendarInputText(e.results[0][0].transcript); 
+      recognition.start(); 
+  };
+   
+  const getProcessedItems = (items) => {
+    let result = [...items];
+    if (activeCityFilter !== 'all') { result = result.filter(item => item.cityId === activeCityFilter); }
+    if (activeDealType !== 'all' && activeTabId !== 'cat_todo' && activeTabId !== 'cat_randevu') { result = result.filter(item => item.dealType === activeDealType); }
+    if (activeFilters.length > 0) { result = result.filter(item => activeFilters.every(filterTag => item.tags && item.tags.includes(filterTag))); }
+    if (priceFilter.min !== '') { result = result.filter(item => item.price >= parseFloat(priceFilter.min)); }
+    if (priceFilter.max !== '') { result = result.filter(item => item.price <= parseFloat(priceFilter.max)); }
+    
+    if (activeTabId !== 'cat_trash') {
+         result = result.filter(item => (item.branchName || 'Ereğli') === activeBranch);
     }
+
+    if (!isAdmin && (activeTabId === 'cat_randevu' || activeTabId === 'cat_todo')) {
+         result = result.filter(item => item.consultantName === activeProfile.name);
+    } else if (activeTabId !== 'cat_randevu' && activeTabId !== 'cat_todo' && activeTabId !== 'cat_trash') {
+         if (ownershipFilter === 'me') {
+             result = result.filter(item => item.consultantName === activeProfile.name);
+         } else if (ownershipFilter === 'others') {
+             result = result.filter(item => item.consultantName !== activeProfile.name);
+         }
+    }
+
+    result.sort((a, b) => {
+      switch (sortOption) {
+        case 'date_asc': return a.id - b.id;
+        case 'date_desc': return b.id - a.id;
+        case 'price_asc': if (!a.price) return 1; if (!b.price) return -1; return a.price - b.price;
+        case 'price_desc': if (!a.price) return 1; if (!b.price) return -1; return b.price - a.price;
+        default: return b.id - a.id;
+      }
+    });
+    return result;
   };
+
+  const getEventsForDate = (targetDate) => {
+      if (!targetDate) return [];
+      let events = [];
+      categories.forEach(c => {
+          if (c.id === 'cat_trash') return; 
+          c.items.forEach(item => {
+              if (item.alarmTime && (item.branchName || 'Ereğli') === activeBranch) {
+                  if (!isAdmin && item.consultantName !== activeProfile.name) return;
+                  
+                  const itemDate = new Date(item.alarmTime);
+                  if (itemDate.getDate() === targetDate.getDate() && 
+                      itemDate.getMonth() === targetDate.getMonth() && 
+                      itemDate.getFullYear() === targetDate.getFullYear()) {
+                      events.push({ ...item, originalCatId: c.id });
+                  }
+              }
+          });
+      });
+      return events;
+  };
+
+  const branchList = getUniqueBranches();
+
+  const getCustomerList = (selectedCat = 'Tümü', selectedBranch = 'Tümü') => {
+    let customers = [];
+    categories.forEach(cat => {
+        if (cat.id === 'cat_trash') return; 
+        
+        let group = 'Diğer';
+        const titleLower = cat.title.toLowerCase();
+        if(titleLower.includes('konut') || titleLower.includes('ev')) group = 'Konut';
+        else if(titleLower.includes('arsa')) group = 'Arsa';
+        else if(titleLower.includes('tarla')) group = 'Tarla';
+        else if(titleLower.includes('ticari') || titleLower.includes('dükkan') || titleLower.includes('ofis')) group = 'Ticari';
+        else if(titleLower.includes('bahçe')) group = 'Bahçe';
+
+        if (selectedCat !== 'Tümü' && group !== selectedCat) return;
+
+        cat.items.forEach(item => {
+            const itemBranch = item.branchName || 'Ereğli';
+            if (selectedBranch !== 'Tümü' && itemBranch !== selectedBranch) return;
+            
+            if (!isAdmin && item.consultantName !== activeProfile.name) return;
+            if (isAdmin && customerConsultantFilter !== 'Tümü' && item.consultantName !== customerConsultantFilter) return;
+
+            if (item.contactName || item.phone) {
+                customers.push({
+                    ...item,
+                    groupName: group,
+                    originalCategoryTitle: cat.title
+                });
+            }
+        });
+    });
+    
+    return customers.sort((a, b) => b.id - a.id);
+  }
+
+  const formatCurrency = (amount) => { if (!amount) return ''; return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(amount); };
+  const toggleFilter = (tag) => { if (activeFilters.includes(tag)) setActiveFilters(activeFilters.filter(t => t !== tag)); else setActiveFilters([...activeFilters, tag]); };
+   
+  const downloadAllData = () => {
+    let allItems = [];
+    categories.forEach(cat => { 
+        if(cat.items.length > 0 && cat.id !== 'cat_trash') {
+            const branchItems = cat.items.filter(i => (i.branchName || 'Ereğli') === activeBranch && (isAdmin || i.consultantName === activeProfile.name));
+            allItems = [...allItems, ...branchItems]; 
+        }
+    });
+    allItems.sort((a, b) => (b.adNo || 0) - (a.adNo || 0));
+    
+    if (allItems.length === 0) {
+        showDialog('alert', "Aktif şubenizde indirilecek kayıt bulunamadı.");
+        return;
+    }
+
+    let fullContent = `${activeBranch.toUpperCase()} ŞUBESİ TÜM VERİLER - ${new Date().toLocaleString('tr-TR')}\r\n\r\n`;
+    categories.forEach(cat => {
+      if(cat.items.length > 0 && cat.id !== 'cat_trash') {
+        const branchItems = cat.items.filter(i => (i.branchName || 'Ereğli') === activeBranch && (isAdmin || i.consultantName === activeProfile.name));
+        if(branchItems.length > 0) {
+            fullContent += `>>> ${cat.title.toUpperCase()} <<<\r\n`;
+            const sortedItems = branchItems.sort((a, b) => (b.adNo || 0) - (a.adNo || 0));
+            sortedItems.forEach(item => {
+               fullContent += `#${item.adNo || '-'} | ${item.date} | ${item.cityName || ''} | Danışman: ${item.consultantName || '-'}\r\n${item.text}\r\nKişi: ${item.contactName || '-'} (${item.phone || '-'})\r\nFiyat: ${formatCurrency(item.price)}\r\n---\r\n`;
+            });
+        }
+      }
+    });
+    downloadFile(fullContent, `${activeBranch}_Tum_Kayitlar.txt`);
+    setShowMenu(false);
+  };
+
+  const downloadFilteredData = () => {
+    const activeCategory = categories.find(c => c.id === activeTabId) || categories[0];
+    if(activeCategory.id === 'cat_trash') return showDialog('alert', "Çöp kutusunu indiremezsiniz.");
+    
+    const filteredItems = getProcessedItems(activeCategory.items);
+    if (filteredItems.length === 0) return showDialog('alert', "Mevcut listede indirilecek veri bulunamadı.");
+    
+    filteredItems.sort((a, b) => (b.adNo || 0) - (a.adNo || 0));
+    let content = `${activeCategory.title.toUpperCase()} RAPORU (${activeBranch} Şubesi) - ${new Date().toLocaleString('tr-TR')}\r\n\r\n`;
+    filteredItems.forEach((item) => {
+        content += `#${item.adNo || '-'} | ${item.cityName || ''} | ${item.dealType === 'rent' ? 'KİRA' : 'SATILIK'} | Danışman: ${item.consultantName || '-'}\r\n${item.text}\r\nFiyat: ${formatCurrency(item.price)}\r\n---\r\n`;
+    });
+    downloadFile(content, `${activeBranch}_${activeCategory.title}_Raporu.txt`);
+    setShowMenu(false);
+  };
+
+  const downloadCustomerList = () => {
+    const list = getCustomerList(customerFilter, customerBranchFilter);
+    if(list.length === 0) return showDialog('alert', "Bu filtreyle eşleşen müşteri bulunamadı.");
+    
+    let content = `MÜŞTERİ LİSTESİ (${customerFilter} - ${customerBranchFilter} Şubesi) - ${new Date().toLocaleString('tr-TR')}\r\n\r\n`;
+    list.forEach(c => {
+       content += `Müşteri: ${c.contactName || 'İsimsiz'} | Tel: ${c.phone || '-'}\r\n`;
+       content += `Grup: ${c.groupName} | Kategori: ${c.originalCategoryTitle} | Şube: ${c.branchName || '-'} | Danışman: ${c.consultantName || '-'}\r\n`;
+       content += `Talep: ${c.text}\r\n`;
+       content += `Fiyat: ${formatCurrency(c.price)}\r\n`;
+       content += `-------------------------------------------\r\n`;
+    });
+    downloadFile(content, `Musteri_Listesi.txt`);
+  };
+
+  const downloadFile = (content, filename) => {
+    const blob = new Blob(["\uFEFF" + content], { type: 'text/plain;charset=utf-8' });
+    const element = document.createElement("a");
+    element.href = URL.createObjectURL(blob);
+    element.download = filename;
+    document.body.appendChild(element); element.click(); document.body.removeChild(element);
+  };
+
+  const getIcon = (icon) => {
+    if(icon==='home') return <Home size={16}/>;
+    if(icon==='map') return <Map size={16}/>;
+    if(icon==='calendar') return <Calendar size={16}/>;
+    if(icon==='check') return <CheckSquare size={16}/>;
+    if(icon==='sprout') return <Sprout size={16}/>;
+    if(icon==='flower') return <Flower size={16}/>;
+    if(icon==='store') return <Store size={16}/>;
+    if(icon==='key') return <Key size={16}/>;
+    if(icon==='trash') return <Trash2 size={16}/>;
+    return <Briefcase size={16}/>;
+  }
+
+  const addNewCity = () => { if (!newCityTitle) return; setCities([...cities, { id: `city_${Date.now()}`, title: newCityTitle, keywords: newCityKeywords }]); setNewCityTitle(''); setNewCityKeywords(''); };
+  
+  const requestRemoveCity = (cityId) => {
+      showDialog('confirm', "Bu şehri silmek istediğinize emin misiniz?", () => setCities(cities.filter(c => c.id !== cityId)));
+  };
+
+  const activeCategory = categories.find(c => c.id === activeTabId) || categories[0];
+  const displayItems = getProcessedItems(activeCategory.items);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-orange-200 selection:text-orange-900">
-      <header className="bg-slate-900 text-white p-4 shadow-lg print:hidden">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2"><Home className="text-orange-500" size={28} /><h1 className="text-xl font-bold">Özcan AKTAŞ - Emlaknomi <span className="text-orange-500 font-light">Pro</span></h1></div>
-          <div className="flex items-center space-x-4">
-             <button onClick={onDownloadProject} disabled={isDownloading} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center font-bold text-sm transition-colors disabled:opacity-50">{isDownloading ? 'Hazırlanıyor...' : <><Download size={18} className="mr-2"/> İndir (ZIP)</>}</button>
-             <div className="h-8 w-8 bg-orange-500 rounded flex items-center justify-center font-bold border border-orange-600">ÖA</div>
-          </div>
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 relative pb-28">
+      
+      {/* Özel Uyarı/Onay Penceresi */}
+      {customDialog.isOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-xs shadow-2xl text-center border border-slate-100 animate-in zoom-in-95">
+                <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${customDialog.type === 'confirm' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
+                    <AlertTriangle size={24}/>
+                </div>
+                <h3 className="font-bold text-lg mb-2 text-slate-800">{customDialog.type === 'confirm' ? 'Emin misiniz?' : 'Bilgilendirme'}</h3>
+                <p className="text-slate-600 text-sm mb-6 leading-relaxed">{customDialog.message}</p>
+                <div className="flex gap-3 justify-center">
+                    {customDialog.type === 'confirm' && (
+                        <button onClick={closeDialog} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-all">İptal</button>
+                    )}
+                    <button onClick={() => {
+                        if (customDialog.onConfirm) customDialog.onConfirm();
+                        closeDialog();
+                    }} className={`flex-1 py-3 rounded-xl font-bold text-white transition-all shadow-md ${customDialog.type === 'confirm' ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-600/20' : 'bg-slate-800 hover:bg-slate-900'}`}>
+                        Tamam
+                    </button>
+                </div>
+            </div>
         </div>
-      </header>
+      )}
 
-      <main className="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-6 print:hidden">
-          <div className="bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-700 text-white">
-            <h2 className="text-lg font-semibold mb-4 flex items-center text-slate-100"><User className="mr-2 text-orange-500" size={20} /> Ayarlar</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div>
-                 <label className="block text-sm font-medium text-slate-400 mb-1">Şube</label>
-                 <select value={selectedOffice} onChange={handleOfficeChange} disabled={activeUser.allowedBranches && activeUser.allowedBranches.length === 1} className={`w-full p-2 border border-slate-600 rounded-lg bg-slate-700 text-white focus:border-orange-500 ${activeUser.allowedBranches && activeUser.allowedBranches.length === 1 ? 'opacity-75 cursor-not-allowed' : ''}`}>
-                    {(activeUser.allowedBranches || Object.keys(availableBranches)).map(key => (availableBranches[key] ? <option key={key} value={key}>{availableBranches[key].name}</option> : null))}
-                 </select>
-               </div>
-               <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-1">Görünüm & Tema</label>
-                  <div className="flex gap-2">
-                    <button onClick={() => setShowLogo(!showLogo)} className="flex-1 border border-slate-600 p-2 rounded text-xs hover:bg-slate-700">{showLogo ? 'Logo Gizle' : 'Logo Göster'}</button>
-                    <label className="cursor-pointer border border-slate-600 p-2 rounded text-xs bg-slate-700 flex items-center justify-center hover:bg-slate-600"><Upload size={14} className="mr-1"/> Logo<input type="file" className="hidden" onChange={handleLogoChange}/></label>
-                  </div>
-                  <div className="mt-2 flex items-center gap-2"><label className="text-xs text-slate-400">Tema Rengi:</label><input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)} className="w-full h-8 rounded cursor-pointer"/></div>
-               </div>
-               <div className="md:col-span-2 border-t border-slate-700 pt-4 mt-2">
-                   <h3 className="text-xs font-bold text-slate-400 mb-2">Danışman Bilgileri</h3>
-                   <div className="grid grid-cols-2 gap-2">
-                       <input name="name" value={consultant.name} onChange={handleConsultantChange} className="p-2 border border-slate-600 rounded text-xs bg-slate-700 text-white" placeholder="Ad Soyad"/>
-                       <input name="phone" value={consultant.phone} onChange={handleConsultantChange} className="p-2 border border-slate-600 rounded text-xs bg-slate-700 text-white" placeholder="Telefon"/>
-                       <label className="flex items-center text-xs gap-1 border border-slate-600 p-2 rounded cursor-pointer hover:bg-slate-700"><input type="checkbox" name="showInfo" checked={consultant.showInfo} onChange={handleConsultantChange}/> Bilgileri Göster</label>
-                       <label className="flex items-center text-xs gap-1 border border-slate-600 p-2 rounded cursor-pointer hover:bg-slate-700"><input type="checkbox" name="showPhoto" checked={consultant.showPhoto} onChange={handleConsultantChange}/> Foto Göster</label>
-                       <label className="col-span-2 cursor-pointer border border-slate-600 p-2 rounded text-xs bg-slate-700 flex items-center justify-center hover:bg-slate-600"><Upload size={14} className="mr-1"/> Profil Fotosu Değiştir<input type="file" className="hidden" onChange={handleProfilePhotoChange} accept="image/*"/></label>
-                   </div>
-               </div>
-               <div className="md:col-span-2 space-y-2 border-t border-slate-700 pt-4">
-                   <div className="flex items-center space-x-2 border border-slate-600 p-2 rounded hover:bg-slate-700"><input type="checkbox" checked={showWebsiteOzcan} onChange={e=>setShowWebsiteOzcan(e.target.checked)} /><span className="text-sm">ozcanaktas.com Göster</span></div>
-                   <div className="flex items-center space-x-2 border border-slate-600 p-2 rounded hover:bg-slate-700"><input type="checkbox" checked={showWebsiteEmlaknomi} onChange={e=>setShowWebsiteEmlaknomi(e.target.checked)} /><span className="text-sm">emlaknomi.com Göster</span></div>
-               </div>
+      {/* Şube Değiştirme Modalı */}
+      {showBranchModal && (
+         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[5000]">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-xs shadow-2xl animate-in zoom-in-95">
+                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2"><Building2 size={18} className="text-indigo-600"/> Şube Değiştir</h3>
+                    <button onClick={() => setShowBranchModal(false)} className="text-slate-400 hover:bg-slate-100 p-1 rounded"><X size={18}/></button>
+                </div>
+                <p className="text-xs text-slate-500 mb-4 leading-relaxed">Çalışmak istediğiniz şubeyi seçin.</p>
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {branchList.map(b => (
+                        <button key={b} onClick={() => handleBranchChange(b)} className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${activeBranch === b ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100'}`}>
+                            {b} {activeBranch === b && <CheckSquare size={16}/>}
+                        </button>
+                    ))}
+                </div>
+            </div>
+         </div>
+      )}
+
+      {/* Transfer Modalı */}
+      {transferringItem && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[6000]">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95">
+                 <div className="flex justify-between items-center mb-4 border-b pb-2">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-2"><ArrowRightLeft size={18} className="text-orange-500"/> Kayıt Transferi</h3>
+                    <button onClick={() => setTransferringItem(null)} className="text-slate-400 hover:bg-slate-100 p-1 rounded"><X size={18}/></button>
+                </div>
+                <p className="text-xs text-slate-500 mb-4">Bu kaydı başka bir şubeye veya bölüme taşıyın.</p>
+                
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hedef Şube</label>
+                        <select 
+                            value={transferringItem.targetBranchName}
+                            onChange={(e) => setTransferringItem({...transferringItem, targetBranchName: e.target.value})}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500"
+                        >
+                            {branchList.map(b => <option key={b} value={b}>{b} Şubesi</option>)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Hedef Bölüm</label>
+                        <select 
+                            value={transferringItem.targetCatId}
+                            onChange={(e) => setTransferringItem({...transferringItem, targetCatId: e.target.value})}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm font-medium outline-none focus:ring-2 focus:ring-orange-500"
+                        >
+                            {categories.filter(c => c.id !== 'cat_trash').map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                        </select>
+                    </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                    <button onClick={() => setTransferringItem(null)} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold hover:bg-slate-200 transition-all">İptal</button>
+                    <button onClick={executeTransfer} className="flex-1 bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 transition-all shadow-md shadow-orange-500/20">Taşı</button>
+                </div>
             </div>
           </div>
+      )}
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-lg font-semibold mb-4 flex items-center text-slate-700"><Layout className="mr-2 text-blue-600" size={20} /> İlan Detayları</h2>
-            <div className="space-y-4">
-              <div className="border-2 border-dashed p-4 rounded bg-slate-50">
-                 <label className="cursor-pointer bg-blue-600 text-white px-3 py-1.5 rounded block text-center text-sm font-medium mb-2"><Camera size={16} className="inline mr-1" /> Fotoğraf Yükle<input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} /></label>
-                 <div className="grid grid-cols-4 gap-2">
-                    {formData.images.map((img, idx) => (
-                        <div key={idx} className={`relative aspect-square border-2 cursor-pointer group ${formData.coverImageIndex === idx ? 'border-orange-500' : 'border-gray-200'}`} onClick={() => setFormData(prev => ({...prev, coverImageIndex: idx}))}>
-                            <img src={img} className="w-full h-full object-cover"/>
-                            {formData.coverImageIndex === idx && <div className="absolute bottom-0 w-full bg-orange-500 text-white text-[8px] text-center">KAPAK</div>}
-                            <button onClick={(e) => removeImage(idx, e)} className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-700" title="Fotoğrafı Sil"><X size={12} /></button>
-                        </div>
-                    ))}
+      {/* Şube Ekle Modalı (Sadece Admin) */}
+      {showAddBranchModal && isAdmin && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[5000]">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95">
+            <div className="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 className="font-bold text-slate-800 flex items-center gap-2"><Building2 size={18}/> Yeni Şube Ekle</h3>
+                <button onClick={() => setShowAddBranchModal(false)} className="text-slate-400 hover:bg-slate-100 p-1 rounded"><X size={18}/></button>
+            </div>
+            <input 
+                placeholder="Örn: Ankara" 
+                value={newBranchName} 
+                onChange={(e) => setNewBranchName(e.target.value)} 
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 mb-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+            <button onClick={() => { 
+                if(!newBranchName.trim()) return; 
+                if(!branches.includes(newBranchName.trim())) {
+                    const updated = [...branches, newBranchName.trim()];
+                    setBranches(updated);
+                    saveToLocal(categories, cities, availableTags, lastAdNumber, updated);
+                    setFeedbackMsg(`🏢 Yeni şube eklendi: ${newBranchName}`);
+                    setTimeout(() => setFeedbackMsg(''), 3000);
+                } else {
+                    showDialog('alert', "Bu şube zaten mevcut.");
+                }
+                setShowAddBranchModal(false); 
+                setNewBranchName(''); 
+            }} className="w-full bg-slate-800 text-white py-3 rounded-xl text-sm font-bold hover:bg-slate-900 transition-all">EKLE</button>
+            <button onClick={() => setShowAddBranchModal(false)} className="w-full mt-2 text-slate-500 text-xs py-2 font-medium hover:bg-slate-50 rounded-lg">İptal</button>
+          </div>
+        </div>
+      )}
+
+      <div className="sticky top-0 z-40 bg-white shadow-sm border-b border-slate-200">
+        <div className="bg-slate-900 text-white p-2 flex justify-between items-center h-16">
+          <div className="flex items-center gap-3">
+            <img src="https://emlaknomi.com/wp-content/uploads/2023/12/Emlaknomi-Simgesi.png" alt="Logo" onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x50/transparent/white?text=E"}} className="w-10 h-10 object-contain rounded-md bg-white/10 p-1"/>
+            <div className="flex flex-col justify-center h-full pt-1 cursor-pointer group" onClick={() => setShowBranchModal(true)}>
+              <h1 className="font-bold text-sm text-orange-400 leading-tight group-hover:text-orange-300 transition-colors">Emlaknomi Talepler ve Randevular</h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                 <div className="flex flex-col">
+                    <p className="text-[0.6rem] text-slate-300 flex items-center gap-1"><User size={10}/> {activeProfile.name}</p>
+                    <p className="text-[0.6rem] text-blue-300 font-bold flex items-center gap-1 bg-blue-900/50 px-1 rounded"><Building2 size={10}/> {activeBranch} Şubesi <span className="text-[8px] opacity-70">(Değiştir)</span></p>
                  </div>
               </div>
-              <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                  <label className="text-xs text-orange-800 font-bold mb-1 block">İlan Başlığı</label>
-                  <div className="flex items-center gap-2"><span className="font-bold text-orange-700 whitespace-nowrap">Emlaknomi'den</span><input type="text" name="customTitle" value={formData.customTitle} onChange={handleInputChange} placeholder="Otomatik (Boş bırakınız)" className="w-full p-2 border border-orange-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/></div>
-              </div>
-              <div><label className="text-xs text-slate-500 font-bold mb-1 block">Emlak Tipi</label><select name="type" value={formData.type} onChange={handleInputChange} className="w-full p-2 border rounded bg-white text-slate-800 font-bold"><option>Satılık Daire</option><option>Kiralık Daire</option><option>Satılık Arsa</option><option>Satılık Tarla</option><option>Satılık Bahçe</option><option>Satılık Ticari</option><option>Kiralık Ticari</option><option>Devren Satılık</option></select></div>
-              <div className="grid grid-cols-2 gap-4"><InputField label="Fiyat" name="price" value={formData.price} onChange={handleInputChange} /><div><label className="text-xs text-slate-500 font-bold mb-1 block">Birim</label><select name="currency" value={formData.currency} onChange={handleInputChange} className="w-full p-2 border rounded bg-white text-slate-800"><option>TL</option><option>USD</option><option>EUR</option></select></div></div>
-              <div className="bg-slate-50 p-3 rounded border">
-                  <div className="flex justify-between mb-2"><span className="text-sm font-bold">Konum</span><button onClick={()=>setIsManualLocation(!isManualLocation)} className="text-xs text-blue-600 underline">Manuel Gir</button></div>
-                  {isManualLocation ? (<div className="grid grid-cols-3 gap-2"><select name="city" value={formData.city} onChange={handleCityChange} className="p-1 border rounded text-xs bg-white text-slate-800">{allCities.map(c=><option key={c}>{c}</option>)}</select><input name="district" value={formData.district} onChange={handleInputChange} placeholder="İlçe" className="p-1 border rounded text-xs" /><input name="neighborhood" value={formData.neighborhood} onChange={handleInputChange} placeholder="Mahalle" className="p-1 border rounded text-xs" /></div>) : (<div className="grid grid-cols-3 gap-2"><select name="city" value={formData.city} onChange={handleCityChange} className="p-1 border rounded text-xs bg-white text-slate-800">{allCities.map(c=><option key={c}>{c}</option>)}</select><select name="district" value={formData.district} onChange={handleDistrictChange} className="p-1 border rounded text-xs bg-white text-slate-800">{detailedCities.includes(formData.city) ? Object.keys(locationData[formData.city]||{}).map(d=><option key={d}>{d}</option>) : <option>Yok</option>}</select><select name="neighborhood" value={formData.neighborhood} onChange={handleInputChange} className="p-1 border rounded text-xs bg-white text-slate-800">{(locationData[formData.city]?.[formData.district]||[]).map(n=><option key={n}>{n}</option>)}</select></div>)}
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">{renderDynamicFields()}</div>
-              
-              <button onClick={generateDescription} className="w-full py-3 bg-slate-800 text-white rounded font-bold hover:bg-slate-700 transition-colors mt-2 mb-2">Sihirli Metin Oluştur (Yenile)</button>
-              <textarea name="description" value={formData.description} onChange={handleInputChange} rows={6} className="w-full p-2 border rounded text-xs font-mono" placeholder="Metin burada oluşacak..."/>
-              
-              <div className="bg-red-50 p-4 rounded border-dashed border-red-200 mt-4">
-                  <div className="text-red-600 font-bold text-xs mb-2 flex items-center"><Lock size={12} className="mr-1"/> Gizli Bilgiler</div>
-                  <div className="grid grid-cols-2 gap-2">
-                      <div className="col-span-2"><label className="block text-xs text-slate-500 mb-1 font-bold">Tarih</label><input type="date" name="date" value={privateData.date} onChange={handlePrivateInputChange} className="w-full p-2 border rounded-lg text-xs bg-white"/></div>
-                      <input name="customerName" value={privateData.customerName} onChange={handlePrivateInputChange} placeholder="Müşteri Adı" className="p-2 border rounded text-xs"/>
-                      <input name="contactInfo" value={privateData.contactInfo} onChange={handlePrivateInputChange} placeholder="İletişim" className="p-2 border rounded text-xs"/>
-                      <textarea name="openAddress" value={privateData.openAddress} onChange={handlePrivateInputChange} placeholder="Açık Adres" className="col-span-2 p-2 border rounded text-xs" rows={2}/>
-                      <input name="propertyNo" value={privateData.propertyNo} onChange={handlePrivateInputChange} placeholder="Taşınmaz No" className="p-2 border rounded text-xs"/>
-                      <input name="doorCode" value={privateData.doorCode} onChange={handlePrivateInputChange} placeholder="Kapı Şifresi" className="p-2 border rounded text-xs"/>
-                      <input name="deedStatusPrivate" value={privateData.deedStatusPrivate} onChange={handlePrivateInputChange} placeholder="Tapu Durumu" className="p-2 border rounded text-xs"/>
-                      <input name="swapPrivate" value={privateData.swapPrivate} onChange={handlePrivateInputChange} placeholder="Takas" className="p-2 border rounded text-xs"/>
-                      <input name="finalPrice" value={privateData.finalPrice} onChange={handlePrivateInputChange} placeholder="Biter Fiyat" className="p-2 border rounded text-xs"/>
-                      <input name="commission" value={privateData.commission} onChange={handlePrivateInputChange} placeholder="Komisyon" className="p-2 border rounded text-xs"/>
-                      <textarea name="notes" value={privateData.notes} onChange={handlePrivateInputChange} placeholder="Notlar..." className="col-span-2 p-2 border rounded text-xs"/>
-                  </div>
-              </div>
             </div>
+          </div>
+          <div className="flex gap-1 items-center">
+             <button onClick={() => setShowFilters(!showFilters)} className="p-1.5 rounded-md hover:bg-slate-700"><Filter size={18} color="white"/></button>
+             {isAdmin && <button onClick={() => setShowAddModal(true)} className="p-1.5 rounded-md hover:bg-slate-700"><Plus size={18} color="white"/></button>}
+             <button onClick={() => setShowMenu(!showMenu)} className="p-1.5 rounded-md hover:bg-slate-700">
+               {showMenu ? <X size={18} color="white"/> : <Menu size={18} color="white"/>}
+             </button>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="flex bg-white p-1 rounded border">
-            <button onClick={() => setActiveTab('social')} className={`flex-1 py-2 text-xs font-bold rounded ${activeTab === 'social' ? 'bg-orange-500 text-white' : 'text-slate-500'}`}>Sosyal Medya</button>
-            <button onClick={() => setActiveTab('pdf')} className={`flex-1 py-2 text-xs font-bold rounded ${activeTab === 'pdf' ? 'bg-red-500 text-white' : 'text-slate-500'}`}>PDF Sunum</button>
-          </div>
-
-          {activeTab === 'social' && (
-            <div className="bg-white p-4 rounded shadow border">
-              <div className="flex justify-between mb-4">
-                  <span className="text-xs font-bold text-slate-500">INSTAGRAM (1080x1080)</span>
-                  <button onClick={onDownloadImageOnly} disabled={isDownloading} className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded font-bold disabled:opacity-50">
-                      {isDownloading ? 'Hazırlanıyor...' : 'Görsel İndir'}
+        <div className="overflow-x-auto z-10 scrollbar-hide bg-slate-900">
+          <div className="flex p-2 gap-2 w-max">
+            {categories.map(cat => {
+              const isActive = activeTabId === cat.id;
+              const isTrash = cat.id === 'cat_trash';
+              return (
+                  <button key={cat.id} onClick={() => {setActiveTabId(cat.id); setIsCalendarView(false);}} 
+                    className={`px-4 py-2 rounded-lg text-sm border transition-all flex items-center gap-2 
+                      ${isActive 
+                        ? (isTrash ? 'bg-red-600 text-white border-red-600 shadow-md font-bold' : 'bg-orange-500 text-slate-900 border-orange-500 shadow-md font-bold') 
+                        : (isTrash ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20 font-medium' : 'bg-slate-800 text-slate-300 font-medium border-slate-700 hover:bg-slate-700')}`}>
+                    <span className={isActive ? (isTrash ? 'text-white' : 'text-slate-900') : (isTrash ? 'text-red-400' : 'text-orange-400')}>{getIcon(cat.icon)}</span> {cat.title}
                   </button>
-              </div>
-              <div className="flex gap-2 mb-4 justify-center">
-                  {['single', 'double', 'triple', 'quad'].map(mode => (
-                      <button key={mode} onClick={() => setDesignMode(mode)} className={`px-3 py-1 text-xs font-bold border rounded ${designMode === mode ? 'bg-slate-800 text-white' : 'bg-white text-slate-600'}`}>
-                          {mode === 'single' ? 'Tekli' : mode === 'double' ? 'İkili' : mode === 'triple' ? 'Üçlü' : 'Dörtlü'}
-                      </button>
-                  ))}
-              </div>
-              <div className="w-full overflow-hidden flex justify-center bg-slate-900" style={{height: '380px'}}> 
-                  <div style={{transform: 'scale(0.35)', transformOrigin: 'top center', width: '1080px', height: '1080px'}}>
-                    <div className="shadow-2xl">
-                         <SocialDesign isCapture={false} />
+              );
+            })}
+          </div>
+        </div>
+
+        {activeTabId === 'cat_randevu' && (
+          <div className="px-4 py-2 flex justify-end border-b border-slate-200 bg-slate-50">
+            <button onClick={() => setIsCalendarView(!isCalendarView)} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isCalendarView ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-600 border border-indigo-200'}`}>
+              {isCalendarView ? <><CheckSquare size={14}/> Liste Görünümü</> : <><CalendarDays size={14}/> Takvim Görünümü</>}
+            </button>
+          </div>
+        )}
+
+        {!isCalendarView && activeTabId !== 'cat_trash' && (
+          <div className="border-b border-slate-200 overflow-x-auto z-10 scrollbar-hide py-2 bg-slate-50">
+            <div className="flex px-2 gap-2 w-max items-center">
+              <MapPin size={14} className="text-slate-400"/>
+              <button onClick={() => setActiveCityFilter('all')} className={`text-xs px-3 py-1.5 rounded-full border transition-all ${activeCityFilter === 'all' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-slate-600 border-slate-300'}`}>Tümü</button>
+              {cities.map(city => (
+                <button key={city.id} onClick={() => setActiveCityFilter(city.id)} className={`text-xs px-3 py-1.5 rounded-full border transition-all ${activeCityFilter === city.id ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-slate-600 border-slate-300'}`}>
+                  {city.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Ortak Alanlar için Sahiplik (Danışman) Filtresi ve Tip Filtresi */}
+        {!isCalendarView && activeTabId !== 'cat_todo' && activeTabId !== 'cat_randevu' && activeTabId !== 'cat_trash' && (
+          <div className="border-b border-slate-200 overflow-x-auto z-10 scrollbar-hide py-2 px-2 bg-slate-100 flex flex-col gap-2">
+            <div className="flex gap-2 w-max items-center">
+              <Wallet size={14} className="text-slate-400 mr-1"/>
+              <button onClick={() => setActiveDealType('all')} className={`text-xs px-4 py-1 rounded-md border font-bold transition-all ${activeDealType === 'all' ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-500 border-slate-200'}`}>Tümü</button>
+              <button onClick={() => setActiveDealType('sale')} className={`text-xs px-4 py-1 rounded-md border font-bold transition-all ${activeDealType === 'sale' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-600 border-slate-200'}`}>Satılık</button>
+              <button onClick={() => setActiveDealType('rent')} className={`text-xs px-4 py-1 rounded-md border font-bold transition-all ${activeDealType === 'rent' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-purple-600 border-slate-200'}`}>Kiralık</button>
+            </div>
+            <div className="flex gap-2 w-max items-center">
+              <Users size={14} className="text-slate-400 mr-1"/>
+              <button onClick={() => setOwnershipFilter('all')} className={`text-xs px-4 py-1 rounded-md border font-bold transition-all ${ownershipFilter === 'all' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-500 border-slate-200'}`}>Tümü</button>
+              <button onClick={() => setOwnershipFilter('me')} className={`text-xs px-4 py-1 rounded-md border font-bold transition-all ${ownershipFilter === 'me' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-500 border-slate-200'}`}>Taleplerim</button>
+              <button onClick={() => setOwnershipFilter('others')} className={`text-xs px-4 py-1 rounded-md border font-bold transition-all ${ownershipFilter === 'others' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-500 border-slate-200'}`}>Diğer Danışmanlar</button>
+            </div>
+          </div>
+        )}
+
+        {!isCalendarView && showFilters && (
+          <div className="border-b border-slate-200 p-3 z-10 bg-slate-100">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="text-slate-500 text-xs font-bold flex gap-1"><ArrowUpDown size={14}/> Sırala:</div>
+              <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="bg-white border border-slate-300 text-slate-700 text-xs rounded-lg p-2 flex-1 outline-none">
+                <option value="date_desc">En Yeni</option>
+                <option value="date_asc">En Eski</option>
+                <option value="price_asc">Fiyat (Artan)</option>
+                <option value="price_desc">Fiyat (Azalan)</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="text-slate-500 text-xs font-bold flex gap-1"><Banknote size={14}/> Fiyat:</div>
+              <input type="number" placeholder="Min" value={priceFilter.min} onChange={(e)=>setPriceFilter({...priceFilter, min: e.target.value})} className="w-1/3 bg-white border border-slate-300 rounded-lg p-1.5 text-xs"/>
+              <input type="number" placeholder="Max" value={priceFilter.max} onChange={(e)=>setPriceFilter({...priceFilter, max: e.target.value})} className="w-1/3 bg-white border border-slate-300 rounded-lg p-1.5 text-xs"/>
+            </div>
+            <div className="flex gap-2 w-full overflow-x-auto pb-1">
+              {availableTags.map(tag => (
+                <button key={tag} onClick={() => toggleFilter(tag)} className={`text-xs px-3 py-1.5 rounded-full border whitespace-nowrap ${activeFilters.includes(tag) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-300'}`}>
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="p-4"> 
+        {activeTabId === 'cat_trash' && displayItems.length > 0 && (
+            <div className="flex justify-end mb-4">
+                <button onClick={requestEmptyTrash} className="bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-red-100 transition-all">
+                    <Trash2 size={16}/> Çöp Kutusunu Boşalt
+                </button>
+            </div>
+        )}
+
+        {isCalendarView && activeTabId === 'cat_randevu' ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 max-w-sm mx-auto mt-2">
+            <div className="flex justify-between items-center mb-4">
+              <button onClick={() => setCurrentCalendarDate(new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() - 1, 1))} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"><ChevronLeft size={18}/></button>
+              <h3 className="font-bold text-base text-slate-800">{currentCalendarDate.toLocaleString('tr-TR', { month: 'long', year: 'numeric' })}</h3>
+              <button onClick={() => setCurrentCalendarDate(new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 1))} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"><ChevronRight size={18}/></button>
+            </div>
+            <div className="grid grid-cols-7 gap-1 text-center mb-2">
+              {['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pa'].map(d => <div key={d} className="text-[10px] font-bold text-slate-400 uppercase">{d}</div>)}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {getDaysInMonth(currentCalendarDate).map((date, i) => {
+                if (!date) return <div key={i} className="h-10"></div>;
+                
+                const dayEvents = getEventsForDate(date);
+                const isToday = date.getDate() === new Date().getDate() && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear();
+
+                return (
+                  <div key={i} className={`h-10 w-full rounded-xl border text-sm flex flex-col items-center justify-center relative cursor-pointer transition-all ${dayEvents.length > 0 ? 'bg-indigo-50 border-indigo-200 font-bold text-indigo-700 hover:bg-indigo-100 shadow-sm' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'} ${isToday ? 'ring-2 ring-orange-500 bg-orange-50 text-orange-700 font-bold' : ''}`}
+                    onClick={() => setViewingDayDate(date)} 
+                  >
+                    {date.getDate()}
+                    {dayEvents.length > 0 && <div className="absolute bottom-1.5 flex gap-0.5">{dayEvents.slice(0,3).map((_, idx) => <div key={idx} className="w-1 h-1 bg-indigo-500 rounded-full"></div>)}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          displayItems.length === 0 ? <div className="text-center py-12 opacity-40 font-medium">Bu bölümde kayıt bulunmuyor.</div> : (
+            <div className="space-y-3">
+              {displayItems.map((item) => {
+                const isMyItem = item.consultantName === activeProfile.name;
+                const canEdit = isAdmin || isMyItem;
+
+                return (
+                <div key={item.id} className={`p-4 rounded-xl border shadow-lg relative group ${activeTabId === 'cat_trash' ? 'bg-slate-900 border-red-900/50 opacity-70 grayscale-[30%]' : 'bg-slate-800 border-slate-700'}`}>
+                  <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                         <span className="text-xs font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-lg border border-orange-500/20">#{item.adNo || '---'}</span>
+                         {item.cityName && <span className="text-[10px] font-bold text-slate-300 flex items-center gap-0.5"><MapPin size={10}/>{item.cityName}</span>}
+                         {item.branchName && <span className="text-[10px] font-bold text-blue-400 bg-blue-900/40 px-2 py-0.5 rounded border border-blue-800 flex items-center gap-1"><Building2 size={10}/>{item.branchName}</span>}
+                      </div>
+                      {item.price > 0 && (
+                        <div className="bg-green-500/10 text-green-400 px-2 py-1 rounded-lg border border-green-500/20 text-xs font-bold flex items-center gap-1">
+                          <Banknote size={12}/>{formatCurrency(item.price)}
+                        </div>
+                      )}
+                  </div>
+                  
+                  {(item.phone || item.contactName) && (
+                    <div className="flex items-center gap-2 mb-2 text-xs text-slate-300">
+                      <User size={14} className="text-slate-400"/>
+                      <span className="font-bold text-slate-100">{item.contactName || 'İsimsiz'}</span>
+                      <span className="text-slate-500">|</span>
+                      <Phone size={14} className="text-slate-400"/>
+                      <a href={`tel:${item.phone}`} className="text-blue-400 font-mono hover:underline">{item.phone}</a>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 mb-2">
+                    {item.dealType === 'rent' && <span className="inline-flex items-center gap-1 bg-purple-900/40 text-purple-400 border border-purple-800 text-[10px] px-2 py-0.5 rounded-full font-bold">KİRALIK</span>}
+                    {item.dealType === 'sale' && <span className="inline-flex items-center gap-1 bg-green-900/30 text-green-400 border border-green-800/50 text-[10px] px-2 py-0.5 rounded-full font-bold">SATILIK</span>}
+                    {item.consultantName && <span className="inline-flex items-center gap-1 bg-slate-700/50 text-slate-300 border border-slate-600 text-[10px] px-2 py-0.5 rounded-full font-medium"><Users size={10}/> {item.consultantName}</span>}
+                  </div>
+
+                  <p className="text-slate-300 text-sm leading-relaxed mb-3 whitespace-pre-wrap">{item.text}</p>
+                  
+                  {item.tags && item.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {item.tags.map(tag => (
+                        <span key={tag} className="text-[10px] bg-blue-900/40 text-blue-400 px-2 py-0.5 rounded border border-blue-800 font-medium">{tag}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {item.alarmActive && item.alarmTime && (
+                    <div className="mb-2 flex items-center gap-2 bg-yellow-900/30 text-yellow-400 px-2 py-1 rounded text-xs border border-yellow-700/50 w-fit">
+                      <Clock size={12}/> {new Date(item.alarmTime).toLocaleString('tr-TR')}
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center pt-3 border-t border-slate-700">
+                    <span className="text-[10px] text-slate-500">{item.date}</span>
+                    <div className="flex gap-2">
+                      {item.alarmTime && activeTabId !== 'cat_trash' && (
+                        <button onClick={() => addToNativeCalendar(item)} className="p-1.5 rounded-full text-blue-400 bg-blue-900/40 hover:bg-blue-800/60" title="Telefona Kaydet"><Calendar size={16}/></button>
+                      )}
+                      
+                      {activeTabId !== 'cat_trash' && canEdit && (
+                          <>
+                             <button onClick={() => setTransferringItem({originalCatId: activeCategory.id, targetCatId: activeCategory.id, targetBranchName: item.branchName || activeBranch, item: {...item}})} className="p-1.5 rounded-full text-orange-400 hover:bg-orange-500/20 hover:text-orange-300" title="Taşı / Transfer Et"><ArrowRightLeft size={16}/></button>
+                             <button onClick={() => setEditingItem({originalCatId: activeCategory.id, targetCatId: activeCategory.id, item: {...item}})} className="p-1.5 rounded-full text-slate-400 hover:bg-slate-700 hover:text-blue-400" title="Düzenle"><Pencil size={16}/></button>
+                          </>
+                      )}
+                      {canEdit && (
+                          <button onClick={() => requestDelete(activeCategory.id, item.id)} className={`p-1.5 rounded-full ${activeTabId === 'cat_trash' ? 'text-red-500 hover:bg-red-900/30' : 'text-slate-400 hover:bg-slate-700 hover:text-red-400'}`} title={activeTabId === 'cat_trash' ? 'Kalıcı Sil' : 'Çöp Kutusuna Taşı'}><Trash2 size={16}/></button>
+                      )}
                     </div>
                   </div>
-              </div>
+                </div>
+              )})}
             </div>
-          )}
+          )
+        )}
+      </div>
 
-          {activeTab === 'pdf' && (
-            <div className="bg-white p-4 rounded shadow border">
-              <div className="flex justify-between mb-4">
-                  <span className="text-xs font-bold text-slate-500">PDF SUNUM</span>
-                  <button onClick={onDownloadPdfOnly} disabled={isDownloading} className="bg-red-100 text-red-800 text-xs px-3 py-1 rounded font-bold disabled:opacity-50 hover:bg-red-200 transition-colors">
-                      {isDownloading ? 'Hazırlanıyor...' : 'PDF İndir'}
-                  </button>
-              </div>
-              <div className="bg-slate-50 p-8 rounded-xl border border-slate-200 text-center flex flex-col items-center justify-center gap-3">
-                  <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mb-2">
-                      <FileText size={32} />
+      {!isCalendarView && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 pb-6 shadow-[0_-5px_20px_rgba(0,0,0,0.1)] z-40">
+          {feedbackMsg && <div className="absolute -top-10 left-0 right-0 text-center text-xs font-bold text-white bg-green-600 py-2 shadow-lg animate-bounce">{feedbackMsg}</div>}
+          <div className="flex gap-2 items-end relative">
+            
+            <div className="relative flex-shrink-0">
+               <button onClick={() => setShowInputCatMenu(!showInputCatMenu)} className="p-3 rounded-xl mb-1 bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all shadow-sm flex items-center justify-center">
+                  <Plus size={24}/>
+               </button>
+               
+               {showInputCatMenu && (
+                  <div className="absolute bottom-16 left-0 bg-white shadow-2xl border border-slate-200 rounded-xl w-48 p-2 z-[60] animate-in slide-in-from-bottom-2">
+                     <div className="text-xs font-bold text-slate-400 mb-2 px-2">Kayıt Yeri Seçin</div>
+                     <button onClick={() => {setSelectedInputCat('auto'); setShowInputCatMenu(false);}} className={`w-full text-left px-3 py-2 text-sm rounded-lg font-bold ${selectedInputCat==='auto'?'bg-indigo-100 text-indigo-700':'hover:bg-slate-50'}`}>✨ Otomatik</button>
+                     <div className="h-px bg-slate-100 my-1"></div>
+                     {categories.filter(c=>c.id!=='cat_trash').map(c => (
+                         <button key={c.id} onClick={() => {setSelectedInputCat(c.id); setShowInputCatMenu(false);}} className={`w-full text-left px-3 py-2 text-sm rounded-lg mt-1 ${selectedInputCat===c.id?'bg-orange-100 text-orange-700 font-bold':'hover:bg-slate-50'}`}>
+                             {c.title}
+                         </button>
+                     ))}
                   </div>
-                  <h4 className="font-bold text-slate-700 text-lg">PDF Sunum Dosyası</h4>
-                  <p className="text-sm text-slate-500 max-w-sm">
-                      Tasarımlı kapak resmi, diğer fotoğraflar, detaylı ilan metni ve danışman bilgilerinden oluşan profesyonel sunum dosyanızı anında indirebilirsiniz.
-                  </p>
-                  <div className="text-xs font-mono bg-slate-200 px-3 py-1.5 rounded mt-2 text-slate-600 font-bold border border-slate-300">
-                      Dosya: {getFileNameBase()}.pdf
-                  </div>
-              </div>
+               )}
             </div>
-          )}
 
-          {/* İNDİRME İÇİN KULLANILAN GİZLİ (STABİL) KONTEYNERLER */}
-          <div style={{ position: 'fixed', top: '0px', left: '0px', zIndex: -9999, opacity: 0, pointerEvents: 'none' }}>
-             <div id="social-capture-element" className="w-[1080px] h-[1080px] bg-white relative overflow-hidden font-sans">
-                <SocialDesign isCapture={true} />
+            <div className="flex-1 relative">
+              <textarea 
+                value={inputText} 
+                onChange={(e) => setInputText(e.target.value)} 
+                onKeyDown={(e) => { 
+                  if(e.key === 'Enter' && !e.shiftKey) { 
+                    e.preventDefault(); 
+                    processCommand(inputText); 
+                  } 
+                }}
+                placeholder={selectedInputCat === 'auto' ? 'Yeni kayıt için yazın veya konuşun...' : `${categories.find(c=>c.id===selectedInputCat)?.title} bölümüne kaydedilecek...`} 
+                className={`w-full rounded-xl p-3 pr-10 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none h-14 border ${selectedInputCat !== 'auto' ? 'bg-orange-50 border-orange-200 font-medium' : 'bg-slate-100 border-slate-200'}`}
+              />
+              {inputText && <button onClick={() => processCommand(inputText)} className="absolute right-2 top-2 text-blue-600 bg-white p-1.5 rounded-lg shadow-sm"><Send size={16}/></button>}
+            </div>
+            <button onClick={startListening} className={`p-4 rounded-xl mb-1 flex-shrink-0 transition-all shadow-lg ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-800 text-white hover:bg-slate-700 active:scale-95'}`}><Mic size={24}/></button>
+          </div>
+        </div>
+      )}
+
+      {showMenu && (
+        <div className="absolute top-16 right-2 bg-white rounded-xl shadow-2xl border border-slate-300 z-[100] w-64 p-2 animate-in slide-in-from-top-2">
+          <div className="px-3 py-2 border-b border-slate-100 mb-2">
+            <p className="text-xs font-bold text-slate-800">{activeProfile.name}</p>
+            <p className="text-[10px] text-slate-500 truncate">{activeProfile.branch} Şubesi (Profil)</p>
+            {isAdmin && <span className="inline-block bg-indigo-100 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded font-bold mt-1">YÖNETİCİ</span>}
+          </div>
+          
+          <button onClick={() => {setShowBranchModal(true); setShowMenu(false);}} className="w-full text-left px-3 py-2 text-sm text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg flex gap-2 font-bold mb-1 border border-blue-200 transition-colors">
+            <Building2 size={16}/> Aktif Şubeyi Değiştir
+          </button>
+
+          {isAdmin && (
+             <button onClick={() => {setShowAddBranchModal(true); setShowMenu(false);}} className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg flex gap-2 transition-colors">
+                <Building2 size={16}/> Şube Ekle
+             </button>
+          )}
+          
+          <div className="h-px bg-slate-100 my-1"></div>
+          
+          <button onClick={() => {setShowCustomersModal(true); setShowMenu(false);}} className="w-full text-left px-3 py-2 text-sm text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg flex gap-2 font-bold mb-1 border border-indigo-200 transition-colors"><Users size={16}/> Müşteri Bilgileri</button>
+
+          <button onClick={downloadAllData} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg flex gap-2 transition-colors"><Download size={16}/> Tüm Verileri İndir ({activeBranch})</button>
+          <button onClick={downloadFilteredData} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-lg flex gap-2 transition-colors"><FileText size={16}/> Şu Anki Listeyi İndir</button>
+          
+          {isAdmin && (
+             <>
+               <div className="h-px bg-slate-100 my-1"></div>
+               <button onClick={() => {setShowCityManagerModal(true); setShowMenu(false);}} className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg flex gap-2 transition-colors"><MapPin size={16}/> Şehirleri Düzenle</button>
+               <button onClick={() => {
+                   if(activeCategory.id === 'cat_trash') {
+                       showDialog('alert', "Çöp kutusu düzenlenemez.");
+                   } else {
+                       setEditingCategoryData({...activeCategory}); 
+                       setShowEditCategoryModal(true); 
+                   }
+                   setShowMenu(false);
+               }} className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg flex gap-2 transition-colors"><Pencil size={16}/> Bölümü Düzenle</button>
+               <button onClick={() => {setShowTagManagerModal(true); setShowMenu(false);}} className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg flex gap-2 transition-colors"><Tag size={16}/> Etiketleri Düzenle</button>
+               <button onClick={() => {setShowImportModal(true); setShowMenu(false);}} className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 rounded-lg flex gap-2 transition-colors"><Upload size={16}/> Veri Yükle (.txt)</button>
+             </>
+          )}
+        </div>
+      )}
+
+      {/* --- MÜŞTERİ BİLGİLERİ MODALI --- */}
+      {showCustomersModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[110]">
+          <div className="bg-white rounded-2xl w-full max-w-lg h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+             
+             {/* Header */}
+             <div className="bg-indigo-600 text-white p-4 flex justify-between items-center">
+                 <div>
+                    <h3 className="font-bold text-lg flex items-center gap-2"><Users size={20}/> Müşteri Bilgileri Havuzu</h3>
+                    <p className="text-indigo-200 text-xs">Müşteri iletişim verileri listesi.</p>
+                 </div>
+                 <button onClick={() => setShowCustomersModal(false)} className="bg-indigo-700 p-2 rounded-lg hover:bg-indigo-800"><X size={20}/></button>
+             </div>
+
+             {/* Filtre ve İndir Butonu */}
+             <div className="p-3 border-b border-slate-200 bg-slate-50 space-y-3">
+                 <div className="flex justify-between items-center">
+                     <span className="text-sm font-bold text-slate-700">Filtreler</span>
+                     <button onClick={downloadCustomerList} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg font-bold flex items-center gap-1 hover:bg-green-700 shadow-sm"><FileDown size={14}/> Listeyi İndir</button>
+                 </div>
+                 
+                 {/* Kategori Filtresi */}
+                 <div className="flex gap-2 w-full overflow-x-auto pb-1 scrollbar-hide items-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase mr-1">Kategori:</span>
+                    {['Tümü', 'Konut', 'Arsa', 'Tarla', 'Ticari', 'Bahçe', 'Diğer'].map(g => (
+                        <button key={g} onClick={() => setCustomerFilter(g)} className={`px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap transition-all ${customerFilter === g ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'}`}>
+                           {g}
+                        </button>
+                    ))}
+                 </div>
+
+                 {/* Şube Filtresi */}
+                 <div className="flex gap-2 w-full overflow-x-auto pb-1 scrollbar-hide items-center">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase mr-1">Şube:</span>
+                    {branchList.map(b => (
+                        <button key={b} onClick={() => setCustomerBranchFilter(b)} className={`px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap transition-all flex items-center gap-1 ${customerBranchFilter === b ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'}`}>
+                           {b !== 'Tümü' && <Building2 size={10}/>} {b}
+                        </button>
+                    ))}
+                 </div>
+
+                 {/* Danışman Filtresi (Sadece Admin Görebilir) */}
+                 {isAdmin && (
+                    <div className="flex gap-2 w-full overflow-x-auto pb-1 scrollbar-hide items-center">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase mr-1">Danışman:</span>
+                        {['Tümü', ...getUniqueConsultants()].map(cName => (
+                            <button key={cName} onClick={() => setCustomerConsultantFilter(cName)} className={`px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap transition-all flex items-center gap-1 ${customerConsultantFilter === cName ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100'}`}>
+                                {cName}
+                            </button>
+                        ))}
+                    </div>
+                 )}
+             </div>
+
+             {/* Liste */}
+             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-100">
+                 {(() => {
+                     const customers = getCustomerList(customerFilter, customerBranchFilter);
+                     if(customers.length === 0) return <div className="text-center py-10 text-slate-400 text-sm font-medium">Müşteri kaydı bulunamadı.</div>;
+                     
+                     return customers.map(c => (
+                         <div key={c.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm transition-all">
+                             <div className="p-3 flex justify-between items-center">
+                                 <div className="flex flex-col">
+                                     <span className="font-bold text-slate-800 flex items-center gap-1.5"><User size={14} className="text-slate-400"/> {c.contactName || 'İsim Belirtilmemiş'}</span>
+                                     <span className="text-xs text-blue-600 font-mono font-medium flex items-center gap-1.5 mt-0.5"><Phone size={12} className="text-slate-400"/> {c.phone || '- Yok -'}</span>
+                                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                         <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">{c.groupName}</span>
+                                         <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100 flex items-center gap-0.5"><Building2 size={8}/> {c.branchName || 'Ereğli'}</span>
+                                         <span className="text-[10px] text-slate-500">Danışman: <span className="font-bold">{c.consultantName || 'Belirsiz'}</span></span>
+                                     </div>
+                                 </div>
+                                 <button onClick={() => setExpandedCustomer(expandedCustomer === c.id ? null : c.id)} className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${expandedCustomer === c.id ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}>
+                                     {expandedCustomer === c.id ? 'Gizle' : 'Detay'}
+                                 </button>
+                             </div>
+                             
+                             {/* Detay Paneli */}
+                             {expandedCustomer === c.id && (
+                                 <div className="bg-indigo-50/50 border-t border-indigo-100 p-3 text-sm animate-in slide-in-from-top-2">
+                                     <p className="text-slate-700 leading-relaxed mb-2"><span className="font-bold text-indigo-900">Talep/Not:</span> {c.text}</p>
+                                     <div className="flex justify-between items-center text-xs border-t border-indigo-100/50 pt-2 mt-2">
+                                         <span className="text-slate-500">{c.date}</span>
+                                         {c.price > 0 && <span className="font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">{formatCurrency(c.price)}</span>}
+                                     </div>
+                                 </div>
+                             )}
+                         </div>
+                     ));
+                 })()}
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- GÜN DETAYI (TAKVİM İÇİN) --- */}
+      {viewingDayDate && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm relative shadow-2xl">
+            <button onClick={() => setViewingDayDate(null)} className="absolute top-4 right-4 text-slate-400 hover:bg-slate-100 p-1 rounded-lg transition-colors"><X size={20}/></button>
+            <h3 className="font-bold text-lg mb-4 text-slate-800 border-b border-slate-100 pb-3">{viewingDayDate.toLocaleDateString('tr-TR')} <span className="text-sm font-medium text-slate-500 block">Planlanan Kayıtlar</span></h3>
+            
+            <div className="space-y-3 mb-6 max-h-72 overflow-y-auto pr-1">
+              {(() => {
+                const dayEvents = getEventsForDate(viewingDayDate);
+                
+                if(dayEvents.length === 0) return <div className="text-center text-sm text-slate-400 py-8 font-medium bg-slate-50 rounded-xl border border-slate-100">Bu güne ait kayıt yok.</div>;
+
+                return dayEvents.map(event => {
+                  const isMyItem = event.consultantName === activeProfile.name;
+                  const canEdit = isAdmin || isMyItem;
+
+                  return (
+                  <div key={event.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm text-sm group">
+                     <div className="flex justify-between items-start mb-2 border-b border-slate-700 pb-2">
+                        <span className="font-bold text-orange-400 flex items-center gap-1.5"><Clock size={14}/> {new Date(event.alarmTime).toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})}</span>
+                        <div className="flex gap-1.5">
+                           <button onClick={() => {addToNativeCalendar(event)}} className="p-1.5 bg-slate-700 rounded-lg text-blue-400 shadow-sm hover:bg-slate-600 transition-colors" title="Takvime Aktar"><Calendar size={14}/></button>
+                           {canEdit && (
+                               <button onClick={() => {setEditingItem({originalCatId: event.originalCatId, targetCatId: event.originalCatId, item: {...event}}); setViewingDayDate(null);}} className="p-1.5 bg-slate-700 rounded-lg text-slate-300 shadow-sm hover:text-white hover:bg-slate-600 transition-colors"><Pencil size={14}/></button>
+                           )}
+                        </div>
+                     </div>
+                     <p className="text-slate-300 leading-relaxed">{event.text}</p>
+                     
+                     {(event.contactName || event.phone) && (
+                         <div className="mt-3 pt-2 border-t border-slate-700/50 flex flex-col gap-1">
+                            {event.contactName && <span className="text-xs text-slate-200 font-bold flex items-center gap-1"><User size={12}/> {event.contactName}</span>}
+                            {event.phone && <a href={`tel:${event.phone}`} className="text-xs text-blue-400 font-mono hover:underline flex items-center gap-1"><Phone size={12}/> {event.phone}</a>}
+                         </div>
+                     )}
+                     
+                     <div className="flex items-center gap-2 mt-3 pt-2">
+                        <span className="inline-flex items-center bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-600 font-medium">{categories.find(c => c.id === event.originalCatId)?.title || 'Bilinmiyor'}</span>
+                        <span className="inline-flex items-center gap-1 bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-600 font-medium"><Users size={10}/> {event.consultantName || 'Belirsiz'}</span>
+                     </div>
+                  </div>
+                )});
+              })()}
+            </div>
+
+            <button onClick={() => { setCalendarSelectedDate(viewingDayDate); setViewingDayDate(null); }} className="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20">
+               <Plus size={18}/> Bu Güne Kayıt Ekle
+            </button>
+          </div>
+        </div>
+      )}
+
+      {calendarSelectedDate && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm relative shadow-2xl animate-in zoom-in-95">
+            <button onClick={() => setCalendarSelectedDate(null)} className="absolute top-4 right-4 text-slate-400 hover:bg-slate-100 p-1 rounded-lg"><X size={20}/></button>
+            <h3 className="font-bold text-lg mb-1 text-slate-800">{calendarSelectedDate.toLocaleDateString('tr-TR')}</h3>
+            <p className="text-xs text-slate-500 mb-4">Bu tarihe randevu ekleyin</p>
+            
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 mb-3 flex items-center justify-between">
+                <span className="text-sm font-bold text-slate-600 flex items-center gap-2"><Clock size={16}/> Saat Seçin:</span>
+                <input 
+                    type="time" 
+                    value={calendarInputTime} 
+                    onChange={(e) => setCalendarInputTime(e.target.value)}
+                    className="bg-white border border-slate-300 rounded-lg p-2 text-sm font-bold text-slate-800 outline-none focus:border-indigo-500"
+                />
+            </div>
+
+            <textarea value={calendarInputText} onChange={(e) => setCalendarInputText(e.target.value)} placeholder="Randevu notu ve iletişim bilgileri..." className="w-full bg-slate-50 rounded-xl p-3 text-sm h-24 mb-4 border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"/>
+            
+            <div className="flex gap-2">
+              <button onClick={startListeningCalendar} className={`p-3.5 rounded-xl flex-shrink-0 transition-all shadow-md ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-800 text-white hover:bg-slate-900'}`}><Mic size={20}/></button>
+              <button onClick={handleCalendarAdd} className="flex-1 bg-indigo-600 text-white font-bold rounded-xl text-sm hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-500/20">KAYDET</button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {showImportModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-lg flex items-center gap-2"><Upload className="text-purple-600"/> Dosya Yükle</h3>
+              <button onClick={()=>setShowImportModal(false)}><X/></button>
+            </div>
+            <p className="text-xs text-slate-500 mb-4">Metin (.txt) dosyanızı seçin.</p>
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-slate-700 mb-1">Hedef Bölüm</label>
+              <select value={importTarget} onChange={(e) => setImportTarget(e.target.value)} className="w-full bg-slate-50 border rounded-lg p-2 text-sm">
+                <option value="auto">✨ Otomatik (Genel)</option>
+                {categories.filter(c => c.id !== 'cat_trash').map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+              </select>
+            </div>
+            <input type="file" accept=".txt" onChange={handleFileUpload} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"/>
+          </div>
+        </div>
+      )}
+
+      {showCityManagerModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm h-3/4 flex flex-col shadow-2xl animate-in zoom-in-95">
+            <h3 className="font-bold mb-4 flex items-center gap-2"><MapPin size={18} className="text-orange-500"/> Şehir Yönetimi</h3>
+            <div className="mb-4 space-y-2">
+              <input value={newCityTitle} onChange={(e)=>setNewCityTitle(e.target.value)} placeholder="Şehir Adı" className="w-full bg-slate-50 border rounded-lg p-2 text-sm"/>
+              <textarea value={newCityKeywords} onChange={(e)=>setNewCityKeywords(e.target.value)} placeholder="Mahalleler / Anahtar Kelimeler (Virgülle)" className="w-full bg-slate-50 border rounded-lg p-2 text-sm h-16"/>
+              <button onClick={addNewCity} className="w-full bg-slate-800 text-white py-2 rounded-lg text-sm font-bold">EKLE</button>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-2 border-t pt-2">
+              {cities.map(city => (
+                <div key={city.id} className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-bold text-sm">{city.title}</span>
+                    <button onClick={()=>requestRemoveCity(city.id)} className="text-red-400 hover:bg-red-50 p-1 rounded"><Trash2 size={14}/></button>
+                  </div>
+                  <p className="text-[10px] text-slate-500">{city.keywords}</p>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => setShowCityManagerModal(false)} className="mt-4 bg-slate-200 text-slate-700 py-2 rounded-lg text-sm">Kapat</button>
+          </div>
+        </div>
+      )}
+
+      {editingItem && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm my-4 shadow-2xl animate-in zoom-in-95">
+             <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                  <Pencil size={18} className="text-blue-500"/> Kaydı Düzenle
+                </h3>
+                <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded border border-orange-200">#{editingItem.item.adNo || '---'}</span>
              </div>
              
-             {/* PDF ÖZEL GİZLİ ŞABLONU (A4 Genişliği 794px baz alınarak tasarlandı) */}
-             <div id="pdf-capture-element" className="w-[794px] bg-white text-slate-800 flex flex-col font-sans relative overflow-hidden">
-                {/* 1. Sayfa: Kapak Görseli (Sosyal Medya Tasarımı) */}
-                <div className="w-[794px] h-[794px] relative overflow-hidden bg-slate-100 flex-shrink-0">
-                   <div style={{transform: 'scale(0.73518)', transformOrigin: 'top left', width: '1080px', height: '1080px'}}>
-                       <SocialDesign isCapture={true} />
-                   </div>
-                </div>
-                
-                {/* 2. Bölüm: Diğer Fotoğraflar (Kapağın Yarı Boyutu Grid) */}
-                {formData.images.length > 1 && (
-                   <div className="px-8 pt-8 bg-white">
-                       <h3 className="text-2xl font-black mb-4 border-b-4 pb-2 text-slate-800" style={{borderColor: themeColor}}>Diğer Görseller</h3>
-                       <div className="grid grid-cols-2 gap-6">
-                           {formData.images.filter((_, i) => i !== formData.coverImageIndex).slice(0, 6).map((img, i) => (
-                               <div key={i} className="aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden shadow-md border border-slate-200">
-                                   <img src={img} className="w-full h-full object-cover" crossOrigin="anonymous"/>
-                               </div>
-                           ))}
-                       </div>
-                   </div>
-                )}
-                
-                {/* 3. Bölüm: İlan Metni / Şablonu */}
-                <div className="p-8 flex-grow bg-white">
-                   <h3 className="text-2xl font-black mb-4 border-b-4 pb-2 text-slate-800" style={{borderColor: themeColor}}>İlan Detayları</h3>
-                   <div className="whitespace-pre-wrap font-mono text-[15px] leading-[1.8] text-slate-700 bg-slate-50 p-8 rounded-2xl border border-slate-200 shadow-sm">
-                       {formData.description || 'İlan metni henüz oluşturulmadı. Lütfen sol taraftaki "Sihirli Metin Oluştur" butonunu kullanın.'}
-                   </div>
-                </div>
-                
-                {/* 4. Bölüm: Büyük Danışman Bilgi Kartı */}
-                <div className="px-8 pb-8 pt-4 mt-auto bg-white">
-                    <div className="bg-slate-800 text-white rounded-[2rem] p-8 shadow-2xl flex items-center gap-8 relative overflow-hidden border-b-[8px]" style={{borderColor: themeColor}}>
-                       <div className="absolute top-0 right-0 opacity-10 pointer-events-none">
-                           <User size={250} />
-                       </div>
-                       {consultant.showPhoto && (
-                           <div className="w-[160px] h-[160px] rounded-2xl border-4 shadow-xl overflow-hidden bg-slate-200 flex-shrink-0 relative z-10" style={{borderColor: themeColor}}>
-                               <img src={consultant.photo} className="w-full h-full object-cover object-top" crossOrigin="anonymous"/>
-                           </div>
-                       )}
-                       <div className="flex flex-col justify-center relative z-10">
-                           <span className="text-base font-bold text-slate-400 uppercase tracking-widest mb-1">Gayrimenkul Uzmanı</span>
-                           <span className="text-[2.75rem] font-black text-white leading-none mb-3">{consultant.name}</span>
-                           <span className="text-[2.25rem] font-extrabold" style={{color: themeColor}}>{consultant.phone}</span>
-                           
-                           <div className="flex flex-row items-center gap-4 mt-4">
-                              {showWebsiteOzcan && (
-                                  <div className="bg-white/10 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center border border-white/20">
-                                      <Globe size={16} className="mr-2" style={{color: themeColor}}/> www.ozcanaktas.com
-                                  </div>
-                              )}
-                              {showWebsiteEmlaknomi && (
-                                  <div className="bg-white/10 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center border border-white/20">
-                                      <Globe size={16} className="mr-2" style={{color: themeColor}}/> www.emlaknomi.com
-                                  </div>
-                              )}
-                          </div>
-                       </div>
-                    </div>
-                </div>
-                <div className="h-8 bg-white w-full"></div> {/* Footer Padding */}
+             <div className="flex items-center border rounded-lg bg-indigo-50 border-indigo-100 mb-2 p-2 gap-2">
+               <span className="text-indigo-800 text-xs font-bold w-12">Bölüm:</span>
+               <select 
+                 value={editingItem.targetCatId} 
+                 onChange={(e) => setEditingItem({ ...editingItem, targetCatId: e.target.value })}
+                 className="bg-transparent w-full text-sm outline-none text-indigo-900 font-medium"
+               >
+                 {categories.filter(c => c.id !== 'cat_trash').map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+               </select>
+               <FolderInput size={16} className="text-indigo-400"/>
+             </div>
+
+             <div className="flex items-center border rounded-lg bg-slate-50 mb-2 p-2 gap-2">
+               <span className="text-slate-400 text-xs font-bold w-12">Şehir:</span>
+               <select 
+                 value={editingItem.item.cityId || ''} 
+                 onChange={(e) => {
+                   const selectedCity = cities.find(c => c.id === e.target.value);
+                   setEditingItem({ ...editingItem, item: { ...editingItem.item, cityId: e.target.value, cityName: selectedCity ? selectedCity.title : '' } })
+                 }}
+                 className="bg-transparent w-full text-sm outline-none"
+               >
+                 <option value="">Seçilmedi</option>
+                 {cities.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+               </select>
+               <MapPin size={16} className="text-slate-400"/>
+             </div>
+
+             <div className="flex items-center border rounded-lg bg-slate-50 mb-2 p-2 gap-2">
+               <span className="text-slate-400 text-xs font-bold">Fiyat:</span>
+               <input type="number" value={editingItem.item.price || ''} onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, price: e.target.value } })} className="bg-transparent w-full text-sm outline-none" placeholder="0"/>
+             </div>
+
+             <div className="flex items-center border rounded-lg bg-slate-50 mb-2 p-2 gap-2">
+               <span className="text-slate-400 text-xs font-bold">Tip:</span>
+               <select 
+                 value={editingItem.item.dealType || 'sale'} 
+                 onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, dealType: e.target.value } })}
+                 className="bg-transparent w-full text-sm outline-none"
+               >
+                 <option value="sale">Satılık</option>
+                 <option value="rent">Kiralık</option>
+               </select>
+             </div>
+
+             <div className="flex items-center border rounded-lg bg-slate-50 mb-2 p-2 gap-2">
+               <span className="text-slate-400 text-xs font-bold w-12">Şube:</span>
+               <select 
+                   value={editingItem.item.branchName || ''} 
+                   onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, branchName: e.target.value } })} 
+                   className="bg-transparent w-full text-sm outline-none"
+               >
+                   {branchList.map(b => <option key={b} value={b}>{b}</option>)}
+               </select>
+             </div>
+
+             <input value={editingItem.item.contactName || ''} onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, contactName: e.target.value } })} className="w-full bg-slate-50 border rounded-lg p-2 mb-2 text-sm" placeholder="İsim"/>
+             <input value={editingItem.item.phone || ''} onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, phone: e.target.value } })} className="w-full bg-slate-50 border rounded-lg p-2 mb-2 text-sm" placeholder="Tel"/>
+             <textarea value={editingItem.item.text || ''} onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, text: e.target.value } })} className="w-full bg-slate-50 border rounded-lg p-2 mb-3 text-sm h-20"/>
+             
+             <div className="bg-yellow-50 p-3 rounded-xl border-2 border-yellow-200 mb-4 shadow-sm">
+               <div className="flex justify-between items-center mb-2">
+                 <label className="text-sm font-bold text-yellow-800 flex items-center gap-1"><Clock size={16}/> Alarm Kur</label>
+                 <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked={editingItem.item.alarmActive} onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, alarmActive: e.target.checked } })} className="sr-only peer"/>
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
+                 </label>
+               </div>
+               <input type="datetime-local" value={editingItem.item.alarmTime || ''} onChange={(e) => setEditingItem({ ...editingItem, item: { ...editingItem.item, alarmTime: e.target.value, alarmActive: true } })} className="w-full bg-white border border-yellow-300 rounded p-2 text-sm font-medium"/>
+             </div>
+
+             <div className="flex gap-2">
+               <button onClick={() => setEditingItem(null)} className="flex-1 bg-slate-100 text-slate-500 py-3 rounded-xl text-sm font-bold hover:bg-slate-200">İptal</button>
+               <button onClick={saveItemChanges} className="flex-1 bg-blue-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-blue-700">Kaydet</button>
              </div>
           </div>
         </div>
-      </main>
+      )}
+
+      {showTagManagerModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm h-3/4 flex flex-col shadow-2xl animate-in zoom-in-95">
+            <h3 className="font-bold mb-4 flex items-center gap-2"><Tag size={18}/> Etiketleri Düzenle</h3>
+            <div className="flex gap-2 mb-4">
+              <input value={newTagName} onChange={(e)=>setNewTagName(e.target.value)} placeholder="Yeni etiket" className="flex-1 bg-slate-50 border rounded-lg p-2 text-sm"/>
+              <button onClick={()=>{if(newTagName && !availableTags.includes(newTagName)){setAvailableTags([...availableTags,newTagName]);setNewTagName('');}}} className="bg-blue-600 text-white px-3 rounded-lg"><Plus size={20}/></button>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-2 border-t pt-2">
+              {availableTags.map(tag => (
+                <div key={tag} className="flex justify-between items-center p-2 bg-slate-50 rounded text-sm">
+                  <span>{tag}</span>
+                  <button onClick={()=>setAvailableTags(availableTags.filter(t=>t!==tag))} className="text-red-400 hover:bg-red-50 p-1 rounded"><Trash2 size={14}/></button>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => setShowTagManagerModal(false)} className="mt-4 bg-slate-800 text-white py-2 rounded-lg text-sm font-bold hover:bg-slate-900">Tamam</button>
+          </div>
+        </div>
+      )}
+      
+       {showEditCategoryModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm shadow-2xl animate-in zoom-in-95">
+            <h3 className="font-bold mb-4 flex items-center gap-2"><Pencil size={18}/> Bölümü Düzenle</h3>
+            <input value={editingCategoryData.title} onChange={(e) => setEditingCategoryData({...editingCategoryData, title: e.target.value})} className="w-full bg-slate-50 border rounded-lg p-2 mb-3 text-sm"/>
+            <textarea value={editingCategoryData.keywords} onChange={(e) => setEditingCategoryData({...editingCategoryData, keywords: e.target.value})} className="w-full bg-slate-50 border rounded-lg p-2 mb-4 text-sm h-20"/>
+            <div className="flex gap-2">
+               <button onClick={() => {
+                   if(categories.length<=2) return showDialog('alert', "Son kalan sekmeyi silemezsiniz."); 
+                   showDialog('confirm', "Bu bölümü silmek istediğinize emin misiniz?", () => {
+                       setCategories(categories.filter(c=>c.id!==editingCategoryData.id)); 
+                       setShowEditCategoryModal(false);
+                   });
+               }} className="flex-1 bg-red-50 text-red-500 py-2 rounded-lg text-sm font-bold hover:bg-red-100">SİL</button>
+               <button onClick={() => {setCategories(categories.map(c=>c.id===editingCategoryData.id?editingCategoryData:c)); setShowEditCategoryModal(false);}} className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-blue-700">KAYDET</button>
+            </div>
+            <button onClick={() => setShowEditCategoryModal(false)} className="w-full mt-2 text-slate-500 text-xs py-2 font-medium hover:bg-slate-50 rounded-lg">İptal</button>
+          </div>
+        </div>
+      )}
+       {showAddModal && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm shadow-2xl animate-in zoom-in-95">
+            <h3 className="font-bold mb-4 flex items-center gap-2"><Plus size={18}/> Yeni Bölüm</h3>
+            <input placeholder="Bölüm Adı" value={newCatTitle} onChange={(e) => setNewCatTitle(e.target.value)} className="w-full bg-slate-50 border rounded-lg p-2 mb-3 text-sm"/>
+            <textarea placeholder="Anahtar kelimeler" value={newCatKeywords} onChange={(e) => setNewCatKeywords(e.target.value)} className="w-full bg-slate-50 border rounded-lg p-2 mb-4 text-sm h-20"/>
+            <button onClick={() => { if(!newCatTitle) return; setCategories([{id: `cat_${Date.now()}`, title: newCatTitle, keywords: newCatKeywords, items: [], icon: 'briefcase'}, ...categories]); setShowAddModal(false); setNewCatTitle(''); setNewCatKeywords(''); }} className="w-full bg-slate-800 text-white py-2 rounded-lg text-sm font-bold hover:bg-slate-900">OLUŞTUR</button>
+            <button onClick={() => setShowAddModal(false)} className="w-full mt-2 text-slate-500 text-xs py-2 font-medium hover:bg-slate-50 rounded-lg">İptal</button>
+          </div>
+        </div>
+      )}
+
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <MainApp />
+    </ErrorBoundary>
   );
 }
