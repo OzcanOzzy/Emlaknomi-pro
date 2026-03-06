@@ -1,2 +1,2 @@
-# Emlaknomi-pro
+# ilan-hazirlama
 Created with CodeSandbox
