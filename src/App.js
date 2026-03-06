@@ -133,7 +133,7 @@ const options = {
 
 const featureCategories = {
   "İç Özellikler": ["ADSL", "Ahşap Doğrama", "Akıllı Ev", "Alarm", "Alaturka Tuvalet", "Alüminyum Doğrama", "Amerikan Kapı", "Amerikan Mutfak", "Ankastre Fırın", "Barbükü", "Beyaz Eşya", "Boyalı", "Bulaşık Makinesi", "Buzdolabı", "Çamaşır Odası", "Çelik Kapı", "Duşakabin", "Duvar Kağıdı", "Fiber İnternet", "Fırın", "Giyinme Odası", "Gömme Dolap", "Görüntülü Diafon", "Hilton Banyo", "Isıcam", "Jakuzi", "Kartonpiyer", "Klima", "Laminat Zemin", "Marley", "Mobilyalı", "Panjur", "Parke Zemin", "PVC Doğrama", "Seramik Zemin", "Spot Aydınlatma", "Şömine", "Teras", "Vestiyer", "Wi-Fi", "Yüz Tanıma & Parmak İzi"],
-  "Dış Özellikler": ["Araç Şarj İstasyonu", "24 Saat Güvenlik", "Apartman Görevlisi", "Buhar Odası", "Çocuk Oyun Parkı", "Hidrofor", "Jeneratör", "Kablo TV", "K Kamera Sistemi", "Kapalı Otopark", "Kreş", "Müstakil Havuzlu", "Oyun Parkı", "Sauna", "Ses Yalıtımı", "Siding", "Spor Alanı", "Su Deposu", "Tenis Kortu", "Uydu", "Yangın Merdiveni", "Yüzme Havuzu (Açık)", "Yüzme Havuzu (Kapalı)"],
+  "Dış Özellikler": ["Araç Şarj İstasyonu", "24 Saat Güvenlik", "Apartman Görevlisi", "Buhar Odası", "Çocuk Oyun Parkı", "Hidrofor", "Jeneratör", "Kablo TV", "Kamera Sistemi", "Kapalı Otopark", "Kreş", "Müstakil Havuzlu", "Oyun Parkı", "Sauna", "Ses Yalıtımı", "Siding", "Spor Alanı", "Su Deposu", "Tenis Kortu", "Uydu", "Yangın Merdiveni", "Yüzme Havuzu (Açık)", "Yüzme Havuzu (Kapalı)"],
   "Muhit / Konum": ["Alışveriş Merkezi", "Belediye", "Cami", "Cemevi", "Denize Sıfır", "Eczane", "Eğlence Merkezi", "Fuar Alanı", "Göl Manzaralı", "Hastane", "Havra", "İlkokul-Ortaokul", "İtfaiye", "Kilise", "Lise", "Market", "Merkezi", "Park", "Polis Merkezi", "Sağlık Ocağı", "Semt Pazarı", "Şehir Manzaralı", "Şehir Merkezi", "Üniversite"],
   "Ulaşım": ["Anayol", "Avrasya Tüneli", "Boğaz Köprüleri", "Cadde", "Dolmuş", "E-5", "Havaalanı", "İskele", "Marmaray", "Metro", "Metrobüs", "Minibüs", "Otobüs Durağı", "Sahil", "TEM", "Teleferik", "Tramvay", "Tren İstasyonu", "Troleybüs"]
 };
@@ -166,9 +166,11 @@ const INITIAL_FORM_DATA = {
 
 // TASARIM KONTROLLERİ İÇİN DEFAULT YAPILAR
 const defaultTransform = { x: 0, y: 0, scale: 1, show: true };
+const defaultTopLogoTransform = { x: 0, y: 0, scale: 1.7, show: true };
+
 const DEFAULT_DESIGN_CONFIG = {
   consultant: {
-    topLogo: { ...defaultTransform },
+    topLogo: { ...defaultTopLogoTransform },
     badge: { ...defaultTransform },
     title: { ...defaultTransform },
     price: { ...defaultTransform },
@@ -179,7 +181,7 @@ const DEFAULT_DESIGN_CONFIG = {
     websites: { ...defaultTransform }
   },
   corporate: {
-    topLogo: { ...defaultTransform },
+    topLogo: { ...defaultTopLogoTransform },
     bottomLogo: { ...defaultTransform, scale: 3 },
     badge: { ...defaultTransform },
     title: { ...defaultTransform },
@@ -745,7 +747,7 @@ export default function App({ userData = null, branchesData = null }) {
             <SelectField label="Balkon Sayısı" name="balconyCount" value={formData.balconyCount} onChange={handleInputChange} options={options.balcony} />
             <SelectField label="Cam Balkon" name="glassBalcony" value={formData.glassBalcony} onChange={handleInputChange} options={options.glassBalcony} />
             <SelectField label="Kızartma Mutfağı" name="kizartmaMutfagi" value={formData.kizartmaMutfagi} onChange={handleInputChange} options={["Var", "Yok"]} />
-            <SelectField label="Giyinme Odası" name="giyinmeOdasi" value={formData.giyinmeOdasi} onChange={handleInputChange} options={["Var", "Yok"]} />
+            <SelectField label="Giyinme Odası" name="giyinme Odasi" value={formData.giyinmeOdasi} onChange={handleInputChange} options={["Var", "Yok"]} />
             <SelectField label="Çamaşır Odası" name="camasirOdasi" value={formData.camasirOdasi} onChange={handleInputChange} options={["Var", "Yok"]} />
             <SelectField label="İç Kapılar" name="icKapilar" value={formData.icKapilar} onChange={handleInputChange} options={options.icKapilar} />
             <SelectField label="Pencereler" name="pencereler" value={formData.pencereler} onChange={handleInputChange} options={options.pencereler} />
@@ -982,7 +984,7 @@ export default function App({ userData = null, branchesData = null }) {
             </div>
 
             {configGroup.topLogo?.show && showLogo && (
-                <div className="absolute top-0 right-8 z-20 flex items-start justify-end h-[204px] w-[680px] pointer-events-none" style={getStyle('topLogo', '', 'top right')}>
+                <div className="absolute top-0 right-8 z-20 flex items-start justify-end h-[120px] w-[400px] pointer-events-none" style={getStyle('topLogo', '', 'top right')}>
                     <img src={customLogo || FIXED_LOGO_URL} crossOrigin="anonymous" className="max-w-full max-h-full object-contain object-right-top drop-shadow-xl" />
                 </div>
             )}
@@ -1018,7 +1020,7 @@ export default function App({ userData = null, branchesData = null }) {
                 )}
 
                 {configGroup.icons?.show && (
-                    <div className={`bg-slate-100/80 border border-white/60 rounded-[1.25rem] ${isLargeIcons ? 'py-4 px-6' : 'py-3 px-4'} shadow-inner relative overflow-visible`}>
+                    <div className={`bg-slate-100/80 border border-white/60 rounded-[1.25rem] ${isLargeIcons ? 'py-4 px-6' : 'py-3 px-4'} shadow-inner relative overflow-hidden`}>
                         <div className={`flex flex-row flex-nowrap items-center justify-start ${isLargeIcons ? 'gap-8' : 'gap-3'} w-full`} style={getStyle('icons', '', 'left center')}>
                             {limitedFeatures.map((feat, idx) => (
                                 <div key={idx} className={`flex flex-col items-center justify-center text-center flex-shrink-0 ${isLargeIcons ? 'w-[130px] gap-1' : 'w-[84px] gap-0.5'}`}>
@@ -1066,7 +1068,7 @@ export default function App({ userData = null, branchesData = null }) {
                 ) : (
                     <div className="mt-1 pt-3 border-t border-slate-200/60 flex items-center justify-between h-[80px] relative">
                         <div className="flex items-center h-[50px] w-auto max-w-[250px] relative z-10 flex-shrink-0" style={getStyle('bottomLogo', '', 'left center')}>
-                            {showLogo && configGroup.bottomLogo?.show && <img src={customLogo || FIXED_LOGO_URL} className="max-h-[50px] w-auto object-contain object-left pointer-events-none" crossOrigin="anonymous"/>}
+                            {showLogo && configGroup.bottomLogo?.show && <img src={customLogo || FIXED_LOGO_URL} className="max-w-full max-h-full object-contain object-left pointer-events-none" crossOrigin="anonymous"/>}
                         </div>
                         
                         <div className="flex flex-row items-center justify-end gap-3 text-white relative z-10" style={getStyle('websites', '', 'right center')}>
@@ -1272,7 +1274,6 @@ export default function App({ userData = null, branchesData = null }) {
             format: [pdfWidth, pdfHeight]
         });
         
-        // Use JPEG format instead of PNG to prevent "Incomplete or corrupt PNG file" errors in jsPDF
         pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         return pdf.output('blob');
     } catch(e) {
@@ -1375,6 +1376,17 @@ export default function App({ userData = null, branchesData = null }) {
         setIsDownloading(false); 
     }
   };
+
+  // EDİTÖR, DASHBOARD VE TASLAKLAR İÇİN ORTAK YÜKLENME KONTROLÜ (EN ÜSTE ALINDI)
+  // Bu sayede Tailwind CSS yüklenmeden hiçbir sayfa ham HTML olarak ekranda görünmez.
+  if (!isReady) {
+      return (
+          <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800">
+              <Loader2 className="animate-spin text-orange-600 mb-4" size={48} />
+              <h2 className="text-xl font-bold">Hazırlanıyor...</h2>
+          </div>
+      );
+  }
 
   // DASHBOARD EKRANI RENDER
   if (appState === 'dashboard') {
@@ -1483,8 +1495,6 @@ export default function App({ userData = null, branchesData = null }) {
   }
 
   // EDİTÖR EKRANI RENDER
-  if (!isReady) return <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800"><Loader2 className="animate-spin text-orange-600 mb-4" size={48} /><h2 className="text-xl font-bold">Hazırlanıyor...</h2></div>;
-
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-orange-200 selection:text-orange-900 pb-20">
       <header className="bg-slate-900 text-white p-4 shadow-lg print:hidden sticky top-0 z-50">
