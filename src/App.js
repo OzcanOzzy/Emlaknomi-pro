@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Home, MapPin, CheckCircle, Layout, Upload, User, ChevronDown, ChevronUp, Download, Lock, Loader2, Globe, Car, Building, X, Compass, Calendar, ArrowUpDown, FileText } from 'lucide-react';
+import { Camera, Home, MapPin, CheckCircle, Layout, Upload, User, ChevronDown, ChevronUp, Download, Lock, Loader2, Globe, Car, Building, X, Compass, Calendar, ArrowUpDown, FileText, Edit3, PlusCircle, Trash2, Flame, Settings } from 'lucide-react';
 
 // --- YARDIMCI BİLEŞENLER ---
 const InputField = ({ label, name, value, onChange, onBlur, placeholder, highlight }) => (
@@ -8,7 +8,7 @@ const InputField = ({ label, name, value, onChange, onBlur, placeholder, highlig
     <input 
       type="text" 
       name={name} 
-      value={value} 
+      value={value || ''} 
       onChange={onChange} 
       onBlur={onBlur}
       className="w-full p-2 border rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:border-orange-500 transition-colors" 
@@ -22,7 +22,7 @@ const SelectField = ({ label, name, value, onChange, options, highlight }) => (
     <label className={`block text-xs ${highlight ? 'text-slate-700' : 'text-slate-500'} mb-1 font-bold`}>{label}</label>
     <select 
       name={name} 
-      value={value} 
+      value={value || ''} 
       onChange={onChange} 
       className="w-full p-2 border rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:border-orange-500 transition-colors"
     >
@@ -32,13 +32,13 @@ const SelectField = ({ label, name, value, onChange, options, highlight }) => (
   </div>
 );
 
-const MultiSelectField = ({ label, field, value, onChange, options, themeColor, highlight }) => (
+const MultiSelectField = ({ label, field, value = [], onChange, options, themeColor, highlight }) => (
   <div className={`relative group mb-2 ${highlight ? 'bg-slate-200/80 p-2.5 rounded-lg border border-slate-300 shadow-sm' : ''}`}>
       <label className={`block text-xs ${highlight ? 'text-slate-700' : 'text-slate-500'} mb-1 font-bold`}>{label} (Çoklu)</label>
-      <div className="w-full p-2 border rounded-lg text-sm h-24 overflow-y-auto cursor-pointer bg-white text-slate-800 focus-within:border-orange-500 transition-colors border-slate-200">
+      <div className="w-full p-2 border rounded-lg text-sm h-24 overflow-y-auto cursor-pointer bg-white text-slate-800 focus-within:border-orange-500 transition-colors border-slate-200 custom-scrollbar">
           {options.map(op => (
-          <div key={op} onClick={() => onChange(field, op)} className={`flex items-center p-1.5 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 ${value.includes(op) ? 'font-bold' : ''}`} style={{color: value.includes(op) ? themeColor : 'inherit', backgroundColor: value.includes(op) ? `${themeColor}10` : 'transparent'}}>
-              {value.includes(op) ? <CheckCircle size={14} className="mr-2" style={{color: themeColor}}/> : <div className="w-3.5 h-3.5 border-2 rounded-full mr-2 border-slate-300"></div>}
+          <div key={op} onClick={() => onChange(field, op)} className={`flex items-center p-1.5 hover:bg-slate-50 cursor-pointer border-b border-slate-50 last:border-0 ${(value || []).includes(op) ? 'font-bold' : ''}`} style={{color: (value || []).includes(op) ? themeColor : 'inherit', backgroundColor: (value || []).includes(op) ? `${themeColor}10` : 'transparent'}}>
+              {(value || []).includes(op) ? <CheckCircle size={14} className="mr-2" style={{color: themeColor}}/> : <div className="w-3.5 h-3.5 border-2 rounded-full mr-2 border-slate-300"></div>}
               {op}
           </div>
       ))}</div>
@@ -48,6 +48,7 @@ const MultiSelectField = ({ label, field, value, onChange, options, themeColor, 
 // --- SABİT VERİLER ---
 const FIXED_LOGO_URL = "https://i.hizliresim.com/fa4ibjl.png"; 
 const DEFAULT_PROFILE_PHOTO = "https://i.hizliresim.com/eqya4c4.png";
+const placeholderImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80';
 
 const officeDetails = {
   eregli: { name: 'Ereğli Şubesi', city: 'Konya', address: 'Yunuslu mh. uğur mumcu caddesi 35/A Ereğli/Konya', phone: '0533 638 7000', authNo: '4202207' },
@@ -132,54 +133,14 @@ const options = {
 
 const featureCategories = {
   "İç Özellikler": ["ADSL", "Ahşap Doğrama", "Akıllı Ev", "Alarm", "Alaturka Tuvalet", "Alüminyum Doğrama", "Amerikan Kapı", "Amerikan Mutfak", "Ankastre Fırın", "Barbükü", "Beyaz Eşya", "Boyalı", "Bulaşık Makinesi", "Buzdolabı", "Çamaşır Odası", "Çelik Kapı", "Duşakabin", "Duvar Kağıdı", "Fiber İnternet", "Fırın", "Giyinme Odası", "Gömme Dolap", "Görüntülü Diafon", "Hilton Banyo", "Isıcam", "Jakuzi", "Kartonpiyer", "Klima", "Laminat Zemin", "Marley", "Mobilyalı", "Panjur", "Parke Zemin", "PVC Doğrama", "Seramik Zemin", "Spot Aydınlatma", "Şömine", "Teras", "Vestiyer", "Wi-Fi", "Yüz Tanıma & Parmak İzi"],
-  "Dış Özellikler": ["Araç Şarj İstasyonu", "24 Saat Güvenlik", "Apartman Görevlisi", "Buhar Odası", "Çocuk Oyun Parkı", "Hidrofor", "Jeneratör", "Kablo TV", "Kamera Sistemi", "Kapalı Otopark", "Kreş", "Müstakil Havuzlu", "Oyun Parkı", "Sauna", "Ses Yalıtımı", "Siding", "Spor Alanı", "Su Deposu", "Tenis Kortu", "Uydu", "Yangın Merdiveni", "Yüzme Havuzu (Açık)", "Yüzme Havuzu (Kapalı)"],
+  "Dış Özellikler": ["Araç Şarj İstasyonu", "24 Saat Güvenlik", "Apartman Görevlisi", "Buhar Odası", "Çocuk Oyun Parkı", "Hidrofor", "Jeneratör", "Kablo TV", "K Kamera Sistemi", "Kapalı Otopark", "Kreş", "Müstakil Havuzlu", "Oyun Parkı", "Sauna", "Ses Yalıtımı", "Siding", "Spor Alanı", "Su Deposu", "Tenis Kortu", "Uydu", "Yangın Merdiveni", "Yüzme Havuzu (Açık)", "Yüzme Havuzu (Kapalı)"],
   "Muhit / Konum": ["Alışveriş Merkezi", "Belediye", "Cami", "Cemevi", "Denize Sıfır", "Eczane", "Eğlence Merkezi", "Fuar Alanı", "Göl Manzaralı", "Hastane", "Havra", "İlkokul-Ortaokul", "İtfaiye", "Kilise", "Lise", "Market", "Merkezi", "Park", "Polis Merkezi", "Sağlık Ocağı", "Semt Pazarı", "Şehir Manzaralı", "Şehir Merkezi", "Üniversite"],
   "Ulaşım": ["Anayol", "Avrasya Tüneli", "Boğaz Köprüleri", "Cadde", "Dolmuş", "E-5", "Havaalanı", "İskele", "Marmaray", "Metro", "Metrobüs", "Minibüs", "Otobüs Durağı", "Sahil", "TEM", "Teleferik", "Tramvay", "Tren İstasyonu", "Troleybüs"]
 };
 
 const allCities = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalva", "Karabük", "Kilis", "Osmaniye", "Düzce"].sort();
 
-export default function App({ userData = null, branchesData = null }) {
-  const defaultUser = {
-    name: 'Özcan AKTAŞ',
-    phone: '0533 638 7000',
-    photo: DEFAULT_PROFILE_PHOTO,
-    role: 'admin',
-    allowedBranches: ['eregli', 'karaman', 'konya', 'alanya', 'antalya', 'eskisehir'] 
-  };
-  
-  const activeUser = userData || defaultUser;
-  const availableBranches = branchesData || officeDetails;
-
-  const [activeTab, setActiveTab] = useState('social');
-  const [designMode, setDesignMode] = useState('single');
-  const [previewDesignType, setPreviewDesignType] = useState('consultant'); // 'consultant' veya 'corporate'
-  const [isManualLocation, setIsManualLocation] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const socialPreviewRef = useRef(null);
-    
-  const [isReady, setIsReady] = useState(false);
-  const [showLogo, setShowLogo] = useState(true);
-  const [customLogo, setCustomLogo] = useState(null); 
-  const [themeColor, setThemeColor] = useState('#ea580c');
-  const [showWebsiteOzcan, setShowWebsiteOzcan] = useState(true);
-  const [showWebsiteEmlaknomi, setShowWebsiteEmlaknomi] = useState(true);
-
-  const [consultant, setConsultant] = useState({
-    name: activeUser.name,
-    phone: activeUser.phone,
-    photo: activeUser.photo || DEFAULT_PROFILE_PHOTO,
-    showInfo: true,
-    showPhoto: true
-  });
-
-  const initialOffice = (activeUser.allowedBranches && activeUser.allowedBranches.length > 0) 
-        ? activeUser.allowedBranches[0] 
-        : Object.keys(availableBranches)[0];
-
-  const [selectedOffice, setSelectedOffice] = useState(initialOffice);
-    
-  const [formData, setFormData] = useState({
+const INITIAL_FORM_DATA = {
     isOpportunity: false,
     customTitle: '',
     title: '', price: '', currency: 'TL',
@@ -201,7 +162,87 @@ export default function App({ userData = null, branchesData = null }) {
     digerOzellikler: '',
     features: [], description: '',
     images: [], coverImageIndex: 0, logo: FIXED_LOGO_URL 
+};
+
+// TASARIM KONTROLLERİ İÇİN DEFAULT YAPILAR
+const defaultTransform = { x: 0, y: 0, scale: 1, show: true };
+const DEFAULT_DESIGN_CONFIG = {
+  consultant: {
+    topLogo: { ...defaultTransform },
+    badge: { ...defaultTransform },
+    title: { ...defaultTransform },
+    price: { ...defaultTransform },
+    icons: { ...defaultTransform },
+    name: { ...defaultTransform },
+    separator: { ...defaultTransform },
+    phone: { ...defaultTransform },
+    websites: { ...defaultTransform }
+  },
+  corporate: {
+    topLogo: { ...defaultTransform },
+    bottomLogo: { ...defaultTransform, scale: 3 },
+    badge: { ...defaultTransform },
+    title: { ...defaultTransform },
+    price: { ...defaultTransform },
+    icons: { ...defaultTransform },
+    websites: { ...defaultTransform }
+  }
+};
+
+export default function App({ userData = null, branchesData = null }) {
+  const defaultUser = {
+    name: 'Özcan AKTAŞ',
+    phone: '0533 638 7000',
+    photo: DEFAULT_PROFILE_PHOTO,
+    role: 'admin',
+    allowedBranches: ['eregli', 'karaman', 'konya', 'alanya', 'antalya', 'eskisehir'] 
+  };
+  
+  const activeUser = userData || defaultUser;
+  const availableBranches = branchesData || officeDetails;
+
+  const [activeTab, setActiveTab] = useState('social');
+  const [designMode, setDesignMode] = useState('single');
+  const [previewDesignType, setPreviewDesignType] = useState('consultant');
+  const [isManualLocation, setIsManualLocation] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  
+  const [appState, setAppState] = useState('dashboard');
+  const [savedDrafts, setSavedDrafts] = useState([]);
+  const [currentDraftId, setCurrentDraftId] = useState(null);
+  const [saveStatus, setSaveStatus] = useState('');
+  const [draftToDelete, setDraftToDelete] = useState(null);
+  
+  const socialPreviewRef = useRef(null);
+    
+  const [isReady, setIsReady] = useState(false);
+  const [showLogo, setShowLogo] = useState(true);
+  const [customLogo, setCustomLogo] = useState(null); 
+  const [themeColor, setThemeColor] = useState('#ea580c');
+  const [showWebsiteOzcan, setShowWebsiteOzcan] = useState(true);
+  const [showWebsiteEmlaknomi, setShowWebsiteEmlaknomi] = useState(true);
+  
+  const [activeConfigTab, setActiveConfigTab] = useState(null); 
+  const [selectedConsultantElement, setSelectedConsultantElement] = useState('topLogo');
+  const [selectedCorporateElement, setSelectedCorporateElement] = useState('topLogo');
+  const [designConfig, setDesignConfig] = useState(DEFAULT_DESIGN_CONFIG);
+  const [overlayData, setOverlayData] = useState({ show: false, photo: null, x: 0, y: 0, scale: 1 });
+
+  const [consultant, setConsultant] = useState({
+    name: activeUser.name,
+    phone: activeUser.phone,
+    photo: activeUser.photo || DEFAULT_PROFILE_PHOTO,
+    showInfo: true,
+    showPhoto: true
   });
+
+  const initialOffice = (activeUser.allowedBranches && activeUser.allowedBranches.length > 0) 
+        ? activeUser.allowedBranches[0] 
+        : Object.keys(availableBranches)[0];
+
+  const [selectedOffice, setSelectedOffice] = useState(initialOffice);
+    
+  const [formData, setFormData] = useState({...INITIAL_FORM_DATA});
 
   const [privateData, setPrivateData] = useState({
     customerName: '', contactInfo: '', finalPrice: '', commission: '', propertyNo: '', notes: '', 
@@ -239,14 +280,152 @@ export default function App({ userData = null, branchesData = null }) {
 
     const savedLogo = localStorage.getItem('emlaknomi_custom_logo');
     if (savedLogo) { setCustomLogo(savedLogo); setShowLogo(true); }
+
+    const savedOverlaySettings = localStorage.getItem('emlaknomi_overlay_settings');
+    const savedOverlayPhoto = localStorage.getItem('emlaknomi_overlay_photo');
+    if (savedOverlaySettings) {
+        try {
+            const parsed = JSON.parse(savedOverlaySettings);
+            setOverlayData(prev => ({ ...prev, ...parsed, photo: savedOverlayPhoto || null }));
+        } catch(e) {}
+    } else if (savedOverlayPhoto) {
+        setOverlayData(prev => ({ ...prev, photo: savedOverlayPhoto }));
+    }
+    
+    const savedDesignConfig = localStorage.getItem('emlaknomi_design_config');
+    if (savedDesignConfig) {
+        try {
+            const parsed = JSON.parse(savedDesignConfig);
+            setDesignConfig({
+                consultant: { ...DEFAULT_DESIGN_CONFIG.consultant, ...(parsed.consultant || {}) },
+                corporate: { ...DEFAULT_DESIGN_CONFIG.corporate, ...(parsed.corporate || {}) }
+            });
+        } catch(e) {}
+    }
+    
+    loadDrafts();
   }, []);
 
-  const [openCategories, setOpenCategories] = useState({ "İç Özellikler": true, "Dış Özellikler": true, "Muhit / Konum": false, "Ulaşım": false });
-  const toggleCategory = (category) => setOpenCategories(prev => ({...prev, [category]: !prev[category]}));
-  const placeholderImage = 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80';
+  useEffect(() => {
+      if (appState === 'editor' && !formData.adNumber) {
+          setSaveStatus('Kaydediliyor...');
+          const timer = setTimeout(() => {
+              saveDraft(true);
+          }, 2000); 
+          return () => clearTimeout(timer);
+      }
+  }, [formData, privateData, selectedOffice, isManualLocation, overlayData, appState]);
+
+  const loadDrafts = () => {
+      const draftsStr = localStorage.getItem('emlaknomi_drafts');
+      if (draftsStr) {
+          try {
+              setSavedDrafts(JSON.parse(draftsStr));
+          } catch(e) {}
+      }
+  };
+
+  const saveDraft = (isAutoSave = false) => {
+      const now = new Date();
+      const draftName = getFileNameBase(false, true) + ` (${now.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})})`;
+      const draftId = currentDraftId || `draft_${now.getTime()}`;
+      
+      const draftObj = {
+          id: draftId,
+          name: draftName,
+          date: now.toISOString(),
+          formData: formData,
+          privateData: privateData,
+          selectedOffice: selectedOffice,
+          isManualLocation: isManualLocation
+      };
+      
+      setSavedDrafts(prev => {
+          let newDrafts = [...prev];
+          const existingIndex = newDrafts.findIndex(d => d.id === draftId);
+          if(existingIndex >= 0) {
+              newDrafts[existingIndex] = draftObj;
+          } else {
+              newDrafts.unshift(draftObj);
+          }
+          localStorage.setItem('emlaknomi_drafts', JSON.stringify(newDrafts));
+          return newDrafts;
+      });
+      
+      setCurrentDraftId(draftId);
+      
+      if (isAutoSave) {
+          setSaveStatus('Taslak kaydedildi.');
+          setTimeout(() => setSaveStatus(''), 3000);
+      } else {
+          alert("İlanınız taslak olarak başarıyla kaydedildi!");
+      }
+  };
+
+  const loadDraft = (draft) => {
+      setFormData(draft.formData);
+      setPrivateData(draft.privateData);
+      setSelectedOffice(draft.selectedOffice);
+      setIsManualLocation(draft.isManualLocation);
+      setCurrentDraftId(draft.id);
+      setAppState('editor');
+  };
+
+  const confirmDeleteDraft = () => {
+      if(draftToDelete) {
+          const newDrafts = savedDrafts.filter(d => d.id !== draftToDelete);
+          setSavedDrafts(newDrafts);
+          localStorage.setItem('emlaknomi_drafts', JSON.stringify(newDrafts));
+          if(currentDraftId === draftToDelete) setCurrentDraftId(null);
+          setDraftToDelete(null);
+      }
+  };
+
+  const startNewProject = () => {
+      setFormData({...INITIAL_FORM_DATA});
+      setPrivateData({
+        customerName: '', contactInfo: '', finalPrice: '', commission: '', propertyNo: '', notes: '', 
+        date: new Date().toISOString().split('T')[0],
+        deedStatusPrivate: '', doorCode: '', swapPrivate: '', openAddress: ''
+      });
+      setCurrentDraftId(null);
+      setAppState('editor');
+  };
 
   const formatNumber = (value) => { if (!value) return ''; return value.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, "."); };
-  const handleInputChange = (e) => { const { name, value } = e.target; if (['price', 'kiraBedeli'].includes(name)) { setFormData(prev => ({ ...prev, [name]: formatNumber(value) })); } else { setFormData(prev => ({ ...prev, [name]: value })); } };
+  
+  const handleInputChange = (e) => { 
+      const { name, value } = e.target; 
+      if (['price', 'kiraBedeli'].includes(name)) { 
+          setFormData(prev => ({ ...prev, [name]: formatNumber(value) })); 
+      } else if (name === 'adNumber') {
+          setFormData(prev => {
+              let newDesc = prev.description || "";
+              if (newDesc) {
+                  if (/> İlan No: .*/.test(newDesc)) {
+                      newDesc = newDesc.replace(/> İlan No: .*/, `> İlan No: ${value}`);
+                  } else if (/İLAN NO: .*/i.test(newDesc)) {
+                      newDesc = newDesc.replace(/İLAN NO: .*/i, `İLAN NO: ${value}`);
+                  }
+                  
+                  const lines = newDesc.split('\n');
+                  if (lines.length > 0 && lines[0].startsWith("EMLAKNOMİ'DEN")) {
+                      let titleLine = lines[0];
+                      titleLine = titleLine.replace(/ - \d+$/i, ''); 
+                      if (value && value.trim() !== '') {
+                          titleLine += ` - ${value}`;
+                      }
+                      lines[0] = titleLine;
+                      newDesc = lines.join('\n');
+                  }
+              }
+              return { ...prev, [name]: value, description: newDesc };
+          });
+      } else { 
+          setFormData(prev => ({ ...prev, [name]: value })); 
+      } 
+  };
+  
   const handleInputBlur = (e) => { const { name, value } = e.target; if (['size', 'netSize', 'yolaTerk', 'yolaCephesi'].includes(name) && value && !value.includes('m²')) { setFormData(prev => ({ ...prev, [name]: `${value} m²` })); } };
   const handleConsultantChange = (e) => { const { name, value, type, checked } = e.target; setConsultant(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value })); };
   
@@ -269,7 +448,68 @@ export default function App({ userData = null, branchesData = null }) {
           reader.readAsDataURL(file); 
       } 
   };
+
+  const handleOverlayPhotoChange = (e) => {
+      if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onloadend = () => {
+              const img = new Image();
+              img.onload = () => {
+                  const canvas = document.createElement('canvas');
+                  canvas.width = img.width;
+                  canvas.height = img.height;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0);
+                  const dataUrl = canvas.toDataURL('image/png');
+                  setOverlayData(prev => {
+                      const next = { ...prev, photo: dataUrl, show: true };
+                      localStorage.setItem('emlaknomi_overlay_photo', dataUrl);
+                      localStorage.setItem('emlaknomi_overlay_settings', JSON.stringify({ show: next.show, x: next.x, y: next.y, scale: next.scale }));
+                      return next;
+                  });
+              };
+              img.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+      }
+  };
+
+  const updateOverlayConfig = (updates) => {
+      setOverlayData(prev => {
+          const next = { ...prev, ...updates };
+          localStorage.setItem('emlaknomi_overlay_settings', JSON.stringify({ show: next.show, x: next.x, y: next.y, scale: next.scale }));
+          return next;
+      });
+  };
   
+  const updateDesignConfig = (type, elementKey, updates) => {
+      setDesignConfig(prev => {
+          const next = {
+              ...prev,
+              [type]: {
+                  ...prev[type],
+                  [elementKey]: { ...prev[type][elementKey], ...updates }
+              }
+          };
+          localStorage.setItem('emlaknomi_design_config', JSON.stringify(next));
+          return next;
+      });
+  };
+
+  const resetDesignConfig = (type) => {
+      if (window.confirm("Bu tasarımdaki tüm boyutlandırma ve konum ayarlarını varsayılana döndürmek istediğinize emin misiniz?")) {
+          setDesignConfig(prev => {
+              const next = {
+                  ...prev,
+                  [type]: { ...DEFAULT_DESIGN_CONFIG[type] }
+              };
+              localStorage.setItem('emlaknomi_design_config', JSON.stringify(next));
+              return next;
+          });
+      }
+  };
+
   const handlePrivateInputChange = (e) => { const { name, value } = e.target; if (['finalPrice', 'commission'].includes(name)) { setPrivateData(prev => ({ ...prev, [name]: formatNumber(value) })); } else { setPrivateData(prev => ({ ...prev, [name]: value })); } };
   const handleMultiSelect = (field, value) => { const current = Array.isArray(formData[field]) ? formData[field] : []; const updated = current.includes(value) ? current.filter(i => i !== value) : [...current, value]; setFormData(prev => ({ ...prev, [field]: updated })); };
   
@@ -303,7 +543,8 @@ export default function App({ userData = null, branchesData = null }) {
                   canvas.height = img.height;
                   const ctx = canvas.getContext('2d');
                   ctx.drawImage(img, 0, 0);
-                  setFormData(prev => ({ ...prev, images: [...prev.images, canvas.toDataURL('image/jpeg', 0.8)] }));
+                  
+                  setFormData(prev => ({ ...prev, images: [...(prev.images || []), canvas.toDataURL('image/jpeg', 0.9)] }));
               };
               img.src = reader.result;
           };
@@ -352,9 +593,25 @@ export default function App({ userData = null, branchesData = null }) {
       const baseStr = `${operation} ${subType}`.trim();
       return formData.isOpportunity ? `FIRSAT ${baseStr}` : baseStr;
   };
-  const getGeneratedTitle = () => { if (formData.customTitle) return formData.customTitle; let parts = []; if (formData.neighborhood) parts.push(`${formData.neighborhood}'da`); if (formData.rooms) parts.push(formData.rooms); if (formData.type.includes('Daire') || formData.konutTipi) { const fd = getFloorDisplay(); if (fd) parts.push(fd); } parts.push(getFullTypeLabel()); return parts.join(' '); };
+  const getGeneratedTitle = () => { 
+      let base = formData.customTitle;
+      if (!base) {
+          let parts = []; 
+          if (formData.neighborhood) parts.push(`${formData.neighborhood}'da`); 
+          if (formData.rooms) parts.push(formData.rooms); 
+          if (formData.type.includes('Daire') || formData.konutTipi) { 
+              const fd = getFloorDisplay(); if (fd) parts.push(fd); 
+          } 
+          parts.push(getFullTypeLabel()); 
+          base = parts.join(' ');
+      }
+      if (formData.adNumber && formData.adNumber.trim() !== '') {
+          base += ` - ${formData.adNumber}`;
+      }
+      return base; 
+  };
 
-  const getFileNameBase = (includeConsultant = true) => {
+  const getFileNameBase = (includeConsultant = true, isDraft = false) => {
     let detail = "Ilan";
     if (formData.type.includes("Daire")) detail = formData.rooms || "Daire";
     else if (formData.type.includes("Arsa")) detail = "Arsa";
@@ -368,12 +625,14 @@ export default function App({ userData = null, branchesData = null }) {
     const formattedPrice = formData.price ? `${formData.price} TL` : "0 TL";
     
     let fileName = "";
-    if (includeConsultant) {
+    if (includeConsultant && !isDraft) {
         const safeConsultantName = consultant.name.trim();
         fileName = `${safeAdNumber} - ${safeConsultantName} - ${safeNeighborhood} - ${detail} - ${formattedPrice}`;
     } else {
         fileName = `${safeAdNumber} - ${safeNeighborhood} - ${detail} - ${formattedPrice}`;
     }
+    
+    if(isDraft) fileName = `TASLAK - ${fileName}`;
     
     const illegalCharsRegex = new RegExp('[\\\\/:*?"<>|]', 'g');
     return fileName.replace(illegalCharsRegex, '');
@@ -400,13 +659,57 @@ export default function App({ userData = null, branchesData = null }) {
     detailsText += addLine('Cephe', formData.facade);
     if (formData.type !== "Devren Satılık" && !formData.type.includes('Kiralık')) { detailsText += addLine('Krediye Uygun', formData.creditSuitable); detailsText += addLine('Takas', formData.swapAvailable); }
     if (['Bireysel Garaj', 'Ortak Kullanım', 'Var'].includes(formData.garage)) { const garageText = formData.garage === "Var" ? "Otopark İmkanı" : formData.garage; detailsText += `> ÖZELLİK: ${garageText} Mevcuttur\n`; }
-    detailsText += addLine('Diğer Özellikler', formData.digerOzellikler);
+    
     let featuresText = ""; Object.keys(featureCategories).forEach(cat => { const selectedInCat = featureCategories[cat].filter(f => formData.features.includes(f)); if (selectedInCat.length > 0) { featuresText += `\n\n> ${cat.toUpperCase()}:\n` + selectedInCat.join(', '); } });
     
     const safeAuthNo = office.authNo ? office.authNo : '7000161';
     
-    const desc = `EMLAKNOMİ'DEN ${generatedTitle.toUpperCase()}\n\n` + `Konum: ${formData.city} / ${formData.district} / ${formData.neighborhood}\n\n` + `GAYRİMENKUL DETAYLARI\n` + detailsText + `${featuresText}\n\n\n` + `FİYAT: ${formData.price} ${formData.currency}\n\n` + `--------------------------------\n` + `${consultant.showInfo ? `Gayrimenkul Uzmanı - ${consultant.name}\nİletişim: ${consultant.phone}\n` : ''}` + `www.ozcanaktas.com\n\n` + `Ofis Adres: ${office.address}\n\n` + `Taşınmaz Ticareti Yetki Belge No: ${safeAuthNo}\n` + `www.emlaknomi.com\n\n` + `\nŞubeler: Karaman - Konya - Ereğli - Eskişehir - Alanya - Balıkesir - Kıbrıs`;
+    let digerOzelliklerText = "";
+    if (formData.digerOzellikler && formData.digerOzellikler.trim() !== '') {
+        digerOzelliklerText = `DİĞER ÖZELLİKLER:\n${formData.digerOzellikler}\n\n`;
+    }
+    
+    const desc = `EMLAKNOMİ'DEN ${generatedTitle.toUpperCase()}\n\n` + `Konum: ${formData.city} / ${formData.district} / ${formData.neighborhood}\n\n` + `GAYRİMENKUL DETAYLARI\n` + detailsText + `${featuresText}\n\n\n` + digerOzelliklerText + `FİYAT: ${formData.price} ${formData.currency}\n\n` + `--------------------------------\n` + `${consultant.showInfo ? `Gayrimenkul Uzmanı - ${consultant.name}\nİletişim: ${consultant.phone}\n` : ''}` + `www.ozcanaktas.com\n\n` + `Ofis Adres: ${office.address}\n\n` + `Taşınmaz Ticareti Yetki Belge No: ${safeAuthNo}\n` + `www.emlaknomi.com\n\n` + `\nŞubeler: Karaman - Konya - Ereğli - Eskişehir - Alanya - Balıkesir - Kıbrıs`;
     setFormData(prev => ({ ...prev, description: desc }));
+  };
+
+  const renderTransformControls = (type, elementKey, label) => {
+      const config = designConfig[type]?.[elementKey];
+      if (!config) return null;
+      
+      return (
+          <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 mt-3">
+               <div className="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                   <span className="text-sm font-bold text-orange-400">{label} Ayarları</span>
+                   <label className="flex items-center text-xs text-slate-300 cursor-pointer">
+                       <input type="checkbox" checked={config.show} onChange={(e) => updateDesignConfig(type, elementKey, {show: e.target.checked})} className="mr-2 w-4 h-4"/>
+                       Göster
+                   </label>
+               </div>
+               {config.show && (
+                   <div className="grid grid-cols-2 gap-6">
+                       <div>
+                           <span className="block text-xs font-bold text-slate-400 mb-2 text-center">KONUM (X/Y)</span>
+                           <div className="grid grid-cols-3 gap-1 w-24 mx-auto">
+                               <div/>
+                               <button onClick={() => updateDesignConfig(type, elementKey, {y: config.y - 5})} className="bg-slate-700 p-2 rounded hover:bg-slate-600 text-white flex justify-center"><ChevronUp size={16}/></button>
+                               <div/>
+                               <button onClick={() => updateDesignConfig(type, elementKey, {x: config.x - 5})} className="bg-slate-700 p-2 rounded hover:bg-slate-600 text-white flex justify-center"><div className="rotate-90"><ChevronDown size={16}/></div></button>
+                               <button onClick={() => updateDesignConfig(type, elementKey, {y: config.y + 5})} className="bg-slate-700 p-2 rounded hover:bg-slate-600 text-white flex justify-center"><ChevronDown size={16}/></button>
+                               <button onClick={() => updateDesignConfig(type, elementKey, {x: config.x + 5})} className="bg-slate-700 p-2 rounded hover:bg-slate-600 text-white flex justify-center"><div className="-rotate-90"><ChevronDown size={16}/></div></button>
+                           </div>
+                       </div>
+                       <div className="flex flex-col justify-center">
+                           <span className="block text-xs font-bold text-slate-400 mb-2 text-center">BOYUT (ÖLÇEK)</span>
+                           <div className="flex gap-2">
+                               <button onClick={() => updateDesignConfig(type, elementKey, {scale: Math.max(0.1, config.scale - 0.05)})} className="bg-slate-700 text-white flex-1 py-3 text-lg rounded font-bold hover:bg-slate-600">-</button>
+                               <button onClick={() => updateDesignConfig(type, elementKey, {scale: config.scale + 0.05})} className="bg-slate-700 text-white flex-1 py-3 text-lg rounded font-bold hover:bg-slate-600">+</button>
+                           </div>
+                       </div>
+                   </div>
+               )}
+          </div>
+      );
   };
 
   const renderDynamicFields = () => {
@@ -574,9 +877,9 @@ export default function App({ userData = null, branchesData = null }) {
       return null;
   };
 
-  const SocialDesign = ({ isCapture = false, designType = 'consultant' }) => {
+  const SocialDesign = ({ isCapture = false, designType = 'consultant', overlayData = {show: false}, designConfig }) => {
       const renderImages = () => {
-          const imgs = formData.images;
+          const imgs = formData.images || [];
           const count = imgs.length;
           const defaultImg = placeholderImage;
           if (designMode === 'single' || count === 0) {
@@ -624,6 +927,9 @@ export default function App({ userData = null, branchesData = null }) {
       if (formData.age && formData.age !== '') {
           activeFeatures.push({ icon: Calendar, label: 'Yaş', value: formData.age });
       }
+      if (formData.heating && formData.heating.length > 0) {
+          activeFeatures.push({ icon: Flame, label: 'Isıtma', value: Array.isArray(formData.heating) ? formData.heating[0] : formData.heating });
+      }
       if (formData.garage && formData.garage !== 'Yok' && formData.garage !== '') {
           activeFeatures.push({ icon: Car, label: 'Garaj', value: formData.garage === 'Bireysel Garaj' || formData.garage === 'Ortak Kullanım' || formData.garage === 'Var' ? 'Var' : formData.garage });
       }
@@ -632,9 +938,22 @@ export default function App({ userData = null, branchesData = null }) {
       }
       
       const displayFeatures = activeFeatures.filter(f => f.value && f.value !== '-' && f.value !== '');
-      const limitedFeatures = displayFeatures.slice(0, 6);
+      const limitedFeatures = displayFeatures.slice(0, 10); 
+      const isLargeIcons = limitedFeatures.length <= 5;
 
       const isConsultant = designType === 'consultant';
+      const configGroup = designConfig[designType] || DEFAULT_DESIGN_CONFIG[designType];
+      
+      const getStyle = (elementKey, extra = '', transformOrigin = 'center') => {
+          const conf = configGroup[elementKey];
+          if (!conf) return {};
+          if (!conf.show) return { display: 'none' };
+          return {
+              transform: `translate(${conf.x}px, ${conf.y}px) scale(${conf.scale}) ${extra}`,
+              transformOrigin: transformOrigin,
+              display: conf.show ? '' : 'none'
+          };
+      };
 
       return (
         <div className="w-[1080px] h-[1080px] bg-slate-100 relative flex-shrink-0 font-sans text-left overflow-hidden">
@@ -650,8 +969,8 @@ export default function App({ userData = null, branchesData = null }) {
                 <div className="bg-white text-slate-900 px-5 py-1.5 text-sm font-bold shadow-xl rounded-r-xl border-l-[5px] tracking-widest ml-1" style={{borderColor: themeColor}}>
                     {`${formData.neighborhood} Mh. • ${formData.district} / ${formData.city}`.toLocaleUpperCase('tr-TR')}
                 </div>
-                {formData.isOpportunity && (
-                    <div className="mt-4 ml-6 flex items-center justify-center w-[150px] h-[150px] bg-red-600 text-white font-black text-[30px] rounded-full shadow-[0_10px_30px_rgba(220,38,38,0.5)] border-[6px] border-white transform -rotate-12 z-30 leading-none tracking-wider">
+                {configGroup.badge?.show && formData.isOpportunity && (
+                    <div className="mt-4 ml-6 flex items-center justify-center w-[150px] h-[150px] bg-red-600 text-white font-black text-[30px] rounded-full shadow-[0_10px_30px_rgba(220,38,38,0.5)] border-[6px] border-white z-30 leading-none tracking-wider" style={getStyle('badge', 'rotate(-12deg)', 'center')}>
                         FIRSAT
                     </div>
                 )}
@@ -662,55 +981,75 @@ export default function App({ userData = null, branchesData = null }) {
                 )}
             </div>
 
-            {showLogo && (
-                <div className="absolute top-0 right-8 z-20 flex items-start justify-end h-[240px] w-[750px] pointer-events-none">
+            {configGroup.topLogo?.show && showLogo && (
+                <div className="absolute top-0 right-8 z-20 flex items-start justify-end h-[204px] w-[680px] pointer-events-none" style={getStyle('topLogo', '', 'top right')}>
                     <img src={customLogo || FIXED_LOGO_URL} crossOrigin="anonymous" className="max-w-full max-h-full object-contain object-right-top drop-shadow-xl" />
+                </div>
+            )}
+            
+            {/* DANIŞMAN ŞEFFAF GÖRSELİ */}
+            {isConsultant && overlayData.show && overlayData.photo && (
+                <div className="absolute z-10 pointer-events-none"
+                     style={{
+                         right: '32px',
+                         bottom: '380px',
+                         transform: `translate(${overlayData.x}px, ${overlayData.y}px) scale(${overlayData.scale})`,
+                         transformOrigin: 'bottom right'
+                     }}>
+                    <img src={overlayData.photo} alt="Danışman Şeffaf" className="max-h-[500px] w-auto drop-shadow-2xl" crossOrigin="anonymous" />
                 </div>
             )}
 
             <div className="absolute bottom-8 left-8 right-8 bg-white/90 rounded-[1.5rem] p-5 shadow-2xl z-20 border border-white/60 flex flex-col gap-3">
-                <div className="h-[65px] overflow-hidden">
-                    <h2 className="text-[1.75rem] font-extrabold leading-tight drop-shadow-sm" style={{color: themeColor}}>
-                        {getGeneratedTitle()}
-                    </h2>
-                </div>
-
-                <div className="text-[1.75rem] font-black text-slate-800 flex items-center gap-2">
-                    <span className="text-sm text-slate-500 font-bold tracking-widest">FİYAT:</span>
-                    {formData.price} {formData.currency}
-                </div>
-
-                <div className="bg-slate-100/80 border border-white/60 rounded-[1.25rem] py-3 px-4 shadow-inner">
-                    <div className="flex flex-row items-center justify-start gap-4">
-                        {limitedFeatures.map((feat, idx) => (
-                            <div key={idx} className="flex flex-col items-center justify-center text-center gap-0.5 min-w-[50px] max-w-[120px]">
-                                <feat.icon size={22} className="mb-0.5" style={{color: themeColor}} />
-                                <span className="text-[9px] text-slate-500 font-bold tracking-widest">{feat.label.toLocaleUpperCase('tr-TR')}</span>
-                                <span className="text-[15px] font-black text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis block w-full">
-                                    {feat.value}
-                               </span>
-                            </div>
-                        ))}
+                
+                {configGroup.title?.show && (
+                    <div className="h-[65px] overflow-hidden" style={getStyle('title', '', 'left center')}>
+                        <h2 className="text-[1.75rem] font-extrabold leading-tight drop-shadow-sm" style={{color: themeColor}}>
+                            {getGeneratedTitle()}
+                        </h2>
                     </div>
-                </div>
+                )}
+
+                {configGroup.price?.show && (
+                    <div className="text-[1.75rem] font-black text-slate-800 flex items-center gap-2" style={getStyle('price', '', 'left center')}>
+                        <span className="text-sm text-slate-500 font-bold tracking-widest">FİYAT:</span>
+                        {formData.price} {formData.currency}
+                    </div>
+                )}
+
+                {configGroup.icons?.show && (
+                    <div className={`bg-slate-100/80 border border-white/60 rounded-[1.25rem] ${isLargeIcons ? 'py-4 px-6' : 'py-3 px-4'} shadow-inner relative overflow-visible`}>
+                        <div className={`flex flex-row flex-nowrap items-center justify-start ${isLargeIcons ? 'gap-8' : 'gap-3'} w-full`} style={getStyle('icons', '', 'left center')}>
+                            {limitedFeatures.map((feat, idx) => (
+                                <div key={idx} className={`flex flex-col items-center justify-center text-center flex-shrink-0 ${isLargeIcons ? 'w-[130px] gap-1' : 'w-[84px] gap-0.5'}`}>
+                                    <feat.icon size={isLargeIcons ? 33 : 22} className={isLargeIcons ? 'mb-1' : 'mb-0.5'} style={{color: themeColor}} />
+                                    <span className={`${isLargeIcons ? 'text-[12px]' : 'text-[9px]'} text-slate-500 font-bold tracking-widest leading-none`}>{feat.label.toLocaleUpperCase('tr-TR')}</span>
+                                    <span className={`${isLargeIcons ? 'text-[21px]' : 'text-[14px]'} font-black text-slate-800 whitespace-nowrap overflow-hidden text-ellipsis block w-full px-1 leading-tight ${isLargeIcons ? 'mt-1.5' : 'mt-1'}`}>
+                                        {feat.value}
+                                   </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {isConsultant ? (
                     consultant.showInfo && (
-                        <div className="mt-1 pt-3 border-t border-slate-200/60 flex items-center justify-between">
+                        <div className="mt-1 pt-3 border-t border-slate-200/60 flex items-center justify-between h-[80px]">
                             <div className="flex items-center gap-4">
                                 {consultant.showPhoto && (
                                     <div className="w-[80px] h-[80px] rounded-xl border-[2px] shadow-md overflow-hidden bg-slate-200" style={{borderColor: themeColor}}>
                                         <img src={consultant.photo} className="w-full h-full object-cover object-top" crossOrigin="anonymous"/>
                                     </div>
                                 )}
-                                <div className="flex items-center">
-                                    <span className="text-2xl font-black text-slate-800">
-                                        {consultant.name} - <span style={{color: themeColor}}>{consultant.phone}</span>
-                                    </span>
+                                <div className="flex items-center gap-2">
+                                    {configGroup.name?.show && <span className="text-2xl font-black text-slate-800" style={getStyle('name', '', 'left center')}>{consultant.name}</span>}
+                                    {configGroup.separator?.show && configGroup.name?.show && configGroup.phone?.show && <span className="text-2xl font-black text-slate-800" style={getStyle('separator', '', 'center')}>-</span>}
+                                    {configGroup.phone?.show && <span className="text-[2.25rem] font-extrabold" style={{color: themeColor, ...getStyle('phone', '', 'left center')}}>{consultant.phone}</span>}
                                 </div>
                             </div>
                             
-                            <div className="flex flex-row items-center justify-end gap-2">
+                            <div className="flex flex-row items-center justify-end gap-2" style={getStyle('websites', '', 'right center')}>
                                 {showWebsiteOzcan && (
                                     <div className="bg-slate-800 text-white px-3 py-2 rounded-lg text-[13px] font-bold flex items-center shadow-md whitespace-nowrap">
                                         <Globe size={16} className="mr-1.5" style={{color: themeColor}}/> www.ozcanaktas.com
@@ -725,13 +1064,12 @@ export default function App({ userData = null, branchesData = null }) {
                         </div>
                     )
                 ) : (
-                    <div className="mt-1 pt-3 border-t border-slate-200/60 flex items-center justify-end h-[80px] relative">
-                        {/* Logo absolute olarak konumlandırıldı, böylece ilan kartını asla büyütmeyecek. Sağ üstteki logonun %15 küçüğüdür. */}
-                        <div className="absolute left-0 bottom--9 h-[204px] w-[400px] flex items-end justify-start pointer-events-none">
-                            {showLogo && <img src={customLogo || FIXED_LOGO_URL} className="max-w-full max-h-full object-contain object-left-bottom" crossOrigin="anonymous"/>}
+                    <div className="mt-1 pt-3 border-t border-slate-200/60 flex items-center justify-between h-[80px] relative">
+                        <div className="flex items-center h-[50px] w-auto max-w-[250px] relative z-10 flex-shrink-0" style={getStyle('bottomLogo', '', 'left center')}>
+                            {showLogo && configGroup.bottomLogo?.show && <img src={customLogo || FIXED_LOGO_URL} className="max-h-[50px] w-auto object-contain object-left pointer-events-none" crossOrigin="anonymous"/>}
                         </div>
                         
-                        <div className="flex flex-row items-center justify-end gap-3 text-white relative z-10">
+                        <div className="flex flex-row items-center justify-end gap-3 text-white relative z-10" style={getStyle('websites', '', 'right center')}>
                             <div className="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-[13px] font-bold flex items-center shadow-md whitespace-nowrap">
                                 <Globe size={16} className="mr-1.5" style={{color: themeColor}}/> www.emlaknomi.com
                             </div>
@@ -755,12 +1093,12 @@ export default function App({ userData = null, branchesData = null }) {
               {/* 1. Sayfa: Kapak Görseli (Sosyal Medya Tasarımı) */}
               <div className="w-[794px] h-[794px] relative overflow-hidden bg-slate-100 flex-shrink-0">
                  <div style={{transform: 'scale(0.73518)', transformOrigin: 'top left', width: '1080px', height: '1080px'}}>
-                     <SocialDesign isCapture={true} designType={designType} />
+                     <SocialDesign isCapture={true} designType={designType} overlayData={overlayData} designConfig={designConfig} />
                  </div>
               </div>
               
               {/* 2. Bölüm: Diğer Fotoğraflar (Kapağın Yarı Boyutu Grid) */}
-              {formData.images.length > 1 && (
+              {(formData.images || []).length > 1 && (
                  <div className="px-8 pt-8 bg-white">
                      <h3 className="text-2xl font-black mb-4 border-b-4 pb-2 text-slate-800" style={{borderColor: themeColor}}>Diğer Görseller</h3>
                      <div className="grid grid-cols-2 gap-6">
@@ -934,7 +1272,8 @@ export default function App({ userData = null, branchesData = null }) {
             format: [pdfWidth, pdfHeight]
         });
         
-        pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        // Use JPEG format instead of PNG to prevent "Incomplete or corrupt PNG file" errors in jsPDF
+        pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         return pdf.output('blob');
     } catch(e) {
         console.error("PDF yakalama hatası:", e);
@@ -984,13 +1323,12 @@ export default function App({ userData = null, branchesData = null }) {
     try {
         const zip = new window.JSZip();
         
-        let zipFolderName = getFileNameBase(true); // Danışman ismi dahil
-
-        const pdfFileName = getFileNameBase(false); // Danışman ismi hariç
+        let zipFolderName = getFileNameBase(true, false); 
+        const pdfFileName = getFileNameBase(false, false);
         
         const rootFolder = zip.folder(zipFolderName);
         const hamFolder = rootFolder.folder("1_HAM_FOTOLAR");
-        if (formData.images.length > 0) {
+        if ((formData.images || []).length > 0) {
           const imgPromises = formData.images.map(async (imgUrl, idx) => {
             try { const response = await fetch(imgUrl); const blob = await response.blob(); hamFolder.file(`resim_${idx + 1}.jpg`, blob); } catch (e) {}
           }); await Promise.all(imgPromises);
@@ -1038,19 +1376,146 @@ export default function App({ userData = null, branchesData = null }) {
     }
   };
 
+  // DASHBOARD EKRANI RENDER
+  if (appState === 'dashboard') {
+      return (
+          <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-6 font-sans">
+              <div className="max-w-4xl w-full">
+                  <div className="text-center mb-12">
+                      <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 text-orange-600 rounded-2xl mb-4 shadow-sm">
+                          <Home size={40} />
+                      </div>
+                      <h1 className="text-4xl font-black text-slate-800 tracking-tight">Emlaknomi <span className="text-orange-500 font-light">İlan Hazırlama</span></h1>
+                      <p className="text-slate-500 mt-2 text-lg">Özcan AKTAŞ Yazılım Teknolojileri</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                      <div onClick={startNewProject} className="bg-white p-8 rounded-3xl shadow-lg border border-slate-200 cursor-pointer hover:shadow-xl hover:border-orange-500 transition-all transform hover:-translate-y-1 flex flex-col items-center justify-center text-center group">
+                          <div className="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                              <PlusCircle size={32} />
+                          </div>
+                          <h2 className="text-xl font-bold text-slate-800 mb-2">Yeni İlan Oluştur</h2>
+                          <p className="text-sm text-slate-500">Sıfırdan yeni bir gayrimenkul ilanı ve tasarımı hazırlayın.</p>
+                      </div>
+                      
+                      <div onClick={() => setAppState('drafts')} className="bg-white p-8 rounded-3xl shadow-lg border border-slate-200 cursor-pointer hover:shadow-xl hover:border-blue-500 transition-all transform hover:-translate-y-1 flex flex-col items-center justify-center text-center group">
+                          <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                              <Edit3 size={32} />
+                          </div>
+                          <h2 className="text-xl font-bold text-slate-800 mb-2">Kayıtlı Taslaklarım</h2>
+                          <p className="text-sm text-slate-500">Yarım kalan ilanlarınızı düzenleyin ve tamamlayın.</p>
+                          <span className="mt-4 bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full">{savedDrafts.length} İlan Taslağı Bulunuyor</span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      );
+  }
+
+  // DETAYLI TASLAK LİSTESİ EKRANI
+  if (appState === 'drafts') {
+      return (
+          <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
+            <header className="bg-slate-900 text-white p-4 shadow-lg sticky top-0 z-50">
+              <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                    <button onClick={() => setAppState('dashboard')} className="flex flex-col items-center justify-center text-slate-400 hover:text-white transition-colors" title="Ana Ekrana Dön">
+                        <Home size={24} />
+                        <span className="text-[10px] mt-0.5">Ana Sayfa</span>
+                    </button>
+                    <div className="flex items-center space-x-2 border-l border-slate-700 pl-4">
+                        <h1 className="text-xl font-bold">Emlaknomi <span className="text-orange-500 font-light">İlan Hazırlama</span></h1>
+                    </div>
+                </div>
+              </div>
+            </header>
+
+            <main className="max-w-4xl mx-auto p-4 md:p-6 mt-4">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+                        <h2 className="text-2xl font-bold text-slate-800 flex items-center"><FileText className="mr-3 text-blue-500" size={28}/> Kayıtlı Taslaklar</h2>
+                        <span className="bg-blue-100 text-blue-700 text-sm font-bold px-3 py-1 rounded-full">{savedDrafts.length} İlan</span>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        {savedDrafts.length === 0 ? (
+                            <div className="text-center py-12 text-slate-400">
+                                <FileText size={48} className="mx-auto mb-4 opacity-50"/>
+                                <p className="text-lg">Henüz kaydedilmiş bir taslağınız bulunmuyor.</p>
+                            </div>
+                        ) : (
+                            savedDrafts.map(draft => (
+                                <div key={draft.id} className="bg-slate-50 border border-slate-200 p-5 rounded-xl flex items-center justify-between hover:bg-slate-100 transition-colors group cursor-pointer" onClick={() => loadDraft(draft)}>
+                                    <div className="flex-1 min-w-0 pr-4">
+                                        <h4 className="text-lg font-bold text-slate-800 truncate mb-1">{draft.name}</h4>
+                                        <div className="flex items-center text-xs text-slate-500 space-x-4">
+                                            <span className="flex items-center"><Calendar size={14} className="mr-1"/> {new Date(draft.date).toLocaleString('tr-TR')}</span>
+                                            <span className="flex items-center"><MapPin size={14} className="mr-1"/> {draft.formData.city} / {draft.formData.district}</span>
+                                            <span className="flex items-center"><Layout size={14} className="mr-1"/> {draft.formData.type}</span>
+                                            <span className="flex items-center font-bold text-orange-600">{draft.formData.price} {draft.formData.currency}</span>
+                                        </div>
+                                    </div>
+                                    <button onClick={(e) => { e.stopPropagation(); setDraftToDelete(draft.id); }} className="w-10 h-10 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition-colors" title="Taslağı Sil">
+                                        <Trash2 size={20} />
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            </main>
+
+            {/* Özel Silme Modalı (Iframe Güvenliği İçin) */}
+            {draftToDelete && (
+                <div className="fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                        <h3 className="text-xl font-black text-slate-800 mb-2">Taslağı Sil</h3>
+                        <p className="text-slate-600 mb-6 text-sm">Bu taslağı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+                        <div className="flex space-x-3 justify-end">
+                            <button onClick={() => setDraftToDelete(null)} className="px-4 py-2 text-slate-700 font-bold bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">İptal</button>
+                            <button onClick={confirmDeleteDraft} className="px-4 py-2 text-white font-bold bg-red-600 hover:bg-red-700 rounded-lg transition-colors">Evet, Sil</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+          </div>
+      );
+  }
+
+  // EDİTÖR EKRANI RENDER
+  if (!isReady) return <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800"><Loader2 className="animate-spin text-orange-600 mb-4" size={48} /><h2 className="text-xl font-bold">Hazırlanıyor...</h2></div>;
+
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-orange-200 selection:text-orange-900">
-      <header className="bg-slate-900 text-white p-4 shadow-lg print:hidden">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-orange-200 selection:text-orange-900 pb-20">
+      <header className="bg-slate-900 text-white p-4 shadow-lg print:hidden sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2"><Home className="text-orange-500" size={28} /><h1 className="text-xl font-bold">Özcan AKTAŞ - Emlaknomi <span className="text-orange-500 font-light">Pro</span></h1></div>
           <div className="flex items-center space-x-4">
-             <button onClick={onDownloadProject} disabled={isDownloading} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center font-bold text-sm transition-colors disabled:opacity-50">{isDownloading ? 'Hazırlanıyor...' : <><Download size={18} className="mr-2"/> İndir (ZIP)</>}</button>
-             <div className="h-8 w-8 bg-orange-500 rounded flex items-center justify-center font-bold border border-orange-600">ÖA</div>
+              <button onClick={() => setAppState('dashboard')} className="flex flex-col items-center justify-center text-slate-400 hover:text-white transition-colors" title="Ana Ekrana Dön">
+                  <Home size={24} />
+                  <span className="text-[10px] mt-0.5">Ana Sayfa</span>
+              </button>
+              <div className="flex items-center space-x-2 border-l border-slate-700 pl-4">
+                  <h1 className="text-xl font-bold hidden md:block">Emlaknomi <span className="text-orange-500 font-light">İlan Hazırlama</span></h1>
+                  <h1 className="text-sm font-bold md:hidden truncate max-w-[150px] text-slate-300">{currentDraftId ? savedDrafts.find(d => d.id === currentDraftId)?.name || 'Düzenleniyor...' : 'Yeni İlan'}</h1>
+              </div>
+          </div>
+          <div className="flex items-center space-x-3">
+             {/* SADECE İLAN NO YOKKEN KAYIT UYARISI GÖSTERİLİR */}
+             {!formData.adNumber ? (
+                 <div className="hidden md:flex items-center text-xs font-bold text-slate-400 mr-2 border border-slate-700 px-3 py-1.5 rounded-lg bg-slate-800">
+                     {saveStatus || 'Değişiklikler otomatik kaydedilir'}
+                 </div>
+             ) : (
+                 <div className="hidden md:flex items-center text-xs font-bold text-green-400 mr-2 border border-green-900 px-3 py-1.5 rounded-lg bg-green-900/30">
+                     <CheckCircle size={14} className="mr-1"/> İlan Tamamlandı
+                 </div>
+             )}
+             <button onClick={onDownloadProject} disabled={isDownloading} className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg flex items-center font-bold text-sm transition-colors disabled:opacity-50 shadow-[0_0_15px_rgba(22,163,74,0.4)]"><Download size={16} className="md:mr-2"/> <span className="hidden md:inline">{isDownloading ? 'Hazırlanıyor...' : 'İndir (ZIP)'}</span></button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <main className="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
         <div className="space-y-6 print:hidden">
           <div className="bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-700 text-white">
             <h2 className="text-lg font-semibold mb-4 flex items-center text-slate-100"><User className="mr-2 text-orange-500" size={20} /> Ayarlar</h2>
@@ -1083,6 +1548,105 @@ export default function App({ userData = null, branchesData = null }) {
                    <div className="flex items-center space-x-2 border border-slate-600 p-2 rounded hover:bg-slate-700"><input type="checkbox" checked={showWebsiteOzcan} onChange={e=>setShowWebsiteOzcan(e.target.checked)} /><span className="text-sm">ozcanaktas.com Göster</span></div>
                    <div className="flex items-center space-x-2 border border-slate-600 p-2 rounded hover:bg-slate-700"><input type="checkbox" checked={showWebsiteEmlaknomi} onChange={e=>setShowWebsiteEmlaknomi(e.target.checked)} /><span className="text-sm">emlaknomi.com Göster</span></div>
                </div>
+               
+               {/* ŞEFFAF GÖRSEL AYARLARI */}
+               <div className="md:col-span-2 border-t border-slate-700 pt-4 mt-2">
+                   <div className="flex items-center justify-between cursor-pointer text-slate-300 hover:text-white" onClick={() => setActiveConfigTab(activeConfigTab === 'overlay' ? null : 'overlay')}>
+                       <h3 className="text-sm font-bold flex items-center"><User size={16} className="mr-2 text-orange-500"/> Şeffaf Danışman Tasarım Görseli</h3>
+                       {activeConfigTab === 'overlay' ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+                   </div>
+                   
+                   {activeConfigTab === 'overlay' && (
+                       <div className="mt-4 p-4 bg-slate-900/50 rounded-xl border border-slate-700 space-y-4">
+                           <div className="flex items-center justify-between gap-4">
+                               <label className="cursor-pointer bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-lg text-xs font-bold flex items-center transition-colors">
+                                   <Upload size={14} className="mr-2"/> Fotoğraf Ekle (PNG)
+                                   <input type="file" className="hidden" accept="image/png" onChange={handleOverlayPhotoChange} />
+                               </label>
+                               <label className="flex items-center text-xs gap-2 text-slate-300 cursor-pointer">
+                                   <input type="checkbox" checked={overlayData.show} onChange={(e) => updateOverlayConfig({show: e.target.checked})} className="w-4 h-4"/>
+                                   Görseli Göster
+                               </label>
+                           </div>
+                           
+                           {overlayData.photo && (
+                               <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-700/50">
+                                   <div>
+                                       <span className="block text-[10px] font-bold text-slate-400 mb-2 text-center">KONUMLANDIRMA</span>
+                                       <div className="grid grid-cols-3 gap-1 w-24 mx-auto">
+                                           <div></div>
+                                           <button onClick={() => updateOverlayConfig({y: overlayData.y - 10})} className="bg-slate-700 p-1.5 rounded hover:bg-slate-600 flex justify-center text-white"><ChevronUp size={14}/></button>
+                                           <div></div>
+                                           <button onClick={() => updateOverlayConfig({x: overlayData.x - 10})} className="bg-slate-700 p-1.5 rounded hover:bg-slate-600 flex justify-center text-white"><div className="rotate-90"><ChevronDown size={14}/></div></button>
+                                           <button onClick={() => updateOverlayConfig({y: overlayData.y + 10})} className="bg-slate-700 p-1.5 rounded hover:bg-slate-600 flex justify-center text-white"><ChevronDown size={14}/></button>
+                                           <button onClick={() => updateOverlayConfig({x: overlayData.x + 10})} className="bg-slate-700 p-1.5 rounded hover:bg-slate-600 flex justify-center text-white"><div className="-rotate-90"><ChevronDown size={14}/></div></button>
+                                       </div>
+                                   </div>
+                                   <div className="flex flex-col justify-center">
+                                       <span className="block text-[10px] font-bold text-slate-400 mb-2 text-center">BOYUTLANDIRMA</span>
+                                       <div className="flex gap-2">
+                                           <button onClick={() => updateOverlayConfig({scale: Math.max(0.1, overlayData.scale - 0.05)})} className="bg-slate-700 text-white flex-1 py-1.5 text-xs rounded font-bold hover:bg-slate-600">-</button>
+                                           <button onClick={() => updateOverlayConfig({scale: overlayData.scale + 0.05})} className="bg-slate-700 text-white flex-1 py-1.5 text-xs rounded font-bold hover:bg-slate-600">+</button>
+                                       </div>
+                                   </div>
+                               </div>
+                           )}
+                       </div>
+                   )}
+               </div>
+
+               {/* TASARIM VE LOGO BOYUTLANDIRMA (DANIŞMAN) */}
+               <div className="md:col-span-2 border-t border-slate-700 pt-4 mt-2">
+                   <div className="flex items-center justify-between cursor-pointer text-slate-300 hover:text-white" onClick={() => setActiveConfigTab(activeConfigTab === 'consultant' ? null : 'consultant')}>
+                       <h3 className="text-sm font-bold flex items-center"><Settings size={16} className="mr-2 text-orange-500"/> Tasarım ve Logo Boyutlandırma (Danışman)</h3>
+                       {activeConfigTab === 'consultant' ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+                   </div>
+                   {activeConfigTab === 'consultant' && (
+                       <div className="mt-4 p-4 bg-slate-900/50 rounded-xl border border-slate-700">
+                           <div className="flex gap-2 mb-4">
+                               <select className="flex-1 p-2 rounded bg-slate-700 text-white border border-slate-600 text-sm" value={selectedConsultantElement} onChange={e => setSelectedConsultantElement(e.target.value)}>
+                                   <option value="topLogo">Sağ Üst Logo</option>
+                                   <option value="badge">Fırsat Etiketi</option>
+                                   <option value="title">İlan Başlığı</option>
+                                   <option value="price">Fiyat</option>
+                                   <option value="icons">Özellik İkonları</option>
+                                   <option value="name">Danışman İsmi</option>
+                                   <option value="separator">İsim-Telefon Çizgisi</option>
+                                   <option value="phone">Danışman Telefonu</option>
+                                   <option value="websites">Websiteler & Adres</option>
+                               </select>
+                               <button onClick={() => resetDesignConfig('consultant')} className="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 rounded font-bold transition-colors">Sıfırla</button>
+                           </div>
+                           {renderTransformControls('consultant', selectedConsultantElement, 'Seçili Öğe')}
+                       </div>
+                   )}
+               </div>
+
+               {/* KURUMSAL TASARIM AYARLARI */}
+               <div className="md:col-span-2 border-t border-slate-700 pt-4 mt-2">
+                   <div className="flex items-center justify-between cursor-pointer text-slate-300 hover:text-white" onClick={() => setActiveConfigTab(activeConfigTab === 'corporate' ? null : 'corporate')}>
+                       <h3 className="text-sm font-bold flex items-center"><Layout size={16} className="mr-2 text-blue-500"/> Kurumsal Tasarım Ayarları</h3>
+                       {activeConfigTab === 'corporate' ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+                   </div>
+                   {activeConfigTab === 'corporate' && (
+                       <div className="mt-4 p-4 bg-slate-900/50 rounded-xl border border-slate-700">
+                           <div className="flex gap-2 mb-4">
+                               <select className="flex-1 p-2 rounded bg-slate-700 text-white border border-slate-600 text-sm" value={selectedCorporateElement} onChange={e => setSelectedCorporateElement(e.target.value)}>
+                                   <option value="topLogo">Sağ Üst Logo</option>
+                                   <option value="bottomLogo">Sol Alt Logo (Kurumsal)</option>
+                                   <option value="badge">Fırsat Etiketi</option>
+                                   <option value="title">İlan Başlığı</option>
+                                   <option value="price">Fiyat</option>
+                                   <option value="icons">Özellik İkonları</option>
+                                   <option value="websites">Websiteler & Adres</option>
+                               </select>
+                               <button onClick={() => resetDesignConfig('corporate')} className="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3 rounded font-bold transition-colors">Sıfırla</button>
+                           </div>
+                           {renderTransformControls('corporate', selectedCorporateElement, 'Seçili Öğe')}
+                       </div>
+                   )}
+               </div>
+
             </div>
           </div>
 
@@ -1101,17 +1665,28 @@ export default function App({ userData = null, branchesData = null }) {
                     ))}
                  </div>
               </div>
+              
               <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
                   <label className="text-xs text-orange-800 font-bold mb-1 block">İlan Başlığı</label>
                   <div className="flex items-center gap-2"><span className="font-bold text-orange-700 whitespace-nowrap">Emlaknomi'den</span><input type="text" name="customTitle" value={formData.customTitle} onChange={handleInputChange} placeholder="Otomatik (Boş bırakınız)" className="w-full p-2 border border-orange-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/></div>
               </div>
-              <div><label className="text-xs text-slate-500 font-bold mb-1 block">Emlak Tipi</label><select name="type" value={formData.type} onChange={handleInputChange} className="w-full p-2 border rounded bg-white text-slate-800 font-bold"><option>Satılık Daire</option><option>Kiralık Daire</option><option>Satılık Arsa</option><option>Satılık Tarla</option><option>Satılık Bahçe</option><option>Satılık Ticari</option><option>Kiralık Ticari</option><option>Devren Satılık</option></select></div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <InputField label="İlan Numarası (Sisteme Yüklendikten Sonra Eklenebilir)" name="adNumber" value={formData.adNumber} onChange={handleInputChange} placeholder="Örn: 12345678" highlight />
+                  <div><label className="text-xs text-slate-500 font-bold mb-1 block">Emlak Tipi</label><select name="type" value={formData.type} onChange={handleInputChange} className="w-full p-2 border rounded bg-white text-slate-800 font-bold"><option>Satılık Daire</option><option>Kiralık Daire</option><option>Satılık Arsa</option><option>Satılık Tarla</option><option>Satılık Bahçe</option><option>Satılık Ticari</option><option>Kiralık Ticari</option><option>Devren Satılık</option></select></div>
+              </div>
+              
               <div className="grid grid-cols-2 gap-4"><InputField label="Fiyat" name="price" value={formData.price} onChange={handleInputChange} /><div><label className="text-xs text-slate-500 font-bold mb-1 block">Birim</label><select name="currency" value={formData.currency} onChange={handleInputChange} className="w-full p-2 border rounded bg-white text-slate-800"><option>TL</option><option>USD</option><option>EUR</option></select></div></div>
               <div className="bg-slate-50 p-3 rounded border">
                   <div className="flex justify-between mb-2"><span className="text-sm font-bold">Konum</span><button onClick={()=>setIsManualLocation(!isManualLocation)} className="text-xs text-blue-600 underline">Manuel Gir</button></div>
                   {isManualLocation ? (<div className="grid grid-cols-3 gap-2"><select name="city" value={formData.city} onChange={handleCityChange} className="p-1 border rounded text-xs bg-white text-slate-800">{allCities.map(c=><option key={c}>{c}</option>)}</select><input name="district" value={formData.district} onChange={handleInputChange} placeholder="İlçe" className="p-1 border rounded text-xs" /><input name="neighborhood" value={formData.neighborhood} onChange={handleInputChange} placeholder="Mahalle" className="p-1 border rounded text-xs" /></div>) : (<div className="grid grid-cols-3 gap-2"><select name="city" value={formData.city} onChange={handleCityChange} className="p-1 border rounded text-xs bg-white text-slate-800">{allCities.map(c=><option key={c}>{c}</option>)}</select><select name="district" value={formData.district} onChange={handleDistrictChange} className="p-1 border rounded text-xs bg-white text-slate-800">{detailedCities.includes(formData.city) ? Object.keys(locationData[formData.city]||{}).map(d=><option key={d}>{d}</option>) : <option>Yok</option>}</select><select name="neighborhood" value={formData.neighborhood} onChange={handleInputChange} className="p-1 border rounded text-xs bg-white text-slate-800">{(locationData[formData.city]?.[formData.district]||[]).map(n=><option key={n}>{n}</option>)}</select></div>)}
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">{renderDynamicFields()}</div>
+              
+              <div className="col-span-2 md:col-span-3 mb-2 mt-4">
+                  <label className="block text-xs text-slate-500 mb-1 font-bold">Diğer Özellikler (Opsiyonel)</label>
+                  <textarea name="digerOzellikler" value={formData.digerOzellikler} onChange={handleInputChange} rows={2} className="w-full p-2 border rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:border-orange-500 transition-colors" placeholder="Krediye uygun, güney cephe, köşe başı vb. ekstra detaylar..." />
+              </div>
               
               <button onClick={generateDescription} className="w-full py-3 bg-slate-800 text-white rounded font-bold hover:bg-slate-700 transition-colors mt-2 mb-2">Sihirli Metin Oluştur (Yenile)</button>
               <textarea name="description" value={formData.description} onChange={handleInputChange} rows={6} className="w-full p-2 border rounded text-xs font-mono" placeholder="Metin burada oluşacak..."/>
@@ -1164,7 +1739,7 @@ export default function App({ userData = null, branchesData = null }) {
               <div className="w-full overflow-hidden flex justify-center bg-slate-900" style={{height: '380px'}}> 
                   <div style={{transform: 'scale(0.35)', transformOrigin: 'top center', width: '1080px', height: '1080px'}}>
                     <div className="shadow-2xl">
-                         <SocialDesign isCapture={false} designType={previewDesignType} />
+                         <SocialDesign isCapture={false} designType={previewDesignType} overlayData={overlayData} designConfig={designConfig} />
                     </div>
                   </div>
               </div>
@@ -1188,7 +1763,7 @@ export default function App({ userData = null, branchesData = null }) {
                       Tasarımlı kapak resmi, diğer fotoğraflar, detaylı ilan metni ve danışman bilgilerinden oluşan profesyonel sunum dosyanızı anında indirebilirsiniz.
                   </p>
                   <div className="text-xs font-mono bg-slate-200 px-3 py-1.5 rounded mt-2 text-slate-600 font-bold border border-slate-300">
-                      Dosya: {getFileNameBase(false)}.pdf
+                      Dosya: {getFileNameBase(false, currentDraftId === null)}.pdf
                   </div>
               </div>
             </div>
@@ -1197,10 +1772,10 @@ export default function App({ userData = null, branchesData = null }) {
           {/* İNDİRME İÇİN KULLANILAN GİZLİ (STABİL) KONTEYNERLER */}
           <div style={{ position: 'fixed', top: '0px', left: '0px', zIndex: -9999, opacity: 0, pointerEvents: 'none' }}>
              <div id="social-capture-element-consultant" className="w-[1080px] h-[1080px] bg-white relative overflow-hidden font-sans">
-                <SocialDesign isCapture={true} designType="consultant" />
+                <SocialDesign isCapture={true} designType="consultant" overlayData={overlayData} designConfig={designConfig} />
              </div>
              <div id="social-capture-element-corporate" className="w-[1080px] h-[1080px] bg-white relative overflow-hidden font-sans">
-                <SocialDesign isCapture={true} designType="corporate" />
+                <SocialDesign isCapture={true} designType="corporate" overlayData={overlayData} designConfig={designConfig} />
              </div>
              
              {/* PDF ÖZEL GİZLİ ŞABLONU (A4 Genişliği 794px baz alınarak tasarlandı) */}
